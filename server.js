@@ -1,40 +1,14 @@
 var http = require('http');
 var fs = require('fs');
+var Calculator = require('./module/arithmetic.js');
 
 var port = process.env.PORT || 1337;
 http.createServer(function(request, response){
-	/*console.log('\nRequest data');
-	console.log('Url: ' + request.url);
-	console.log('Type: ' + request.method);
-	console.log('User-Agent:' + request.headers['user-agent']);
-	console.log(request.headers);
-
-	response.setHeader('UserId', 10);
-	response.setHeader('Content-Type', 'text/html');
-	response.write('<h2> My little pony </h2>');*/
-
-	/*console.log('Get Url: ' + request.url);
-	if (request.url.startsWith('/public/')){
-		var fPath = request.url.substr(1);
-		fs.readFile(fPath, function(err, data){
-			if (err) {
-				reponse.statusCode = 404;
-				response.end('Resource not found!');
-			}
-			else {
-				//response.setHeader('Content-Type', 'text/html');
-				response.end(data);
-			}
-			return;
-		})
-	}
-	else {
-		response.end('Missing start page!');
-	}*/
-
 	fs.readFile('public/index.html', 'utf-8', function(err, data){
-		var name = 'Sergey';
-		data = data.replace('{name}', name);
+		var calc = new Calculator();
+		data = data.replace('{p1}', 2).replace('{p2}', 4).replace('{pRes}', calc.plus(2, 4));
+		data = data.replace('{m1}', 10).replace('{m2}', 3).replace('{mRes}', calc.minus(10, 3));
+		data = data.replace('{ml1}', 3).replace('{ml2}', 2).replace('{mlRes}', calc.multi(3, 2));
 		response.end(data);
 	})
 }).listen(port);
