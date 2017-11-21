@@ -13,7 +13,7 @@ http.createServer(function(request, response){
 	response.setHeader('Content-Type', 'text/html');
 	response.write('<h2> My little pony </h2>');*/
 
-	console.log('Get Url: ' + request.url);
+	/*console.log('Get Url: ' + request.url);
 	if (request.url.startsWith('/public/')){
 		var fPath = request.url.substr(1);
 		fs.readFile(fPath, function(err, data){
@@ -30,7 +30,11 @@ http.createServer(function(request, response){
 	}
 	else {
 		response.end('Missing start page!');
-	}
+	}*/
 
-	response.end();
+	fs.readFile('public/index.html', 'utf-8', function(err, data){
+		var name = 'Sergey';
+		data = data.replace('{name}', name);
+		response.end(data);
+	})
 }).listen(port);
