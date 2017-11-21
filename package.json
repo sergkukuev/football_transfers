@@ -5,5 +5,11 @@
   "main": "server.js",
   "author": {
     "name": "skukuev"
+  },
+  "scripts":{
+    "test" : "cd ./tests/ && mocha *.js"
+  },
+  "devDependencies": {
+    "mocha": "^4.0.1"
   }
 }
