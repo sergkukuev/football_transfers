@@ -1,9 +1,0 @@
-{
-  "name": "rsoi-course",
-  "version": "0.0.0",
-  "description": "RSOI-course",
-  "main": "server.js",
-  "author": {
-    "name": "skukuev"
-  }
-}
