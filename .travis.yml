@@ -1,0 +1,16 @@
+language: node_js
+sudo: required
+node_js:
+- '8'
+install:
+- npm install
+- npm install -g mocha
+scripts:
+- npm test
+deploy:
+  provider: heroku
+  app: rsoi-course
+  api:
+    key:
+      secure: C0LqSmqGPeICBrdjN6Ujv+Xl6WLGHf9SIpmCcmtlDo9IXfoXFACltC8PwPm0VdyTJxBdh1pxYxIejDNljCaIpXyiXanShLAWpeDivyl78llJKcGqMqBrMIy9ZRaxXuiFpo9kRamqesuBQbOPxv9UzCq3aIrIzyy0UeJJzrLbJcYZt2mPqvoauzoWZEKjwcv8854ntz+FYZaEEb06+QCBhnIOQyaMJw04klkhXhBfVnpS9Yc8MWxhgcF704FHqLpRB/gEaVCSIvNwQ4he7lnEQm+D4W1/Bz5OvSJ/wsCOLy3H2kykVSPHZ6pxQf97d+mrAsfIGugApchkZt9fmgXCvN+Xwh8qrHNnxn9X+j5QlKcLY7yXdyVAOJ6pO75E9ty+UOyfvlIGL8S+wil9Pn0+tc93WK9sRn6XTGt/GvdsPoq6RuF/dDobyhIOvNvPpuD3Z/t2FWozaVjjTv3wdfrx5GqPaYB3QD3v9p8NmSgDpNgMH5nq1kWpTeeaDehpVosNC5aPN841ufKXmPRCHxE8dQCAehsjXg/atbpfRQCoLW0NWacVZwVq40Qrrat9CcY7+cgup9J+USBon8TLCpxEwdqo931+AlnsfZ1dAf7qR83GzTAzlFi5j/LiHrB0xWzSMNgFd6U3GJJYXyKorHJrTnyN8kCYsSs681qtYYXfkWc=
+  strategy: git
