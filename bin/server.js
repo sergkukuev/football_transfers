@@ -1,39 +1,16 @@
-/*var http = require('http');
+var http = require('http');
+
 var port = process.env.PORT || 1337;
+http.createServer(function(request, response){
+	/*console.log('\nRequest data');
+	console.log('Url: ' + request.url);
+	console.log('Type: ' + request.method);
+	console.log('User-Agent:' + request.headers['user-agent']);
+	console.log(request.headers);*/
 
-// request - stream reader, response - stream writter
+	response.setHeader('UserId', 10);
+	response.setHeader('Content-Type', 'text/html');
+	response.write('<h2> My little pony </h2>');
 
-http.createServer(function (request, response) {
-    response.writeHead(200, { 'Content-Type': 'text/plain' });
-    response.end();
-}).listen(1337, '127.0.0.1', function () {
-    console.log('Server started listening to request on port 1337');
-})*/
-/*
-var fs = require('fs');
-
-var wrStream = fs.createWriteStream('hello.txt');
-wrStream.write('Hello all\n');
-wrStream.write('ololol');
-
-var rdStream = fs.createReadStream('hello.txt', 'utf-8');
-
-rdStream.on('data', function(chunk){
-	console.log(chunk);
-});*/
-
-var fs = require('fs');
-var zlib = require('zlib');
-
-var rdStream = fs.createReadStream('hello.txt', 'utf-8');
-var wrStream = fs.createWriteStream('some.zip');
-
-//rdStream.on('data', function(chink){
-	//wrStream.write(chink);
-//})
-
-var gzip = zlib.createGzip();
-
-rdStream.pipe(gzip).pipe(wrStream);
-
-//rdStream.pipe(wrStream);
+	response.end();
+}).listen(port);
