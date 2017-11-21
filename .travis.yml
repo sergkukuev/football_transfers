@@ -9,7 +9,6 @@ scripts:
 - npm test
 branches:
   only:
-  - lab-1
   - master
 deploy:
   provider: heroku
