@@ -25,3 +25,4 @@ deploy:
   on:
     repo: sergkukuev/RSOI-course
     branch: master
+  strategy: git
