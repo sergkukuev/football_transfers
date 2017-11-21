@@ -31,6 +31,9 @@
     <Compile Include="my-module\greeting.js">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="my-module\user.js">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="server.js" />
     <Content Include="package.json" />
     <Content Include="README.md" />
