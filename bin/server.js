@@ -21,7 +21,7 @@ http.createServer(function (request, response) {
 })*/
 //.listen(port);
 
-function display(data, callback) {
+/*function display(data, callback) {
 	// случайное определение ошибки
 	var randInt = Math.random() * (10 - 1) + 1;
 	var err = randInt > 5 ? new Error('Error. randInt > 5.') : null;
@@ -37,4 +37,37 @@ display('Data processing...', function(err, data){
 	console.log(data);
 });
 
-console.log('Finish app');
+console.log('Finish app');*/
+
+var util = require('util');
+var Emitter = require('events');
+var emitter = new Emitter();
+var eventName = 'greet';
+
+
+function User(){
+}
+util.inherits(User, Emitter);
+User.prototype.sayGoodBye = function(data) {
+	this.emit(eventName, data);
+}
+
+var user = new User();
+// Добавление к объекту user обработку события
+user.on(eventName, function(data){
+	console.log(data);
+});
+
+
+
+emitter.on(eventName, function(){
+	console.log('Hello all!');
+});
+
+emitter.on(eventName, function(data){
+	console.log(data);
+});
+
+emitter.emit(eventName, 'Sergey');
+
+user.sayGoodBye('Bye all!');
