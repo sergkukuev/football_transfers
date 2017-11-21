@@ -9,7 +9,7 @@ http.createServer(function (request, response) {
 }).listen(1337, '127.0.0.1', function () {
     console.log('Server started listening to request on port 1337');
 })*/
-
+/*
 var fs = require('fs');
 
 var wrStream = fs.createWriteStream('hello.txt');
@@ -20,4 +20,20 @@ var rdStream = fs.createReadStream('hello.txt', 'utf-8');
 
 rdStream.on('data', function(chunk){
 	console.log(chunk);
-});
+});*/
+
+var fs = require('fs');
+var zlib = require('zlib');
+
+var rdStream = fs.createReadStream('hello.txt', 'utf-8');
+var wrStream = fs.createWriteStream('some.zip');
+
+//rdStream.on('data', function(chink){
+	//wrStream.write(chink);
+//})
+
+var gzip = zlib.createGzip();
+
+rdStream.pipe(gzip).pipe(wrStream);
+
+//rdStream.pipe(wrStream);
