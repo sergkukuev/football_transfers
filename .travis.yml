@@ -14,9 +14,9 @@ branches:
 deploy:
   provider: heroku
   app: rsoi-course
+  api_key:
+    secure: 4c3a45e1-67fd-4ce8-a99a-d01827a41f17
   on:
     repo: sergkukuev/RSOI-course
     branch: master
   strategy: git
-  api_key:
-    secure: NXBYmpFSfC957Yqzgp2UGh3aHFUIM19VVVG1caY9+FKHWGOH02TFr34KVaIgIZwy0WQ74tAR7QyksC1O4h4djhF9DNHmraKQTMpJE+OYWQe94INij5wZsryKLilfiZQquFVc3Mbcs2qX21AwCIiakYWQ8q8mxHY3fOVse6FAReSBa1KqoU6sDwViajSOQa3eU0qWlYYZZRqBU+tpmQmmUqyTljPwvhvTsF0zhvAKdt+NctHaalwcvH4iLCplTztwDCSZxRVU1+v3Fh1IbMKMb3o7PDJHlcHMCJtrXYt+OPGd3DJx/HKGd7mSICVJcx/QB+psQhr1BI/MuqWwaaam9Z3Nu4qERkubix+fCZtUnubGqQuWmB0xCGJra+Ol0ciSt+GemoXS73EK77HHo9FBbYLxNBQ/uf8ks9Z24b+eM2HwSQZj0w+cniCaX51N+494PzKNgekLq9mD8Miwn/K7f8Om+YCZkwW/WQBXe62IusbVUqTY3jc0FGYDqTyEMnK+P3FLDOwquTHIAY4Y0bkB1FXbK/RtlHEMJvqIiND2S0V7GgJ0s6ksDVuEuh0w9kkLsHrMhE+iByISFDy9OM5PGtFxoBIPqdY7pAozDWNrt6EboWa72SmWFDkfX7cjS8a8i45UYxaMm3eO+n1OiloW10RqSuQO9sXRMBA2YxOEIYg=
