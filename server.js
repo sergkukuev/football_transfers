@@ -1,4 +1,4 @@
-var express         = require('express');
+/*var express         = require('express');
 var path            = require('path'); // модуль для парсинга пути
 var log             = require('./libs/log')(module);
 var ArticleModel 	= require('./libs/mongoose').ArticleModel;
@@ -128,4 +128,96 @@ app.get('/api', function (request, response, next) {
 
 app.listen(config.get('port'), function(){
     log.info('Express server listening on port ' + config.get('port'));
+});
+*/
+
+var express = require("express");
+var bodyParser = require("body-parser");
+var mongoClient = require("mongodb").MongoClient;
+var objectId = require("mongodb").ObjectID;
+ 
+var app = express();
+var jsonParser = bodyParser.json();
+var url = "mongodb://admin:admin@rsoicluster-shard-00-00-voyya.mongodb.net:27017,rsoicluster-shard-00-01-voyya.mongodb.net:27017,rsoicluster-shard-00-02-voyya.mongodb.net:27017/test?ssl=true&replicaSet=RsoiCluster-shard-0&authSource=admin";
+ 
+app.use(express.static(__dirname + "/public"));
+app.get("/api/users", function(req, res){
+      
+    mongoClient.connect(url, function(err, db){
+        db.collection("users").find({}).toArray(function(err, users){
+            res.send(users)
+            db.close();
+        });
+    });
+});
+app.get("/api/users/:id", function(req, res){
+      
+    var id = new objectId(req.params.id);
+    mongoClient.connect(url, function(err, db){
+        db.collection("users").findOne({_id: id}, function(err, user){
+             
+            if(err) return res.status(400).send();
+             
+            res.send(user);
+            db.close();
+        });
+    });
+});
+ 
+app.post("/api/users", jsonParser, function (req, res) {
+     
+    if(!req.body) return res.sendStatus(400);
+     
+    var userName = req.body.name;
+    var userAge = req.body.age;
+    var user = {name: userName, age: userAge};
+     
+    mongoClient.connect(url, function(err, db){
+        db.collection("users").insertOne(user, function(err, result){
+             
+            if(err) return res.status(400).send();
+             
+            res.send(user);
+            db.close();
+        });
+    });
+});
+  
+app.delete("/api/users/:id", function(req, res){
+      
+    var id = new objectId(req.params.id);
+    mongoClient.connect(url, function(err, db){
+        db.collection("users").findOneAndDelete({_id: id}, function(err, result){
+             
+            if(err) return res.status(400).send();
+             
+            var user = result.value;
+            res.send(user);
+            db.close();
+        });
+    });
+});
+ 
+app.put("/api/users", jsonParser, function(req, res){
+      
+    if(!req.body) return res.sendStatus(400);
+    var id = new objectId(req.body.id);
+    var userName = req.body.name;
+    var userAge = req.body.age;
+     
+    mongoClient.connect(url, function(err, db){
+        db.collection("users").findOneAndUpdate({_id: id}, { $set: {age: userAge, name: userName}},
+             {returnOriginal: false },function(err, result){
+             
+            if(err) return res.status(400).send();
+             
+            var user = result.value;
+            res.send(user);
+            db.close();
+        });
+    });
+});
+  
+app.listen(3000, function(){
+    console.log("Сервер ожидает подключения...");
 });
