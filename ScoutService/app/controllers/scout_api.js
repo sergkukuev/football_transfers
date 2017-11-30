@@ -1,7 +1,8 @@
 var express = require('express'),
 	router = express.Router(),
 	mongoose = require('mongoose'),
-	ScoutsSystem = mongoose.model('Scout');
+	ScoutsSystem = mongoose.model('Scout'),
+	validator = require('./../validator');
 
 module.exports = function(app) {
 	app.use('/ScoutsSystem', router);
@@ -9,9 +10,8 @@ module.exports = function(app) {
 
 // Для функции getScouts
 router.get('/', function(req, res, next) {
-	let page;
-	let count;
-	// TODO: Сделать валидатор на page и count
+	let page = validator.checkInt(req.query.page);
+	let count = validator.checkInt(req.query.count);
 	page = (typeof(page) != 'undefined') ? page : 0;
 	count = (typeof(count) != 'undefined') ? count : 0;
 	ScoutsSystem.getScouts(page, count, function(err, result) {
