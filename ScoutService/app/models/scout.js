@@ -10,7 +10,7 @@ db.on('error', function(err) {
 });
 
 db.once('open', function callback() {
-	log.info("Connected to MongoDB");
+	log.info("Scout service connected to MongoDB");
 });
 
 let Schema = mongoose.Schema;
@@ -30,7 +30,82 @@ let Scout = new Schema({
 		min: 18,
 		max: 70 
 	},
-	players: [String]
+	players: [Schema.Types.ObjectID]
 });
+
+Scout.virtual('date')
+	.get(function() {
+		return this._id.getTimestamp();
+	});
+
+Scout.statics.saveScout = function(scout, callback) {
+	return scout.save(callback);
+}
+
+Scout.statics.getScouts = function(page = 0, count = 15, callback) {
+	return this.find(function(err, scouts) {
+		if (err)
+			callback(err, null);
+		else {
+			if (scouts) {
+				let result = [];
+				for (let i = 0; i < scouts.length; i++)
+					result[i] = getScoutsInfo(scouts[i]);
+				callback(null, result);
+			}
+			else {
+				callback(null, null);
+			}
+		}
+	}).skip(page * count).limit(count);
+}
+
+Scout.statics.getScout = function(id, callback) {
+	if (!id || typeof(id) == 'undefined' || id.length == 0) {
+		return callback({ status: 'Error', message: 'ID is undefined'});
+	};
+	return this.findById(id, function(err, scout) {
+		if (err)
+			callback(err, null);
+		else {
+			if (scout) {
+				let result = getScoutInfo(scout);
+				callback(null, result);
+			}
+			else {
+				callback(null, null);
+			}
+		}
+	});
+}
+
+Scout.statics.getShortList = function(id, callback) {
+	if (!id || typeof(id) == 'undefined' || id.length == 0) {
+		return callback({ status: 'Error', message: 'ID is undefined'});
+	};
+	return this.findById(id, function(err, scout) {
+		if (err)
+			callback(err, null);
+		else {
+			if (scout) {
+				let players = scout.players;
+				callback(null, players);
+			}
+			else {
+				callback(null, null);
+			}
+		}
+	});
+}
+
+function getScoutInfo(scout) {
+	let elem = {
+		'ID'	: scout._id,
+		'Name'	: scout.name,
+		'Club'	: scout.club,
+		'Age'	: scout.age
+	};
+	return elem;
+}
 
 mongoose.model('Scout', Scout);
