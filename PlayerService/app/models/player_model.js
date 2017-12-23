@@ -2,17 +2,6 @@ var mongoose = require('mongoose'),
 	log = require('./../../libs/log')(module),
 	config = require('./../../libs/config');
 
-mongoose.connect(config.get('mongoose:uri'));
-var db = mongoose.connection;
-
-db.on('error', function(err) {
-	log.error('Connection error:', err.message);
-});
-
-db.once('open', function callback() {
-	log.info("Player service connected to MongoDB");
-});
-
 let Schema = mongoose.Schema;
 
 let Player = new Schema({

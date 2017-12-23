@@ -3,13 +3,13 @@ var express = require('express'),
 	mongoose = require('mongoose'),
 	log = require('./../../libs/log')(module),
 	PlayerSystem = mongoose.model('Player'),
-	validator = require('./../validator');
+	validator = require('./../validator/player_validator');
 
 module.exports = function(app) {
-	app.use('/PlayerSystem', router);
+	app.use('/player', router);
 };
 
-// Для функции getPlayers
+// get all players
 router.get('/', function(req, res, next) {
 	let page = validator.checkInt(req.query.page);
 	let count = validator.checkInt(req.query.count);
@@ -21,7 +21,7 @@ router.get('/', function(req, res, next) {
 	});
 });
 
-// Для фуннкции getPlayer
+// get player by id
 router.get('/:id', function(req, req, next) {
 	const id = req.params.id;
 	if (!id || typeof(id) == 'undefined' || id.length == 0)
