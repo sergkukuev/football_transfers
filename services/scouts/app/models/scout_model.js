@@ -18,8 +18,8 @@ let Scout = new Schema({
 		default: 18,
 		min: 18,
 		max: 70 
-	},
-	players: [Schema.Types.ObjectID]
+	}//,
+	//players: [Schema.Types.ObjectID]
 });
 
 Scout.virtual('date')
@@ -68,7 +68,7 @@ Scout.statics.getScout = function(id, callback) {
 	});
 }
 
-Scout.statics.getScoutPlayers = function(id, callback) {
+/*Scout.statics.getScoutPlayers = function(id, callback) {
 	if (!id || typeof(id) == 'undefined' || id.length == 0) {
 		return callback({ status: 'Error', message: 'ID is undefined'});
 	};
@@ -85,7 +85,7 @@ Scout.statics.getScoutPlayers = function(id, callback) {
 			}
 		}
 	});
-}
+}*/
 
 function getScoutInfo(scout) {
 	let elem = {

@@ -36,7 +36,7 @@ router.get('/:id', function(req, req, next) {
 });
 
 // get players list for scout by id
-router.get('/players/:id', function(req, res, next) {
+/*router.get('/players/:id', function(req, res, next) {
 	const id = req.params.id;
 	if (!id == typeof(id) == 'undefined' || id.length == 0)
 		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
@@ -48,7 +48,7 @@ router.get('/players/:id', function(req, res, next) {
 		});
 	}
 });
-
+*/
 router.options('/live', function(req, res, next) {
 	res.status(200).send(null);
 });
