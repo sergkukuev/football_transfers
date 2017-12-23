@@ -1,14 +1,15 @@
 var express = require('express'),
 	router = express.Router(),
 	mongoose = require('mongoose'),
+	log = require('./../../libs/log')(module),
 	ScoutsSystem = mongoose.model('Scout'),
-	validator = require('./../validator');
+	validator = require('./../validator/scout_validator');
 
 module.exports = function(app) {
-	app.use('/ScoutsSystem', router);
+	app.use('/scouts', router);
 };
 
-// Для функции getScouts
+// get all scouts
 router.get('/', function(req, res, next) {
 	let page = validator.checkInt(req.query.page);
 	let count = validator.checkInt(req.query.count);
@@ -20,7 +21,7 @@ router.get('/', function(req, res, next) {
 	});
 });
 
-// Для фуннкции getScout
+// get scout by id
 router.get('/:id', function(req, req, next) {
 	const id = req.params.id;
 	if (!id || typeof(id) == 'undefined' || id.length == 0)
@@ -34,8 +35,8 @@ router.get('/:id', function(req, req, next) {
 	}
 });
 
-// Для функции getShortList
-router.get('/:id', function(req, res, next) {
+// get players list for scout by id
+router.get('/players/:id', function(req, res, next) {
 	const id = req.params.id;
 	if (!id == typeof(id) == 'undefined' || id.length == 0)
 		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});

@@ -2,17 +2,6 @@ var mongoose = require('mongoose'),
 	log = require('./../../libs/log')(module),
 	config = require('./../../libs/config');
 
-mongoose.connect(config.get('mongoose:uri'));
-var db = mongoose.connection;
-
-db.on('error', function(err) {
-	log.error('Connection error:', err.message);
-});
-
-db.once('open', function callback() {
-	log.info("Scout service connected to MongoDB");
-});
-
 let Schema = mongoose.Schema;
 
 let Scout = new Schema({
@@ -79,7 +68,7 @@ Scout.statics.getScout = function(id, callback) {
 	});
 }
 
-Scout.statics.getShortList = function(id, callback) {
+Scout.statics.getScoutPlayers = function(id, callback) {
 	if (!id || typeof(id) == 'undefined' || id.length == 0) {
 		return callback({ status: 'Error', message: 'ID is undefined'});
 	};
