@@ -33,9 +33,7 @@ var controllers = glob.sync(config.root + '/app/controllers/*.js');
 });
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-extended: true
-}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(compress());
 app.use(express.static(config.root + '/public'));

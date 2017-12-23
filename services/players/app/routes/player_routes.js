@@ -6,7 +6,7 @@ var express = require('express'),
 	validator = require('./../validator/player_validator');
 
 module.exports = function(app) {
-	app.use('/player', router);
+	app.use('/players', router);
 };
 
 // get all players

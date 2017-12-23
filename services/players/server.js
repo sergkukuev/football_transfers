@@ -33,15 +33,16 @@ var controllers = glob.sync(config.root + '/app/controllers/*.js');
 });
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({
-extended: true
-}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(compress());
 app.use(express.static(config.root + '/public'));
 app.use(methodOverride());
 
-/*
+app.listen(config.get('port'), function(){
+	log.info('Service \'Player\' listening on port ' + config.get('port'));
+});
+
 // Error 404
 app.use(function(request, response, next) {
 	response.status(404);
@@ -56,8 +57,4 @@ app.use(function(request, response, next) {
 	log.error('Internal error(%d): %s', response.statusCode, err.message);
 	response.send({ error: err.message });
 	return;
-});*/
-
-app.listen(config.get('port'), function(){
-	log.info('Service \'Player\' listening on port ' + config.get('port'));
 });
