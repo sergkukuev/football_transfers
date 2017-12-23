@@ -6,7 +6,7 @@ var gulp = require('gulp'),
 gulp.task('run', function() {
 	livereload.listen();
 	nodemon({
-		script: 'index.js',
+		script: 'server.js',
 		stdout: false
 	}).on('readable', function() {
 		this.stdout.on('data', function(chunk) {

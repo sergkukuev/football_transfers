@@ -1,8 +1,8 @@
 {
-  "name": "scoutservice",
+  "name": "players",
   "version": "1.0.0",
-  "description": "Micro-service for working with scouts",
-  "main": "index.js",
+  "description": "Micro-service for working with players",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,5 +12,14 @@
     "gulp": "^3.9.1",
     "gulp-livereload": "^3.8.1",
     "gulp-nodemon": "^2.2.1"
+  },
+  "dependencies": {
+    "compression": "^1.7.1",
+    "cookie-parser": "^1.4.3",
+    "express": "^4.16.2",
+    "method-override": "^2.3.10",
+    "mongoose": "^4.13.7",
+    "nconf": "^0.10.0",
+    "winston": "^2.4.0"
   }
 }
