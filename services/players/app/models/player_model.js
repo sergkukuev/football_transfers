@@ -1,6 +1,4 @@
-var mongoose = require('mongoose'), 
-	log = require('./../../libs/log')(module),
-	config = require('./../../libs/config');
+var mongoose = require('mongoose');
 
 let Schema = mongoose.Schema;
 
@@ -19,20 +17,10 @@ let Player = new Schema({
 		min: 18,
 		max: 45 
 	},
-	cost: {
-		type: Number,
-		default: 0,
-	},
 	rank: {
 		type: Number,
 		default: 45,
-		max: 100
-	},
-	potential: {
-		type: Number,
-		default: 99,
-		min: 45,
-		max: 100
+		max: 99
 	}
 });
 
@@ -41,7 +29,7 @@ Player.virtual('date')
 		return this._id.getTimestamp();
 	});
 
-Player.statics.savePlayer = function(player, callback) {
+Player.statics.createPlayer = function(player, callback) {
 	return player.save(callback);
 }
 
@@ -56,43 +44,30 @@ Player.statics.getPlayers = function(page = 0, count = 15, callback) {
 					result[i] = getPlayerInfo(players[i]);
 				callback(null, result);
 			}
-			else {
+			else
 				callback(null, null);
-			}
 		}
 	}).skip(page * count).limit(count);
 }
 
-Scout.statics.getPlayer = function(id, callback) {
+Player.statics.getPlayer = function(id, callback) {
 	if (!id || typeof(id) == 'undefined' || id.length == 0) {
 		return callback({ status: 'Error', message: 'ID is undefined'});
 	};
 	return this.findById(id, function(err, player) {
-		if (err)
-			callback(err, null);
-		else {
-			if (scout) {
-				let result = getPlayerInfo(player);
-				callback(null, result);
-			}
-			else {
-				callback(null, null);
-			}
-		}
+		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
 	});
 }
 
 function getPlayerInfo(player) {
-	let elem = {
+	let item = {
 		'ID'	: player._id,
 		'Name'	: player.name,
 		'Club'	: player.club,
-		'Cost'	: player.cost,
 		'Age'	: player.age,
 		'Rank'	: player.rank,
-		'Potential': player.potential
 	};
-	return elem;
+	return item;
 }
 
 mongoose.model('Player', Player);

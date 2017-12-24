@@ -3,7 +3,7 @@ var express = require('express'),
 	mongoose = require('mongoose'),
 	log = require('./../../libs/log')(module),
 	PlayerSystem = mongoose.model('Player'),
-	validator = require('./../validator/player_validator');
+	validator = require('./../validators/player_validator');
 
 module.exports = function(app) {
 	app.use('/players', router);
@@ -28,8 +28,12 @@ router.get('/:id', function(req, req, next) {
 		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
 	else {
 		PlayerSystem.getPlayer(id, function(err, result) {
-			err ? (err.kind == "ObjectID" ? res.status(400).send({ status: 'Error', message: 'Bad request: Invalid ID'}) : 
-					res.status(400).send({ status: 'Error', message: 'Player not found'})) :
+			if (err) {
+				err.kind == "ObjectID" ? 
+					res.status(400).send({ status: 'Error', message: 'Bad request: ID is invalid'}) : 
+					res.status(400).send({ status: 'Error', message: 'Player not found'});
+			}
+			else
 				res.status(200).send(result); 
 		});
 	}
@@ -37,4 +41,23 @@ router.get('/:id', function(req, req, next) {
 
 router.options('/live', function(req, res, next) {
 	res.status(200).send(null);
+});
+
+// generate test players
+router.put('/test_generate', function (req, res, next) {
+	const count = validator.checkInt(req.query.count);
+	count = (typeof(count) != 'undefined') ? count : 20;
+	for (let i = 0; i < count; i++){
+		let player = new PlayerSystem({
+			name  		: 'Player ' + i.toString(),
+			club  		: 'Club ' + i.toString(),
+			age			: (100 - i) % (45 - 18) + 18,
+			rank    	: (90 * i) % 100
+		});
+		
+		PlayerSystem.createPlayer(player, function(err, result){
+			err ? next(err) : log.info("Save new player " + i.toString());
+		});
+	}
+	res.status(200).send('Random ' + count + ' players');
 });
