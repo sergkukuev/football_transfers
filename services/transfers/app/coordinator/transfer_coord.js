@@ -1,7 +1,7 @@
 module.exports = {
     // get player by id
     getPlayer : function(id, callback){
-        const host      = 'http://127.0.0.1:3001'
+        const host      = 'http://localhost:3001'
         const url       = host+'/players/' + id;
         const options   = createOptions(url, 'GET');
         createAndSendGetHttpRequest(url, options,null,function(err, status, response){
@@ -19,7 +19,7 @@ module.exports = {
     },
     // get scout by id
     getScout : function(id, callback){
-        const host      = 'http://127.0.0.1:3002';
+        const host      = 'http://localhost:3002';
         const url       = host + '/scouts/'+id;
         const options   = createOptions(url, 'GET');
         createAndSendGetHttpRequest(url, options,null, function(err, status, response){

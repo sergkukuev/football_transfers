@@ -1,33 +1,52 @@
-var mongoose = require('mongoose'), 
-	log = require('./../../libs/log')(module);
+var mongoose = require('mongoose');
 
 let Schema = mongoose.Schema;
 
 let Transfer = new Schema({
-	ClubIN: {
-		type: String, 
-		default: 'NoClub'
-	},
-	ClubOUT: { 
-		type: String,
-		default: 'NoClub'
-	},
-	Cost: {
-		type: Number,
-		default: 0,
-	},
-	Contract: {
-		StartDate: Date,
-		EndDate: Date
-	},
 	PlayerID: Schema.Types.ObjectId,
-	ScoutID: Schema.Types.ObjectId
+	ScoutID: Schema.Types.ObjectId,
+	cost: {
+		type: Number,
+		min: 0,
+		default: 0
+	},
+	dateOfSign: Date,
+	club: {
+		from: {
+			type: String,
+			default: 'NoClub'
+		},
+		to: {
+			type: String,
+			default: 'NoClub'
+		}
+	}
 });
 
 Transfer.virtual('date')
 	.get(function() {
 		return this._id.getTimestamp();
 	});
+
+Transfer.statics.createTransfer = function(info, callback) {
+	let object = Object(info);
+	const check = checkRequiredFields(Object.keys(object));
+	if (check) {
+		let transfer = createTransfer(object);
+		if (transfer) {
+			return transfer.save(function (err, result) {
+				if (err)
+					return callback(err, null);
+				else {
+					let res = getTransfer(result);
+					return callback(null, res);
+				}
+			});
+		} else
+			return callback('Incorrect transfer fields', null);
+	} else
+		return callback('Not found required fields', null);
+};
 
 Transfer.statics.getTransfers = function(page, count, callback){
 	if (page < 0 || typeof(page) == 'undefined' || count <= 0 || typeof(count) == 'undefined')
@@ -39,8 +58,8 @@ Transfer.statics.getTransfers = function(page, count, callback){
 			else {
 				if (transfers) {
 					let result = [];
-					for (let i = 0; I < orders.length; i++){
-		        		let item = getTranfer(orders[i]);
+					for (let i = 0; i < transfers.length; i++){
+		        		let item = getTranfer(transfers[i]);
 		        		result[i] = item;
 		      		}
 
@@ -67,38 +86,17 @@ Transfer.statics.getTranfer = function(id, callback) {
 	});
 };
 
-Transfer.statics.newTransfer = function(info, callback) {
-	let object = Object(info);
-	const check = checkRequiredFields(Object.keys(object));
-	if (check) {
-		let transfer = createTransfer(object);
-		if (transfer) {
-			return transfer.save(function (err, result) {
-				if (err)
-					return callback(err, null);
-				else {
-					let res = getTransfer(result);
-					return callback(null, res);
-				}
-			});
-		} else
-			return callback('Incorrect transfer fields', null);
-	} else
-		return callback('Not found required fields', null);
-};
-
 function getTransfer(object) {
 	let item = {
 		ID: object._id,
-		ClubIN: object.ClubIN,
-		ClubOUT: object ClubOUT,
-		Cost: object.Cost
-		Contract: {
-			StartDate: object.Contract.StartDate,
-			EndDate: object.Contract.EndDate
-		},
 		PlayerID: object.PlayerID,
-		ScoutID: object.ScoutID
+		ScoutID: object.ScoutID,
+		cost: object.Cost,
+		dateOfSign: object.dateOfSign,
+		club: {
+			from: object.club.from,
+			to: object.club.to
+		}
 	};
 	return item;
 }
@@ -116,20 +114,17 @@ function createTransfer(object) {
 			case 'ScoutID':
 				item.ScoutID = mongoose.Types.ObjectId(object[key]);
 				break;
-			case 'StartDate':
-				item.Contract.StartDate = new Date(object[key]);
+			case 'Cost':
+				item.cost = new Number(object[key]);
 				break;
-			case 'EndDate':
-				item.Contract.EndDate = new Date(object[key]);
+			case 'ClubFrom':
+				item.club.from = new String(object[key]);
 				break;
-			case 'ClubIN':
-				item.ClubIN = new String(object[key]);
+			case 'ClubTo':
+				item.club.to = new String(object[key]);
 				break;
-			case 'ClubOUT':
-				item.ClubOUT = new String(object[key]);
-				break;
-			case 'cost':
-				item.Cost = new String(object[key]);
+			case 'DateOfSign':
+				item.dateOfSign = new String(object[key]);
 				break;
 			default:
 				error = true;
@@ -144,7 +139,7 @@ function createTransfer(object) {
 
 function checkRequiredFields(objectKeys){
 	const keys = Array.from(objectKeys);
-	const requiredField = ['ClubIN', 'ClubOUT', 'Cost', 'StartDate', 'EndDate', 'PlayerID', 'ScoutID'];
+	const requiredField = ['PlayerID', 'ScoutID', 'Cost', 'DateOfSign', 'ClubFrom', 'ClubTo'];
 	let flag = 0;
 	
 	for(let i = 0; i < keys.length; i++ )
