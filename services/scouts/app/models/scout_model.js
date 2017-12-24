@@ -1,6 +1,4 @@
-var mongoose = require('mongoose'), 
-	log = require('./../../libs/log')(module),
-	config = require('./../../libs/config');
+var mongoose = require('mongoose');
 
 let Schema = mongoose.Schema;
 
@@ -9,17 +7,14 @@ let Scout = new Schema({
 		type: String,
 		required: true 
 	},
-	club: { 
-		type: String,
-		default: 'NoClub'
-	},
-	age: { 
+	amountOfDeals: {
 		type: Number,
-		default: 18,
-		min: 18,
-		max: 70 
-	}//,
-	//players: [Schema.Types.ObjectID]
+		default: 0
+	},
+	rank: {
+		type: Number,
+		default: 0
+	}
 });
 
 Scout.virtual('date')
@@ -27,7 +22,8 @@ Scout.virtual('date')
 		return this._id.getTimestamp();
 	});
 
-Scout.statics.saveScout = function(scout, callback) {
+Scout.statics.createScout = function(scout, callback) {
+	scout.rank = calculateRank(scout.amountOfDeals);
 	return scout.save(callback);
 }
 
@@ -39,12 +35,11 @@ Scout.statics.getScouts = function(page = 0, count = 15, callback) {
 			if (scouts) {
 				let result = [];
 				for (let i = 0; i < scouts.length; i++)
-					result[i] = getScoutsInfo(scouts[i]);
+					result[i] = getScoutInfo(scouts[i]);
 				callback(null, result);
 			}
-			else {
+			else
 				callback(null, null);
-			}
 		}
 	}).skip(page * count).limit(count);
 }
@@ -56,45 +51,34 @@ Scout.statics.getScout = function(id, callback) {
 	return this.findById(id, function(err, scout) {
 		if (err)
 			callback(err, null);
-		else {
-			if (scout) {
-				let result = getScoutInfo(scout);
-				callback(null, result);
-			}
-			else {
-				callback(null, null);
-			}
-		}
+		else
+			scout ? callback(null, getScoutInfo(scout)) : callback(null, null);
 	});
 }
 
-/*Scout.statics.getScoutPlayers = function(id, callback) {
-	if (!id || typeof(id) == 'undefined' || id.length == 0) {
-		return callback({ status: 'Error', message: 'ID is undefined'});
-	};
-	return this.findById(id, function(err, scout) {
-		if (err)
-			callback(err, null);
-		else {
-			if (scout) {
-				let players = scout.players;
-				callback(null, players);
-			}
-			else {
-				callback(null, null);
-			}
-		}
-	});
-}*/
+function calculateRank(amountOfDeals) {
+	let rank = 0;
+	if (amountOfDeals < 25)
+		rank = 1;
+	if (25 <= amountOfDeals && amountOfDeals < 50)
+		rank = 2;
+	if ( 50 <= amountOfDeals && amountOfDeals < 75)
+		rank = 3;
+	if (75 <= amountOfDeals && amountOfDeals < 100)
+		rank = 4;
+	if (amountOfDeals >= 100)
+		rank = 5
+	return rank;
+}
 
 function getScoutInfo(scout) {
-	let elem = {
+	let item = {
 		'ID'	: scout._id,
 		'Name'	: scout.name,
-		'Club'	: scout.club,
-		'Age'	: scout.age
+		'amountOfDeals' : scout.amountOfDeals,
+		'Rank'	: scout.rank
 	};
-	return elem;
+	return item;
 }
 
 mongoose.model('Scout', Scout);
