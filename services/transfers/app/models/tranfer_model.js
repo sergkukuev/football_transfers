@@ -59,7 +59,7 @@ Transfer.statics.getTransfers = function(page, count, callback){
 				if (transfers) {
 					let result = [];
 					for (let i = 0; i < transfers.length; i++){
-		        		let item = getTranfer(transfers[i]);
+		        		let item = getTransfer(transfers[i]);
 		        		result[i] = item;
 		      		}
 
