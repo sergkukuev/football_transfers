@@ -59,6 +59,26 @@ Player.statics.getPlayer = function(id, callback) {
 	});
 }
 
+Player.statics.getPlayerByName = function(str, callback) {
+	if (!str || typeof(str) == 'undefined' || str.length == 0) {
+		return callback({ status: 'Error', message: 'Name is undefined'});
+	};
+	return this.find({
+		name: str
+	}).exec(function(err, player) {
+		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
+	});
+}
+
+Player.statics.updatePlayer = function(id, clubTo, callback) {
+	if (!id || typeof(id) == 'undefined' || id.length == 0) {
+		return callback({ status: 'Error', message: 'ID is undefined'});
+	};
+	return this.findByIdAndUpdate(id, { club: clubTo}, function(err, player) {
+		err ? callback(err, null) : (player ? callback(null, getPlayerName(player)) : callback(null, null));
+	});
+} 
+
 function getPlayerInfo(player) {
 	let item = {
 		'ID'	: player._id,
@@ -68,6 +88,9 @@ function getPlayerInfo(player) {
 		'Rank'	: player.rank,
 	};
 	return item;
+}
+function getPlayerName(player) {
+	return player.name;
 }
 
 mongoose.model('Player', Player);

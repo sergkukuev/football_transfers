@@ -22,8 +22,9 @@ router.get('/', function(req, res, next) {
 });
 
 // get player by id
-router.get('/:id', function(req, req, next) {
-	const id = req.params.id;
+router.get('/:id', function(req, res, next) {
+	const id = '5a3fb1000824f917acdb7f06'; // fixed this
+	//const id = req.param.id;
 	if (!id || typeof(id) == 'undefined' || id.length == 0)
 		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
 	else {
@@ -35,6 +36,28 @@ router.get('/:id', function(req, req, next) {
 			}
 			else
 				res.status(200).send(result); 
+		});
+	}
+});
+
+// update player
+router.put('/:id', function(req, res, next) {
+	const id = '5a3fb1000824f917acdb7f06';	// and this
+	//const id = req.params.id;
+	let clubTo = req.query.ClubTo;
+	if (!id || typeof(id) == 'undefined' || id.length == 0)
+		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
+	else if (!clubTo || typeof(clubTo) == 'undefined' || clubTo.length == 0)
+		res.status(400).send({ status: 'Error', message: 'Bad request: ClubTo is undefined'});
+	else {
+		PlayerSystem.updatePlayer(id, clubTo, function(err, result) {
+			if (err) {
+				err.kind == "ObjectID" ? 
+					res.status(400).send({ status: 'Error', message: 'Bad request: ID is invalid'}) : 
+					res.status(400).send({ status: 'Error', message: 'Player not found'});
+			}
+			else
+				res.status(200).send(result + ' moved to ' + clubTo); 
 		});
 	}
 });
