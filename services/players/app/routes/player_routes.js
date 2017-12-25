@@ -40,7 +40,7 @@ router.get('/:id', function(req, res, next) {
 	}
 });
 
-// update player
+// update player by id
 router.put('/:id', function(req, res, next) {
 	const id = '5a3fb1000824f917acdb7f06';	// and this
 	//const id = req.params.id;
