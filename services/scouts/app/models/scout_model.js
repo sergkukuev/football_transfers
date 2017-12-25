@@ -56,15 +56,26 @@ Scout.statics.getScout = function(id, callback) {
 	});
 }
 
-Scout.statics.updateScout = function(id, callback) {
+Scout.statics.updateScout = function(id, amount, callback) {
 	if (!id || typeof(id) == 'undefined' || id.length == 0) {
 		return callback({ status: 'Error', message: 'ID is undefined'});
 	};
+	amount++;
+
 	return this.findByIdAndUpdate(id, { 
-			amountOfDeals: amountOfDeals++,
-			rank: calculateRank(amountOfDeals)
+			amountOfDeals: amount,
+			rank: calculateRank(amount)
 		}, function(err, scout) {
-		err ? callback(err, null) : (player ? callback(null, getScoutName(scout)) : callback(null, null));
+		err ? callback(err, null) : (scout ? callback(null, getScoutName(scout)) : callback(null, null));
+	});
+}
+
+Scout.statics.getAmountById = function (id, callback) {
+	return this.findById(id, function(err, scout) {
+		if (err)
+			callback(err, null);
+		else
+			scout ? callback(null, scout.amountOfDeals) : callback(null, null);
 	});
 }
 

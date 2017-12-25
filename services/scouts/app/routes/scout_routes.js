@@ -47,14 +47,23 @@ router.put('/:id', function(req, res, next) {
 	if (!id || typeof(id) == 'undefined' || id.length == 0)
 		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
 	else {
-		ScoutSystem.updateScout(id, function(err, result) {
+		ScoutSystem.getAmountById(id, function(err, amount) {
 			if (err) {
 				err.kind == "ObjectID" ? 
 					res.status(400).send({ status: 'Error', message: 'Bad request: ID is invalid'}) : 
 					res.status(400).send({ status: 'Error', message: 'Scout not found'});
 			}
-			else
-				res.status(200).send(result + ' updated'); 
+			else {
+				ScoutSystem.updateScout(id, amount, function(err, result) {
+				if (err) {
+					err.kind == "ObjectID" ? 
+						res.status(400).send({ status: 'Error', message: 'Bad request: ID is invalid'}) : 
+						res.status(400).send({ status: 'Error', message: 'Scout not found'});
+				}
+				else
+					res.status(200).send(result + ' updated'); 
+				});
+			}
 		});
 	}
 });
