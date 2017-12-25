@@ -56,6 +56,18 @@ Scout.statics.getScout = function(id, callback) {
 	});
 }
 
+Scout.statics.updateScout = function(id, callback) {
+	if (!id || typeof(id) == 'undefined' || id.length == 0) {
+		return callback({ status: 'Error', message: 'ID is undefined'});
+	};
+	return this.findByIdAndUpdate(id, { 
+			amountOfDeals: amountOfDeals++,
+			rank: calculateRank(amountOfDeals)
+		}, function(err, scout) {
+		err ? callback(err, null) : (player ? callback(null, getScoutName(scout)) : callback(null, null));
+	});
+}
+
 function calculateRank(amountOfDeals) {
 	let rank = 0;
 	if (amountOfDeals < 25)
@@ -69,6 +81,10 @@ function calculateRank(amountOfDeals) {
 	if (amountOfDeals >= 100)
 		rank = 5
 	return rank;
+}
+
+function getScoutName(scout) {
+	return scout.name;
 }
 
 function getScoutInfo(scout) {

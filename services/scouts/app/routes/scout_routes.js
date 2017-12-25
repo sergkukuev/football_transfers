@@ -22,8 +22,9 @@ router.get('/', function(req, res, next) {
 });
 
 // get scout by id
-router.get('/:id', function(req, req, next) {
-	const id = req.params.id;
+router.get('/:id', function(req, res, next) {
+	const id = '5a40096005d0dd2d18c6167e';
+	//const id = req.params.id;
 	if (!id || typeof(id) == 'undefined' || id.length == 0)
 		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
 	else {
@@ -35,6 +36,25 @@ router.get('/:id', function(req, req, next) {
 			}
 			else
 				res.status(200).send(result); 
+		});
+	}
+});
+
+// update scout by id
+router.put('/:id', function(req, res, next) {
+	const id = '5a40096005d0dd2d18c6167e';	// and this
+	//const id = req.params.id;
+	if (!id || typeof(id) == 'undefined' || id.length == 0)
+		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
+	else {
+		ScoutSystem.updateScout(id, function(err, result) {
+			if (err) {
+				err.kind == "ObjectID" ? 
+					res.status(400).send({ status: 'Error', message: 'Bad request: ID is invalid'}) : 
+					res.status(400).send({ status: 'Error', message: 'Scout not found'});
+			}
+			else
+				res.status(200).send(result + ' updated'); 
 		});
 	}
 });
