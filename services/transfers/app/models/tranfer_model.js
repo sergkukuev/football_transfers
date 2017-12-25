@@ -72,7 +72,7 @@ Transfer.statics.getTransfers = function(page, count, callback){
 };
 
 Transfer.statics.getTranfer = function(id, callback) {
-	return findById(id, function(err, result) {
+	return this.findById(id, function(err, result) {
 		if (err)
 			return callback(err, null);
 		else {
