@@ -1,6 +1,7 @@
 const   PlayerHost 	= 'http://localhost:3001',
         ScoutHost	= 'http://localhost:3002',
         TranferHost	= 'http://localhost:3003';
+
 module.exports = {
     // Players service
     getPlayers: function (page, count, callback) {
@@ -22,14 +23,14 @@ module.exports = {
     // Transfers service
     createTransfer: function (object, callback) {
         const url = TranferHost + '/transfers';
-        const options = createOptions(url, "POST");
+        const options = createOptions(url, "PUT");
         createAndSendHttpPostRequest(options, object, function (err, status, response) {
             return responseHandlerObject(err, status, response, callback);
         });
         return;
     },
-    getTransfer: function (order_id, callback) {
-        const url = TransferHost + '/transfers/' + order_id;
+    getTransfer: function (id, callback) {
+        const url = TransferHost + '/transfers/' + id;
         const options = createOptions(url, "GET");
         createAndSendGetHttpRequest(options, function (err, status, response) {
             return responseHandlerObject(err, status, response, callback);

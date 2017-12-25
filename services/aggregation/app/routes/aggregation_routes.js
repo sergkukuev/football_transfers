@@ -9,8 +9,8 @@ module.exports = function(app) {
 
 // get all players
 router.get('/players', function(req, res, next) {
-	const page = valid.checkPosIntNumber(req.query.page);
-	const count = valid.checkPosIntNumber(req.query.count);
+	const page = valid.checkInt(req.query.page);
+	const count = valid.checkInt(req.query.count);
 	coord.getPlayers(page, count, function(err, statusCode, resText) {
 		err ? return next(err) : res.status(statusCode).send(resText);
 	});
@@ -20,7 +20,7 @@ router.get('/players', function(req, res, next) {
 router.get('/players/:id', function(req, res, next) {
 	const id = valid.checkID(req.params.id);
 	if (typeof(id) == 'undefined')
-		res.status(400).send({ status: 'Error', message: 'Bad request'});
+		res.status(400).send({ status: 'Error', message: 'ID is  undefined'});
 	else {
 		coord.getPlayer(id, function(err, statusCode, resText) {
 			err ? return next(err) : res.status(statusCode).send(resText);
@@ -39,9 +39,9 @@ router.get('/scouts', function(req, res, next) {
 
 // get scout by id
 router.get('/scouts/:id', function(req, res, next) {
-	const id;
+	const id = valid.checkID(req.params.id);
 	if (typeof(id) == 'undefined')
-		res.status(400).send({ status: 'Error', message: 'Bad request'});
+		res.status(400).send({ status: 'Error', message: 'ID is undeinfed'});
 	else {
 		coord.getScout(id, function(err, statusCode, resText) {
 			err ? return next(err) : res.status(statusCode).send(resText);
@@ -50,13 +50,14 @@ router.get('/scouts/:id', function(req, res, next) {
 });
 
 // create transfer
-router.post('/transfers/new_transfer', function(req, res, next) {
+router.post('/transfers/create', function(req, res, next) {
 	const param = {
 		PlayerID: req.body.PlayerID,
 		ScoutID: req.body.ScoutID,
-		startDate:req.body.startDate,
-		endDate: req.body.endDate,
-		Cost: req.body.Cost
+		Cost: req.body.Cost,
+		DateOfSign: req.body.DateOfSign,
+		ClubFrom: req.body.ClubFrom,
+		ClubTo: req.body.ClubTo
 	};
 	coord.createTransfer(param, function(err, statusCode, res) {
 		err ? return next(err) : res.status(statusCode).send(res);
