@@ -4,7 +4,8 @@
   "description": "Micro-service for working with players",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    //"test": "cd ./tests/ && mocha *.js", 
+    "coverage": "env COVERAGE=1 mocha -R html-cov > coverage.html && open coverage.html"
   },
   "author": "sergkukuev",
   "license": "ISC",
@@ -14,12 +15,16 @@
     "gulp-nodemon": "^2.2.1"
   },
   "dependencies": {
+    "chai": "^4.1.2",
+    "chai-http": "^3.0.0",
     "compression": "^1.7.1",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.2",
     "method-override": "^2.3.10",
+    "mocha": "^4.0.1",
     "mongoose": "^4.13.7",
     "nconf": "^0.10.0",
+    "nyc": "^11.4.1",
     "serve-favicon": "^2.4.5",
     "winston": "^2.4.0"
   }

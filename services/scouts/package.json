@@ -4,21 +4,41 @@
   "description": "Micro-service for working with scouts",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha ./test/*.js",
+    "coverage": "nyc --reporter=html mocha --recursive test"
+  },
+  "config": {
+    "blanket": {
+      "pattern": [
+        ""
+      ],
+      "data-cover-never": [
+        "node_modules",
+        "tests"
+      ]
+    }
   },
   "author": "sergkukuev",
   "license": "ISC",
   "devDependencies": {
+    "babel": "^6.23.0",
     "gulp": "^3.9.1",
     "gulp-livereload": "^3.8.1",
-    "gulp-nodemon": "^2.2.1"
+    "gulp-nodemon": "^2.2.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.0.2", 
+    "nyc": "^8.4.0"
   },
   "dependencies": {
+    "blanket": "^1.2.3",
     "body-parser": "^1.18.2",
+    "chai": "^4.1.2",
+    "chai-http": "^3.0.0",
     "compression": "^1.7.1",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.2",
     "glob": "^7.1.2",
+    "jasmine": "^2.8.0",
     "method-override": "^2.3.10",
     "mongoose": "^4.13.7",
     "nconf": "^0.10.0",
