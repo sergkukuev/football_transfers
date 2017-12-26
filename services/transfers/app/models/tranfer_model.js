@@ -11,15 +11,9 @@ let Transfer = new Schema({
 		default: 0
 	},
 	dateOfSign: Date,
-	club: {
-		from: {
-			type: String,
-			default: 'NoClub'
-		},
-		to: {
-			type: String,
-			default: 'NoClub'
-		}
+	clubTo: {
+		type: String,
+		default: 'NoClub'
 	}
 });
 
@@ -48,55 +42,50 @@ Transfer.statics.createTransfer = function(info, callback) {
 		return callback('Not found required fields', null);
 };
 
-Transfer.statics.getTransfers = function(page, count, callback){
-	if (page < 0 || typeof(page) == 'undefined' || count <= 0 || typeof(count) == 'undefined')
-		return callback('incorrect page and count', null);
-	else {
-		return this.find( function(err, transfers) {
-			if (err)
-				callback(err, null);
-			else {
-				if (transfers) {
-					let result = [];
-					for (let i = 0; i < transfers.length; i++){
-		        		let item = getTransfer(transfers[i]);
-		        		result[i] = item;
-		      		}
-
-		      		callback(null, result);
-				} else
-		      		callback(null, null);
-		    }
-      	}).skip(page * count).limit(count); 
-	}
+Transfer.statics.updateTransfer = function(id, info, callback) {
+	return this.findByIdAndUpdate(id, {
+		cost: info.Cost,
+		dateOfSign: info.DateOfSign,
+		clubTo: info.ClubTo
+	}, function(err, transfer) {
+		err ? callback(err, null) : (transfer ? callback(null, getTransfer(transfer)) : callback(null, null));
+	});
 };
 
-Transfer.statics.getTranfer = function(id, callback) {
-	return this.findById(id, function(err, result) {
+
+Transfer.statics.getTransfers = function(page, count, callback){
+	return this.find( function(err, transfers) {
 		if (err)
-			return callback(err, null);
+			callback(err, null);
 		else {
-			if (result) {
-				let transfer = getTransfer(result);
-				return callback(null, transfer);
-			} 
-			else
-				return callback(null, null);
-		}
+			if (transfers) {
+				let result = [];
+				for (let i = 0; i < transfers.length; i++){
+	        		let item = getTransfer(transfers[i]);
+	        		result[i] = item;
+	      		}
+
+	      		callback(null, result);
+			} else
+	      		callback(null, null);
+	    }
+  	}).skip(page * count).limit(count); 
+};
+
+Transfer.statics.getTransfer = function(id, callback) {
+	return this.findById(id, function(err, result) {
+		err ? callback(err, null) : (result ? callback(null, getTransfer(result)) : callback(null, null));
 	});
 };
 
 function getTransfer(object) {
 	let item = {
-		ID: object._id,
-		PlayerID: object.PlayerID,
-		ScoutID: object.ScoutID,
-		cost: object.Cost,
-		dateOfSign: object.dateOfSign,
-		club: {
-			from: object.club.from,
-			to: object.club.to
-		}
+		'ID'		: object._id,
+		'PlayerID'	: object.PlayerID,
+		'ScoutID'	: object.ScoutID,
+		'Cost'		: object.cost,
+		'DateOfSign': object.dateOfSign,
+		'ClubTo'	: object.clubTo
 	};
 	return item;
 }
@@ -117,14 +106,11 @@ function createTransfer(object) {
 			case 'Cost':
 				item.cost = new Number(object[key]);
 				break;
-			case 'ClubFrom':
-				item.club.from = new String(object[key]);
-				break;
 			case 'ClubTo':
-				item.club.to = new String(object[key]);
+				item.clubTo = new String(object[key]);
 				break;
 			case 'DateOfSign':
-				item.dateOfSign = new String(object[key]);
+				item.dateOfSign = new Date(object[key]);
 				break;
 			default:
 				error = true;
@@ -139,7 +125,7 @@ function createTransfer(object) {
 
 function checkRequiredFields(objectKeys){
 	const keys = Array.from(objectKeys);
-	const requiredField = ['PlayerID', 'ScoutID', 'Cost', 'DateOfSign', 'ClubFrom', 'ClubTo'];
+	const requiredField = ['PlayerID', 'ScoutID', 'Cost', 'DateOfSign', 'ClubTo'];
 	let flag = 0;
 	
 	for(let i = 0; i < keys.length; i++ )

@@ -2,79 +2,138 @@ var express = require('express'),
 	router = express.Router(),
 	mongoose = require('mongoose'),
 	log = require('./../../libs/log')(module),
-	TransferSystem = mongoose.model('Transfer'),
-	validator = require('./../validators/transfer_validator');
+	transfers = mongoose.model('Transfer'),
+	validator = require('./../validators');
 
 module.exports = function(app) {
 	app.use('/transfers', router);
 };
 
+/////////////////////////////////// GET REQUEST ///////////////////////////////////
 // get all transfers
 router.get('/', function(req, res, next) {
-	let page  = validator.checkInt(req.query.page);
+	let page = validator.checkInt(req.query.page);
 	let count = validator.checkInt(req.query.count);
-	page  = (typeof(page)   != 'undefined') ? page : 0;
-	count = (typeof(count)  != 'undefined') ? count : 20;
-	TransferSystem.getTransfers(page, count, function(err, transfers) {
+	page = validator.checkValue(page) ? page : 0;
+	count = validator.checkValue(count) ? count : 0;
+	transfers.getTransfers(page, count, function(err, result) {
 		if (err) {
-			(err.kind == 'ObjectId') ?
-				res.status(400).send({status : 'Error', message : 'Bad request : Invalid ID'}) : 
-				res.status(400).send({status : 'Error', message : err});
-		} else {
-			transfers ? res.status(200).send(transfers) :
-				res.status(404).send({status : 'Error', message : 'Not found transfers'});
+			log.debug('Request \'getTransfers\': ' + err);
+			res.status(400).send({ status: 'Error', message: err});
+		}
+		else {
+			log.info('Request \'getTransfers\' was successfully executed');
+			res.status(200).send(result);
 		}
 	});
 });
 
-// get transfer information by id
+// get transfer by id
 router.get('/:id', function(req, res, next) {
 	const id = req.params.id;
-	if (!id || typeof(id) == 'undefined' || id.length == 0) {
-		res.status(400).send({status : 'Error', message : 'Bad request : Invalid ID'});
-	} else {
-		orders.getTransfer(id, function(err, transfer){
+	if (!validator.checkValue(id)) {
+		log.debug('Request \'getTransfer\': ID is undefined');
+		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
+	}
+	else {
+		transfers.getTransfer(id, function(err, result) {
 			if (err) {
-				(err.kind == 'ObjectId') ?
-					res.status(400).send({status : 'Error', message : 'Bad request : Invalid ID'}) : 
-					res.status(400).send({status : 'Error', message : err});
-			} else {
-				(order) ?
-					res.status(200).send(transfer) :
-					res.status(404).send({status:'Error', message : "Transfers is not found"});
+				if (err.kind == "ObjectID") {
+					log.debug('Request \'getTransfer\': ID is invalid');
+					res.status(400).send({ status: 'Error', message: 'Bad request: ID is invalid'});
+				} 
+				else { 
+					log.debug('Request \'getTransfer\': Transfer not found');
+					res.status(400).send({ status: 'Error', message: 'Transfer not found'});
+				}
+			}
+			else {
+				log.info('Request \'getTransfer\' was successfully executed');
+				res.status(200).send(result); 
+			}
+		});
+	}
+});
+/////////////////////////////////// PUT REQUEST ///////////////////////////////////
+router.put('/update/:id', function(req, res, next) {
+	const id = req.params.id;
+	let item = {
+		Cost: parseInt(req.body.Cost, 10),
+		DateOfSign: validator.parseDate(req.body.DateOfSign),
+		ClubTo: req.body.ClubTo
+	};
+
+	let keys = Array.from(item);
+	let flag = false;
+
+	for (let i = 0; i < keys.length; i++)
+		if (!validator.checkValue(keys[i]))
+			flag = true;
+
+	if (!validator.checkValue(id)) {
+		log.debug('Request \'updateTransfer\': ID is undefined');
+		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
+	}
+	else if (flag) {
+		log.debug('Request \'updateTransfer\': incorrect fields');
+		res.status(400).send('Bad request: incorrect fields');
+	} else {
+		transfers.updateTransfer(id, item, function(err, result) {
+			if (err) {
+				log.debug('Request \'updateTransfer\': ' + err);
+				next(err);
+			}
+			else {
+				if (result) {
+					log.debug('Request \'updateTransfer\' was successfully executed');
+					res.status(201).send(result);	
+				}
+				else {
+					log.debug('Request \'updateTransfer\': Unknown error');
+					res.status(500).send('Error: Unknown error');
+				}
 			}
 		});
 	}
 });
 
+/////////////////////////////////// POST REQUEST ///////////////////////////////////
 // create transfer
-router.put('/create', function(req, res, next) {
+router.post('/create', function(req, res, next) {
 	let item = {
 		PlayerID: req.body.PlayerID,
 		ScoutID: req.body.ScoutID,
 		Cost: parseInt(req.body.Cost, 10),
 		DateOfSign: validator.parseDate(req.body.DateOfSign),
-		ClubFrom: req.body.ClubFrom,
 		ClubTo: req.body.ClubTo
 	};
 
-	if (!item.PlayerID  || typeof(item.PlayerID) == 'undefined' || item.PlayerID.length == 0 ||
-      !item.ScoutID   || typeof(item.ScoutID) == 'undefined'  || item.ScoutID.length == 0 ||
-      !item.Cost || typeof(item.Cost) == 'undefined' || item.Cost.length == 0 ||
-      !item.DateOfSign || typeof(item.DateOfSign) == 'undefined' || item.DateOfSign.length == 0 ||
-      !item.ClubFrom || typeof(item.ClubFrom) == 'undefined' || item.ClubFrom.length == 0 ||
-      !item.ClubTo || typeof(item.ClubTo) == 'undefined' || item.ClubTo.length == 0) {
+	let keys = Array.from(item);
+	let flag = false;
+
+	for (let i = 0; i < keys.length; i++)
+		if (!validator.checkValue(keys[i]))
+			flag = true;
+
+	if (flag) {
+		log.debug('Request \'createTransfer\': incorrect fields');
 		res.status(400).send('Bad request: incorrect fields');
 	} else {
-		TransferSystem.createTransfer(item, function(err, result) {
-			if (err)
-				return next(err);
+		transfers.createTransfer(item, function(err, result) {
+			if (err) {
+				log.debug('Request \'createTransfer\': ' + err);
+				next(err);
+			}
 			else {
-				result ? res.status(201).send(result) : res.status(500).send('Something went wrong');
+				if (result) {
+					log.debug('Request \'createTransfer\' was successfully executed');
+					res.status(201).send(result);	
+				}
+				else {
+					log.debug('Request \'createTransfer\': Unknown error');
+					res.status(500).send('Error: Unknown error');
+				}
 			}
 		});
 	}
 });
-
-// delete transfer by id
-// later (may be)

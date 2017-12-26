@@ -18,7 +18,7 @@ router.get('/', function(req, res, next) {
 	count = validator.checkValue(count) ? count : 0;
 	players.getPlayers(page, count, function(err, result) {
 		if (err) {
-			log.debug('Error: ' + err);
+			log.debug('Request \'getPlayers\': ' + err);
 			res.status(400).send({ status: 'Error', message: err});
 		}
 		else {
@@ -30,13 +30,13 @@ router.get('/', function(req, res, next) {
 
 // get player by name
 router.get('/byname/:name', function(req, res, next) {
-	const name = req.param.name;
+	const name = req.params.name;
 	if (!validator.checkValue(name)) {
 		log.debug('Request \'getPlayerByName\': Name is undefined');
 		res.status(400).send({ status: 'Error', message: 'Bad request: Name is undefined'});
 	}
 	else {
-		players.getPlayer(name, function(err, result) {
+		players.getPlayerByName(name, function(err, result) {
 			if (err) {
 				if (err.kind == "ObjectID") {
 					log.debug('Request \'getPlayerByName\': Name is invalid');
@@ -57,7 +57,7 @@ router.get('/byname/:name', function(req, res, next) {
 
 // get player by id
 router.get('/:id', function(req, res, next) {
-	const id = req.param.id;
+	const id = req.params.id;
 	if (!validator.checkValue(id)) {
 		log.debug('Request \'getPlayerById\': ID is undefined');
 		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
@@ -91,19 +91,19 @@ router.put('/test_generate', function (req, res, next) {
 		let player = new players({
 			name  		: 'Player' + i.toString(),
 			club  		: 'Club' + i.toString(),
-			age			: Math.random(18, 45),
-			rating    	: Math.random(45, 100)
+			age			: (i*30 + 18) % 45,//Math.random(18, 45),
+			rating    	: (i*30 + 18) % 99//Math.random(45, 100)
 		});
 		
 		players.createPlayer(player, function(err, result){
-			err ? next(err) : log.debug('Save new player \'' + result.name + '\'');
+			err ? next(err) : log.debug('Save new player \'' + result.Name + '\'');
 		});
 	}
 	log.info('Random ' + count + ' players was created');
-	res.status(200).send('Random ' + count + ' players was created');
+	res.status(200).send({ message: 'Random ' + count + ' players was created' });
 });
 
-// update player by id
+// update player by name
 router.put('/byname/:name', function(req, res, next) {
 	const name = req.params.name;
 	let clubTo = req.query.ClubTo;
@@ -116,7 +116,7 @@ router.put('/byname/:name', function(req, res, next) {
 		res.status(400).send({ status: 'Error', message: 'Bad request: ClubTo is undefined'});
 	}
 	else {
-		players.updatePlayer(name, clubTo, function(err, result) {
+		players.updatePlayerByName(name, clubTo, function(err, result) {
 			if (err) {
 				if (err.kind == "ObjectID") {
 					log.debug('Request \'updatePlayerByName\': Name is invalid');
@@ -129,7 +129,7 @@ router.put('/byname/:name', function(req, res, next) {
 			}
 			else {
 				log.info('Request \'updatePlayerByName\' was successfully executed');
-				res.status(200).send(result.name + ' moved to ' + clubTo); 
+				res.status(200).send({ message: result.Name + ' moved to ' + clubTo }); 
 			}
 		});
 	}
@@ -161,7 +161,9 @@ router.put('/:id', function(req, res, next) {
 			}
 			else {
 				log.info('Request \'updatePlayerById\' was successfully executed');
-				res.status(200).send(result.name + ' moved to ' + clubTo);
+				console.log(clubTo);
+				let msg = result.Name + ' moved to ' + clubTo;
+				res.status(200).send({ message: msg });
 			} 
 		});
 	}

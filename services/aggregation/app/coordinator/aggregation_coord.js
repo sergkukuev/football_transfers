@@ -1,6 +1,6 @@
 const   PlayerHost 	= 'http://localhost:3001',
         ScoutHost	= 'http://localhost:3002',
-        TranferHost	= 'http://localhost:3003';
+        TransferHost	= 'http://localhost:3003';
 
 module.exports = {
     // Players service
@@ -20,11 +20,34 @@ module.exports = {
         });
         return;
     },
+    getPlayerByName: function (name, callback) {
+        const url = PlayerHost + '/players/byname/' + name;
+        const options = createOptions(url, "GET");
+        createAndSendGetHttpRequest(options, function (err, status, response) {
+            return responseHandlerObject(err, status, response, callback);
+        });
+        return;
+    },
+    updatePlayer: function (id, clubTo, callback) {
+        const url = PlayerHost + '/players/' + id + '?ClubTo=' + clubTo;
+        const options = createOptions(url, "PUT");
+        createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
+            return responseHandlerObject(err, status, response, callback);
+        });
+    },
     // Transfers service
     createTransfer: function (object, callback) {
-        const url = TranferHost + '/transfers';
-        const options = createOptions(url, "PUT");
+        const url = TransferHost + '/transfers/create';
+        const options = createOptions(url, "POST");
         createAndSendHttpPostRequest(options, object, function (err, status, response) {
+            return responseHandlerObject(err, status, response, callback);
+        });
+        return;
+    },
+    updateTransfer: function (id, data, callback) {
+        const url = TransferHost + '/transfers/update/' + id;
+        const options = createOptions(url, "PUT");
+        createAndSendHttpPutWithFormRequest(options, data, function (err, status, response) {
             return responseHandlerObject(err, status, response, callback);
         });
         return;
@@ -37,7 +60,7 @@ module.exports = {
         });
         return;
     },
-    getTransfers: function (order_id, page, count, callback) {
+    getTransfers: function (page, count, callback) {
         const url = TransferHost + '/transfers?page=' + page + '&count=' + count;
         const options = createOptions(url, "GET");
         createAndSendGetHttpRequest(options, function (err, status, response) {
@@ -62,6 +85,21 @@ module.exports = {
         });
         return;
     },
+    getScoutByName: function (name, callback) {
+        const url = ScoutHost + '/scouts/byname/' + name;
+        const options = createOptions(url, "GET");
+        createAndSendGetHttpRequest(options, function (err, status, response) {
+            return responseHandlerObject(err, status, response, callback);
+        });
+        return;
+    },
+    updateScout: function (id, callback) {
+        const url = ScoutHost + '/scouts/' + id;
+        const options = createOptions(url, "PUT");
+        createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
+            return responseHandlerObject(err, status, response, callback);
+        });
+    }
 }
 
 function createAndSendHttpPutWithFormRequest(options, data, callback) {
@@ -111,7 +149,7 @@ function responseHandlerObject(err, status, response, callback) {
     else {
         if (response) {
             const object = JSON.parse(response);
-            return callback(err, status, object);
+            return callback(err, status, response);
         } else {
             return callback(err, status, null);
         }
@@ -125,7 +163,7 @@ function responseHandlerArrayObject(err, status, response, callback) {
         if (status == 200) {
             if (response) {
                 const parseObject = JSON.parse(response);
-                const array = array.from(parseObject);
+                const array = Array.from(parseObject);
                 return callback(err, status, array);
             } else {
                 return callback(err, status, null);

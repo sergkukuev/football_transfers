@@ -17,8 +17,7 @@ let Scout = new Schema({
 	}
 });
 
-Scout.virtual('date')
-	.get(function() {
+Scout.virtual('date').get(function() {
 		return this._id.getTimestamp();
 	});
 
@@ -27,7 +26,7 @@ Scout.statics.createScout = function(scout, callback) {
 	return scout.save(callback);
 }
 
-Scout.statics.getScouts = function(page = 0, count = 15, callback) {
+Scout.statics.getScouts = function(page = 0, count = 10, callback) {
 	return this.find(function(err, scouts) {
 		if (err)
 			callback(err, null);
@@ -45,37 +44,32 @@ Scout.statics.getScouts = function(page = 0, count = 15, callback) {
 }
 
 Scout.statics.getScout = function(id, callback) {
-	if (!id || typeof(id) == 'undefined' || id.length == 0) {
-		return callback({ status: 'Error', message: 'ID is undefined'});
-	};
 	return this.findById(id, function(err, scout) {
-		if (err)
-			callback(err, null);
-		else
-			scout ? callback(null, getScoutInfo(scout)) : callback(null, null);
+		err ? callback(err, null) : (scout ? callback(null, getScoutInfo(scout)) : callback(null, null));
+	});
+}
+
+Scout.statics.getScoutByName = function(surname, callback) {
+	return this.findOne({ name: surname }, function(err, scout) {
+		err ? callback(err, null) : (scout ? callback(null, getScoutInfo(scout)) : callback(null, null));
 	});
 }
 
 Scout.statics.updateScout = function(id, amount, callback) {
-	if (!id || typeof(id) == 'undefined' || id.length == 0) {
-		return callback({ status: 'Error', message: 'ID is undefined'});
-	};
-	amount++;
-
 	return this.findByIdAndUpdate(id, { 
 			amountOfDeals: amount,
 			rank: calculateRank(amount)
 		}, function(err, scout) {
-		err ? callback(err, null) : (scout ? callback(null, getScoutName(scout)) : callback(null, null));
+		err ? callback(err, null) : (scout ? callback(null, getScoutInfo(scout)) : callback(null, null));
 	});
 }
 
-Scout.statics.getAmountById = function (id, callback) {
-	return this.findById(id, function(err, scout) {
-		if (err)
-			callback(err, null);
-		else
-			scout ? callback(null, scout.amountOfDeals) : callback(null, null);
+Scout.statics.updateScoutByName = function(surname, amount, callback) {
+	return this.findOneAndUpdate({name: surname}, { 
+			amountOfDeals: amount,
+			rank: calculateRank(amount)
+		}, function(err, scout) {
+		err ? callback(err, null) : (scout ? callback(null, getScoutInfo(scout)) : callback(null, null));
 	});
 }
 
@@ -94,15 +88,11 @@ function calculateRank(amountOfDeals) {
 	return rank;
 }
 
-function getScoutName(scout) {
-	return scout.name;
-}
-
 function getScoutInfo(scout) {
 	let item = {
 		'ID'	: scout._id,
 		'Name'	: scout.name,
-		'amountOfDeals' : scout.amountOfDeals,
+		'AmountOfDeals' : scout.amountOfDeals,
 		'Rank'	: scout.rank
 	};
 	return item;

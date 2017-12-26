@@ -80,7 +80,7 @@ function getPlayerInfo(player) {
 		'Name'	: player.name,
 		'Club'	: player.club,
 		'Age'	: player.age,
-		'Rank'	: player.rank,
+		'Rating': player.rating,
 	};
 	return item;
 }
