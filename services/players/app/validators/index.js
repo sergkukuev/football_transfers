@@ -8,5 +8,11 @@ module.exports = {
             	return res;
         }
         return undefined;
+    },
+    checkValue : function(value) {
+        if (!value || typeof(value) == 'undefined' || value.length == 0)
+            return false;
+        else
+            return true;
     }
 }

@@ -17,15 +17,15 @@ let Player = new Schema({
 		min: 18,
 		max: 45 
 	},
-	rank: {
+	rating: {
 		type: Number,
 		default: 45,
+		min: 45,
 		max: 99
 	}
 });
 
-Player.virtual('date')
-	.get(function() {
+Player.virtual('date').get(function() {
 		return this._id.getTimestamp();
 	});
 
@@ -51,31 +51,26 @@ Player.statics.getPlayers = function(page = 0, count = 15, callback) {
 }
 
 Player.statics.getPlayer = function(id, callback) {
-	if (!id || typeof(id) == 'undefined' || id.length == 0) {
-		return callback({ status: 'Error', message: 'ID is undefined'});
-	};
 	return this.findById(id, function(err, player) {
 		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
 	});
 }
 
-Player.statics.getPlayerByName = function(str, callback) {
-	if (!str || typeof(str) == 'undefined' || str.length == 0) {
-		return callback({ status: 'Error', message: 'Name is undefined'});
-	};
-	return this.find({
-		name: str
-	}).exec(function(err, player) {
+Player.statics.getPlayerByName = function(surname, callback) {
+	return this.findOne({ name: surname }, function(err, player) {
 		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
 	});
 }
 
 Player.statics.updatePlayer = function(id, clubTo, callback) {
-	if (!id || typeof(id) == 'undefined' || id.length == 0) {
-		return callback({ status: 'Error', message: 'ID is undefined'});
-	};
 	return this.findByIdAndUpdate(id, { club: clubTo}, function(err, player) {
-		err ? callback(err, null) : (player ? callback(null, getPlayerName(player)) : callback(null, null));
+		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
+	});
+}
+
+Player.statics.updatePlayerByName = function(surname, clubTo, callback) {
+	return this.findOneAndUpdate({ name: surname }, { club: clubTo }, function(err, player) {
+		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
 	});
 } 
 
@@ -88,9 +83,6 @@ function getPlayerInfo(player) {
 		'Rank'	: player.rank,
 	};
 	return item;
-}
-function getPlayerName(player) {
-	return player.name;
 }
 
 mongoose.model('Player', Player);
