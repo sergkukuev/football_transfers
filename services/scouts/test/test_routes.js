@@ -8,7 +8,7 @@ var chai        = require('chai'),
 chai.use(chaiHttp);
 
 describe('Test routes scouts service', function(){
-    describe('Get scouts 0 - 5', function(){
+    describe('Get scouts', function(){
         it('Good request /scouts/', function(done){
             chai.request(server)
             .get('/scouts/?page=0&count=5')
@@ -20,7 +20,7 @@ describe('Test routes scouts service', function(){
             });
         });
     });
-    describe('Get scouts 0 - 5', function(){
+    describe('Get scouts', function(){
         it('Bad request /scouts/?count=5', function(done){
             chai.request(server)
             .get('/scouts/?count=5')
@@ -33,19 +33,20 @@ describe('Test routes scouts service', function(){
         });
     });
 
-    describe('Get scouts 0 - 5', function(){
+    describe('Get scouts', function(){
         it('Bad request /scouts/?page=0', function(done){
             chai.request(server)
             .get('/scouts/?page=0')
             .end(function(err, res) {
                 res.should.have.status(200);
                 res.body.should.be.a('array');
+                //res.body.length.should.be.eql(5);
                 done();
             });
         });
     });
 
-    describe('Get scouts 0 - 5', function(){
+    describe('Get scouts', function(){
         it('Bad request with page bad parameter', function(done){
             chai.request(server)
             .get('/scouts/?page=olol&count=5')
@@ -58,7 +59,7 @@ describe('Test routes scouts service', function(){
         });
     });
 
-    describe('Get scouts 0 - 5', function(){
+    describe('Get scouts', function(){
         it('Bad request with count bad parameter', function(done){
             chai.request(server)
             .get('/scouts/?page=0&count=alal')
@@ -70,7 +71,7 @@ describe('Test routes scouts service', function(){
         });
     });
 
-    describe('Get scouts 0 - 5', function(){
+    describe('Get scouts', function(){
         it('Bad request with negative page value', function(done){
             chai.request(server)
             .get('/scouts/?page=-1&count=5')
@@ -82,7 +83,7 @@ describe('Test routes scouts service', function(){
         });
     });
 
-    describe('Get scouts 0 - 5', function(){
+    describe('Get scouts', function(){
         it('Bad request with negative count value', function(done){
             chai.request(server)
             .get('/scouts/?page=1&count=-5')
@@ -121,7 +122,7 @@ describe('Test routes scouts service', function(){
     describe('Get scouts with id', function(){
         it('Bad request with undefined id', function(done){
             chai.request(server)
-            .get('/scouts/sss')
+            .get('/scouts/undefined')
             .end(function(err, res) {
                 res.should.have.status(400);
                 res.body.should.be.a('object');
@@ -149,6 +150,18 @@ describe('Test routes scouts service', function(){
             .get('/scouts/byname/')
             .end(function(err, res) {
                 res.should.have.status(400);
+                res.body.should.be.a('object');
+                done();
+            });
+        });
+    });
+
+    describe('Get scouts with name', function(){
+        it('Bad request with undefined name', function(done){
+            chai.request(server)
+            .get('/scouts/byname/undefined')
+            .end(function(err, res) {
+                res.should.have.status(200);
                 res.body.should.be.a('object');
                 done();
             });
