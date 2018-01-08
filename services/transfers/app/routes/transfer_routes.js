@@ -19,7 +19,7 @@ router.get('/', function(req, res, next) {
 	transfers.getTransfers(page, count, function(err, result) {
 		if (err) {
 			log.debug('Request \'getTransfers\': ' + err);
-			res.status(400).send({ status: 'Error', message: err});
+			res.status(400).send({ "message": err});
 		}
 		else {
 			log.info('Request \'getTransfers\' was successfully executed');
@@ -33,18 +33,18 @@ router.get('/:id', function(req, res, next) {
 	const id = req.params.id;
 	if (!validator.checkValue(id)) {
 		log.debug('Request \'getTransfer\': ID is undefined');
-		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
+		res.status(400).send({ "message": "Bad request: ID is undefined"});
 	}
 	else {
 		transfers.getTransfer(id, function(err, result) {
 			if (err) {
 				if (err.kind == "ObjectID") {
 					log.debug('Request \'getTransfer\': ID is invalid');
-					res.status(400).send({ status: 'Error', message: 'Bad request: ID is invalid'});
+					res.status(400).send({ "message": "Bad request: ID is invalid"});
 				} 
 				else { 
 					log.debug('Request \'getTransfer\': Transfer not found');
-					res.status(400).send({ status: 'Error', message: 'Transfer not found'});
+					res.status(400).send({ "message": "Transfer not found"});
 				}
 			}
 			else {
@@ -55,12 +55,13 @@ router.get('/:id', function(req, res, next) {
 	}
 });
 /////////////////////////////////// PUT REQUEST ///////////////////////////////////
-router.put('/update/:id', function(req, res, next) {
+router.put('/:id', function(req, res, next) {
 	const id = req.params.id;
 	let item = {
-		Cost: parseInt(req.body.Cost, 10),
-		DateOfSign: validator.parseDate(req.body.DateOfSign),
-		ClubTo: req.body.ClubTo
+		cost: parseInt(req.body.Cost, 10),
+		dateOfSign: validator.parseDate(req.body.DateOfSign),
+		clubTo: req.body.ClubTo,
+		clubFrom: req.body.ClubFrom
 	};
 
 	let keys = Array.from(item);
@@ -72,11 +73,11 @@ router.put('/update/:id', function(req, res, next) {
 
 	if (!validator.checkValue(id)) {
 		log.debug('Request \'updateTransfer\': ID is undefined');
-		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
+		res.status(400).send({ "message": "Bad request: ID is undefined"});
 	}
 	else if (flag) {
 		log.debug('Request \'updateTransfer\': incorrect fields');
-		res.status(400).send('Bad request: incorrect fields');
+		res.status(400).send({ "message": "Bad request: incorrect fields" });
 	} else {
 		transfers.updateTransfer(id, item, function(err, result) {
 			if (err) {
@@ -90,7 +91,7 @@ router.put('/update/:id', function(req, res, next) {
 				}
 				else {
 					log.debug('Request \'updateTransfer\': Unknown error');
-					res.status(500).send('Error: Unknown error');
+					res.status(500).send({ "message": "Unknown error" });
 				}
 			}
 		});
@@ -105,6 +106,7 @@ router.post('/create', function(req, res, next) {
 		ScoutID: req.body.ScoutID,
 		Cost: parseInt(req.body.Cost, 10),
 		DateOfSign: validator.parseDate(req.body.DateOfSign),
+		ClubFrom: req.body.ClubFrom,
 		ClubTo: req.body.ClubTo
 	};
 
@@ -117,7 +119,7 @@ router.post('/create', function(req, res, next) {
 
 	if (flag) {
 		log.debug('Request \'createTransfer\': incorrect fields');
-		res.status(400).send('Bad request: incorrect fields');
+		res.status(400).send({ "message": "Bad request: incorrect fields" });
 	} else {
 		transfers.createTransfer(item, function(err, result) {
 			if (err) {
@@ -131,7 +133,7 @@ router.post('/create', function(req, res, next) {
 				}
 				else {
 					log.debug('Request \'createTransfer\': Unknown error');
-					res.status(500).send('Error: Unknown error');
+					res.status(500).send({ "message": "Unknown error" });
 				}
 			}
 		});

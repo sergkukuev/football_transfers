@@ -9,7 +9,7 @@ let Player = new Schema({
 	},
 	club: { 
 		type: String,
-		default: 'NoClub'
+		default: "NoClub"
 	},
 	age: { 
 		type: Number,
@@ -22,6 +22,18 @@ let Player = new Schema({
 		default: 45,
 		min: 45,
 		max: 99
+	}, 
+	contract: {
+		date: {
+			type: Date,
+			default: Date.now()
+		},
+		years: {
+			type: Number,
+			default: 3,
+			min: 1, 
+			max: 6
+		}
 	}
 });
 
@@ -56,33 +68,37 @@ Player.statics.getPlayer = function(id, callback) {
 	});
 }
 
-Player.statics.getPlayerByName = function(surname, callback) {
-	return this.findOne({ name: surname }, function(err, player) {
+Player.statics.updatePlayer = function(id, data, callback) {
+	return this.findByIdAndUpdate(id, { 
+			club: data.clubTo,
+			contract: {
+				date: data.date,
+				years: data.years
+			} 
+		}, function(err, player) {
 		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
 	});
 }
 
-Player.statics.updatePlayer = function(id, clubTo, callback) {
-	return this.findByIdAndUpdate(id, { club: clubTo}, function(err, player) {
+Player.statics.updateContract = function(id, data, callback) {
+	return this.findByIdAndUpdate(id, { contract: { date: data.date, years: data.years } }, function(err, player) {
 		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
 	});
 }
-
-Player.statics.updatePlayerByName = function(surname, clubTo, callback) {
-	return this.findOneAndUpdate({ name: surname }, { club: clubTo }, function(err, player) {
-		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
-	});
-} 
 
 function getPlayerInfo(player) {
 	let item = {
-		'ID'	: player._id,
-		'Name'	: player.name,
-		'Club'	: player.club,
-		'Age'	: player.age,
-		'Rating': player.rating,
+		"id"	: player._id,
+		"name"	: player.name,
+		"club"	: player.club,
+		"age"	: player.age,
+		"rating": player.rating,
+		"contract": {
+			"date": player.contract.date,
+			"years": player.contract.years
+		}
 	};
 	return item;
 }
 
-mongoose.model('Player', Player);
+mongoose.model("Player", Player);

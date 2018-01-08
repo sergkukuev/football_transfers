@@ -20,7 +20,7 @@ router.get('/', function(req, res, next) {
 	scouts.getScouts(page, count, function(err, result) {
 		if (err) {
 			log.debug('Request \'getScouts\': ' + err);
-			res.status(400).send({ status: 'Error', message: err});
+			res.status(400).send({ "message": err});
 		}
 		else {
 			log.info('Request \'getScouts\' was successfully executed');
@@ -29,50 +29,23 @@ router.get('/', function(req, res, next) {
 	});
 });
 
-// get scout by name
-router.get('/byname/:name', function(req, res, next) {
-	const name = req.params.name;
-	if (!validator.checkValue(name)) {
-		log.debug('Request \'getScoutByName\': Name is undefined');
-		res.status(400).send({ status: 'Error', message: 'Bad request: Name is undefined'});
-	}
-	else {
-		scouts.getScoutByName(name, function(err, result) {
-			if (err) {
-				if (err.kind == "ObjectID") {
-					log.debug('Request \'getScoutByName\': Name is invalid');
-					res.status(400).send({ status: 'Error', message: 'Bad request: Name is invalid'});
-				} 
-				else { 
-					log.debug('Request \'getScoutByName\': Scout not found');
-					res.status(400).send({ status: 'Error', message: 'Scout not found'});
-				}
-			}
-			else {
-				log.info('Request \'getScoutByName\' was successfully executed');
-				res.status(200).send(result); 
-			}
-		});
-	}
-});
-
 // get scout by id
 router.get('/:id', function(req, res, next) {
 	const id = req.params.id;
 	if (!validator.checkValue(id)) {
 		log.debug('Request \'getScout\': ID is undefined');
-		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
+		res.status(400).send({ "message": "Bad request: ID is undefined"});
 	}
 	else {
 		scouts.getScout(id, function(err, result) {
 			if (err) {
 				if (err.kind == "ObjectID") {
 					log.debug('Request \'getScout\': ID is invalid');
-					res.status(400).send({ status: 'Error', message: 'Bad request: ID is invalid'});
+					res.status(400).send({ "message": "Bad request: ID is invalid"});
 				} 
 				else { 
 					log.debug('Request \'getScout\': Scout not found');
-					res.status(400).send({ status: 'Error', message: 'Scout not found'});
+					res.status(400).send({ "message": "Scout not found"});
 				}
 			}
 			else {
@@ -91,7 +64,10 @@ router.put('/test_generate', function (req, res, next) {
 	for (let i = 0; i < count; i++){
 		let scout = new scouts({
 			name  			: 'Scout' + i.toString(),
-			amountOfDeals	: (i * 43) % 100,
+			amount: {
+				deals: (i * 43) % 100,
+				contracts: (i * 43) % 100 
+			}
 		});
 		
 		scouts.createScout(scout, function(err, result){
@@ -99,37 +75,41 @@ router.put('/test_generate', function (req, res, next) {
 		});
 	}
 	log.info('Random ' + count + ' scouts was created');
-	res.status(200).send({ message: 'Random ' + count + ' scouts was created' });
+	res.status(200).send({ "message": "Random " + count + " scouts was created" });
 });
 
-// update scout by name
-router.put('/byname/:name', function(req, res, next) {
-	const name = req.params.name;
-	if (!validator.checkValue(name)) {
-		log.debug('Request \'updateScoutByName\': Name is undefined');
-		res.status(400).send({ status: 'Error', message: 'Bad request: Name is undefined'});
+// update deals scout by id
+router.put('/:id/deals', function(req, res, next) {
+	const id = req.params.id;
+	if (!validator.checkValue(id)) {
+		log.debug('Request \'updateScoutDeals\': ID is undefined');
+		res.status(400).send({ "message": "Bad request: ID is undefined"});
 	}
 	else {
-		scouts.getScoutByName(name, function(err, scout) {
+		scouts.getScout(id, function(err, scout) {
 			if (err) {
-				log.debug('Request \'updateScout\': Name is invalid');
-				res.status(400).send({ status: 'Error', message: 'Bad request: Name is invalid'});
+				log.debug('Request \'updateScoutDeals\': ID is invalid');
+				res.status(400).send({ "message": "Bad request: ID is invalid"});
 			}
 			else {
-				scouts.updateScoutByName(name, scout.AmountOfDeals + 1, function(err, result) {
+				let data = {
+					deal: scout.amount.deals + 1,
+					contract: scout.amount.contracts
+				};
+				scouts.updateScout(id, data, function(err, result) {
 					if (err) {
 						if (err.kind == "ObjectID") {
-							log.debug('Request \'updateScoutByName\': Name is invalid');
-							res.status(400).send({ status: 'Error', message: 'Bad request: Name is invalid'});
+							log.debug('Request \'updateScoutDeals\': ID is invalid');
+							res.status(400).send({ "message": "Bad request: ID is invalid"});
 						} 
 						else { 
-							log.debug('Request \'updateScoutByName\': Scout not found');
-							res.status(400).send({ status: 'Error', message: 'Scout not found'});
+							log.debug('Request \'updateScoutDeals\': Scout not found');
+							res.status(400).send({ "message": "Scout not found"});
 						}
 					}
 					else {
-						log.info('Request \'updateScoutByName\' was successfully executed');
-						res.status(200).send({message: result.Name + ' bargained'}); 
+						log.info('Request \'updateScoutDeals\' was successfully executed');
+						res.status(200).send({ "message": result.name + " made deal"}); 
 					}
 				});
 			}
@@ -137,34 +117,38 @@ router.put('/byname/:name', function(req, res, next) {
 	}
 });
 
-// update scout by id
-router.put('/:id', function(req, res, next) {
+// update contracts scout by id
+router.put('/:id/contracts', function(req, res, next) {
 	const id = req.params.id;
 	if (!validator.checkValue(id)) {
-		log.debug('Request \'updateScout\': ID is undefined');
-		res.status(400).send({ status: 'Error', message: 'Bad request: ID is undefined'});
+		log.debug('Request \'updateScoutDeals\': ID is undefined');
+		res.status(400).send({ "message": "Bad request: ID is undefined"});
 	}
 	else {
 		scouts.getScout(id, function(err, scout) {
 			if (err) {
-				log.debug('Request \'updateScout\': ID is invalid');
-				res.status(400).send({ status: 'Error', message: 'Bad request: ID is invalid'});
+				log.debug('Request \'updateScoutContracts\': ID is invalid');
+				res.status(400).send({ "message": "Bad request: ID is invalid"});
 			}
 			else {
-				scouts.updateScout(id, scout.AmountOfDeals + 1, function(err, result) {
+				let data = {
+					deal: scout.amount.deals,
+					contract: scout.amount.contracts + 1
+				};
+				scouts.updateScout(id, data, function(err, result) {
 					if (err) {
 						if (err.kind == "ObjectID") {
-							log.debug('Request \'updateScout\': ID is invalid');
-							res.status(400).send({ status: 'Error', message: 'Bad request: ID is invalid'});
+							log.debug('Request \'updateScoutContracts\': ID is invalid');
+							res.status(400).send({ "message": "Bad request: ID is invalid"});
 						} 
 						else { 
-							log.debug('Request \'updateScout\': Scout not found');
-							res.status(400).send({ status: 'Error', message: 'Scout not found'});
+							log.debug('Request \'updateScoutContracts\': Scout not found');
+							res.status(400).send({ "message": "Scout not found"});
 						}
 					}
 					else {
-						log.info('Request \'updateScout\' was successfully executed');
-						res.status(200).send({message: result.Name + ' bargained'}); 
+						log.info('Request \'updateScoutContracts\' was successfully executed');
+						res.status(200).send({ "message": result.name + " made contract"}); 
 					}
 				});
 			}

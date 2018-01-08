@@ -7,9 +7,15 @@ let Scout = new Schema({
 		type: String,
 		required: true 
 	},
-	amountOfDeals: {
-		type: Number,
-		default: 0
+	amount: {
+		deals: {
+			type: Number,
+			default: 0
+		},
+		contracts: {
+			type: Number,
+			default: 0
+		}
 	},
 	rank: {
 		type: Number,
@@ -22,7 +28,7 @@ Scout.virtual('date').get(function() {
 	});
 
 Scout.statics.createScout = function(scout, callback) {
-	scout.rank = calculateRank(scout.amountOfDeals);
+	scout.rank = calculateRank(scout.amount.deals);
 	return scout.save(callback);
 }
 
@@ -49,51 +55,43 @@ Scout.statics.getScout = function(id, callback) {
 	});
 }
 
-Scout.statics.getScoutByName = function(surname, callback) {
-	return this.findOne({ name: surname }, function(err, scout) {
-		err ? callback(err, null) : (scout ? callback(null, getScoutInfo(scout)) : callback(null, null));
-	});
-}
-
-Scout.statics.updateScout = function(id, amount, callback) {
+Scout.statics.updateScout = function(id, data, callback) {
+	console.log(data);
 	return this.findByIdAndUpdate(id, { 
-			amountOfDeals: amount,
-			rank: calculateRank(amount)
+			amount:  {
+				deals: data.deal,
+				contracts: data.contract
+			},
+			rank: calculateRank(data.deal)
 		}, function(err, scout) {
 		err ? callback(err, null) : (scout ? callback(null, getScoutInfo(scout)) : callback(null, null));
 	});
 }
 
-Scout.statics.updateScoutByName = function(surname, amount, callback) {
-	return this.findOneAndUpdate({name: surname}, { 
-			amountOfDeals: amount,
-			rank: calculateRank(amount)
-		}, function(err, scout) {
-		err ? callback(err, null) : (scout ? callback(null, getScoutInfo(scout)) : callback(null, null));
-	});
-}
-
-function calculateRank(amountOfDeals) {
+function calculateRank(deals) {
 	let rank = 0;
-	if (amountOfDeals < 25)
+	if (deals < 25)
 		rank = 1;
-	if (25 <= amountOfDeals && amountOfDeals < 50)
+	if (25 <= deals && deals < 50)
 		rank = 2;
-	if ( 50 <= amountOfDeals && amountOfDeals < 75)
+	if ( 50 <= deals && deals < 75)
 		rank = 3;
-	if (75 <= amountOfDeals && amountOfDeals < 100)
+	if (75 <= deals && deals < 100)
 		rank = 4;
-	if (amountOfDeals >= 100)
+	if (deals >= 100)
 		rank = 5
 	return rank;
 }
 
 function getScoutInfo(scout) {
 	let item = {
-		'ID'	: scout._id,
-		'Name'	: scout.name,
-		'AmountOfDeals' : scout.amountOfDeals,
-		'Rank'	: scout.rank
+		"id"	: scout._id,
+		"name"	: scout.name,
+		"amount": {
+			"deals": scout.amount.deals,
+			"contracts": scout.amount.contracts
+		},
+		"rank"	: scout.rank
 	};
 	return item;
 }

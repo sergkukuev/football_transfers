@@ -25,20 +25,6 @@ router.get('/players', function(req, res, next) {
 	});
 });
 
-// get player by name
-router.get('/players/byname/:name', function(req, res, next) {
-	coord.getPlayerByName(req.params.name, function(err, statusCode, player) {
-		if (err) {
-			log.debug(err);
-			return next(err);
-		}
-		else {
-			log.info('Player was received');
-			res.status(statusCode).send(player);
-		}
-	});
-});
-
 // get player by id
 router.get('/players/:id', function(req, res, next) {
 	coord.getPlayer(req.params.id, function(err, statusCode, player) {
@@ -47,7 +33,7 @@ router.get('/players/:id', function(req, res, next) {
 			return next(err);
 		}
 		else {
-			log.info('Player was received');
+			log.info("Player was received");
 			res.status(statusCode).send(player);
 		}
 	});
@@ -63,22 +49,8 @@ router.get('/scouts', function(req, res, next) {
 			return next(err);
 		}
 		else {
-			log.info('Scouts was received');
+			log.info("Scouts was received");
 			res.status(statusCode).send(scouts);
-		}
-	});
-});
-
-// get scout by name
-router.get('/scouts/byname', function(req, res, next) {
-	coord.getScoutByName(req.params.name, function(err, statusCode, scout) {
-		if (err) {
-			log.debug(err);
-			return next(err);
-		}
-		else {
-			log.info('Scout was received');
-			res.status(statusCode).send(scout);
 		}
 	});
 });
@@ -91,7 +63,7 @@ router.get('/scouts/:id', function(req, res, next) {
 			return next(err);
 		}
 		else {
-			log.info('Scout was received');
+			log.info("Scout was received");
 			res.status(statusCode).send(scout);
 		}
 	});
@@ -107,7 +79,7 @@ router.get('/transfers', function(req, res, next) {
 			next(err);
 		}
 		else {
-			log.info('Transfers was received');
+			log.info("Transfers was received");
 			res.status(statusCode).send(transfers);
 		}
 	});
@@ -130,21 +102,28 @@ router.get('/transfers/:id', function(req, res, next) {
 						if (err3)
 							next(err3);
 						else {
+							console.log(play);
 							let result = {
 								Player: {
-									'Name'	: player.Name,
-									'Club'	: play.Club,
-									'Age'	: play.Age,
-									'Rating': play.Rating
+									"name"	: player.name,
+									"Club"	: play.club,
+									"Age"	: play.age,
+									"Rating": play.rating,
+									"Contract": {
+										"StartDate": play.contract.date,
+										"Years": play.contract.years
+									}
 								},
 								Scout:{
-									'Name'	: sc.Name,
-									'AmountOfDeals': sc.AmountOfDeals,
-									'Rank'	: sc.Rank
+									"Name"	: sc.came,
+									"Deals": sc.amount.deals,
+									"Contracts": sc.amount.contracts,
+									"Rank"	: sc.rank
 								},
-								Cost: trans.Cost,
-								DateOfSign: trans.DateOfSign,
-								ClubTo: trans.ClubTo
+								Cost: trans.cost,
+								DateOfSign: trans.dateOfSign,
+								ClubTo: trans.club.to,
+								ClubFrom: trans.club.from
 							};
 							res.status(statusCode3).send(result);
 						}
@@ -214,4 +193,12 @@ router.put('/transfers/update/:id', function(req, res, next) {
 			res.status(statusCode).send(transfer);
 		}
 	});
+});
+
+// update contract info
+router.put('/players/contracts/update/:id', function(req, res, next) {
+	const id = req.params.id;
+	const param = {
+
+	};
 });

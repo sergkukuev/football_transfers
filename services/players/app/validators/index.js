@@ -14,5 +14,19 @@ module.exports = {
             return false;
         else
             return true;
+    },
+    parseDate : function(date){
+        if (!date)
+            return null;
+        const dateParts = date.split('.');
+
+        if (!dateParts || dateParts.length != 3)
+            return null;
+        
+        let year  = parseInt(dateParts[2]);
+        let month = parseInt(dateParts[1]);
+        let day   = parseInt(dateParts[0]);
+
+        return new Date(year, month - 1, day);
     }
 }

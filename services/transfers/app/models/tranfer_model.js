@@ -10,10 +10,19 @@ let Transfer = new Schema({
 		min: 0,
 		default: 0
 	},
-	dateOfSign: Date,
-	clubTo: {
-		type: String,
-		default: 'NoClub'
+	dateOfSign: {
+		type: Date, 
+		default: Date.now()
+	},
+	club: {
+		from: {
+			type: String,
+			default: "NoClub"
+		},
+		to: {
+			type: String,
+			default: "NoClub"
+		}
 	}
 });
 
@@ -37,16 +46,19 @@ Transfer.statics.createTransfer = function(info, callback) {
 				}
 			});
 		} else
-			return callback('Incorrect transfer fields', null);
+			return callback("Incorrect transfer fields", null);
 	} else
-		return callback('Not found required fields', null);
+		return callback("Not found required fields", null);
 };
 
-Transfer.statics.updateTransfer = function(id, info, callback) {
+Transfer.statics.updateTransfer = function(id, data, callback) {
 	return this.findByIdAndUpdate(id, {
-		cost: info.Cost,
-		dateOfSign: info.DateOfSign,
-		clubTo: info.ClubTo
+		cost: data.cost,
+		dateOfSign: data.dateOfSign,
+		club: {
+			from: data.clubFrom, 
+			to: data.clubTo
+		}
 	}, function(err, transfer) {
 		err ? callback(err, null) : (transfer ? callback(null, getTransfer(transfer)) : callback(null, null));
 	});
@@ -64,7 +76,6 @@ Transfer.statics.getTransfers = function(page, count, callback){
 	        		let item = getTransfer(transfers[i]);
 	        		result[i] = item;
 	      		}
-
 	      		callback(null, result);
 			} else
 	      		callback(null, null);
@@ -80,36 +91,42 @@ Transfer.statics.getTransfer = function(id, callback) {
 
 function getTransfer(object) {
 	let item = {
-		'ID'		: object._id,
-		'PlayerID'	: object.PlayerID,
-		'ScoutID'	: object.ScoutID,
-		'Cost'		: object.cost,
-		'DateOfSign': object.dateOfSign,
-		'ClubTo'	: object.clubTo
+		"id"		: object._id,
+		"playerID"	: object.playerID,
+		"scoutID"	: object.scoutID,
+		"cost"		: object.cost,
+		"dateOfSign": object.dateOfSign,
+		"club": {
+			"from"	: object.club.from,
+			"to"	: object.club.to
+		}
 	};
 	return item;
 }
 
 function createTransfer(object) {
-	const model = mongoose.model('Transfer');
+	const model = mongoose.model("Transfer");
 	let item = new model();
 	let error = false;
 
 	for (key in object) {
 		switch (key) {
-			case 'PlayerID':
-				item.PlayerID = mongoose.Types.ObjectId(object[key]);
+			case "PlayerID":
+				item.playerID = mongoose.Types.ObjectId(object[key]);
 				break;
-			case 'ScoutID':
-				item.ScoutID = mongoose.Types.ObjectId(object[key]);
+			case "ScoutID":
+				item.scoutID = mongoose.Types.ObjectId(object[key]);
 				break;
-			case 'Cost':
+			case "Cost":
 				item.cost = new Number(object[key]);
 				break;
-			case 'ClubTo':
-				item.clubTo = new String(object[key]);
+			case "ClubTo":
+				item.club.to = new String(object[key]);
 				break;
-			case 'DateOfSign':
+			case "ClubFrom":
+				item.club.from = new String(object[key]);
+				break;
+			case "DateOfSign":
 				item.dateOfSign = new Date(object[key]);
 				break;
 			default:
@@ -125,7 +142,7 @@ function createTransfer(object) {
 
 function checkRequiredFields(objectKeys){
 	const keys = Array.from(objectKeys);
-	const requiredField = ['PlayerID', 'ScoutID', 'Cost', 'DateOfSign', 'ClubTo'];
+	const requiredField = ["PlayerID", "ScoutID", "Cost", "DateOfSign", "ClubFrom", "ClubTo"];
 	let flag = 0;
 	
 	for(let i = 0; i < keys.length; i++ )
@@ -138,4 +155,4 @@ function checkRequiredFields(objectKeys){
 		return false;
 }
 
-mongoose.model('Transfer', Transfer);
+mongoose.model("Transfer", Transfer);
