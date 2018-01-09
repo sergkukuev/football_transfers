@@ -58,27 +58,28 @@ router.get('/:id', function(req, res, next) {
 
 /////////////////////////////////// PUT REQUEST ///////////////////////////////////
 // generate test players
-router.put('/test_generate', function (req, res, next) {
+router.post('/test_generate', function (req, res, next) {
+	let name = ["Roberto", "Sanches", "Morata", "Bakary", "Handanovich", "Messi", "Rivaldo", "Jo", "Lee", "Yamaho"];
+	let club = ["Juventus", "Arsenal", "Barselona", "Betis", "Chelsea", "Milan", "Inter", "Bayern", "Koln", "CSKA"];
 	let count = validator.checkInt(req.query.count);
-	count = validator.checkValue(count) ? count : 10;
+	count = validator.checkValue(count) ? count : 10; 
 	for (let i = 0; i < count; i++){
 		let player = new players({
-			name  		: "Player" + i.toString(),
-			club  		: "Club" + i.toString(),
-			age			: (i*30 + 18) % 45,	//Math.random(18, 45),
-			rating    	: (i*30 + 18) % 99,	//Math.random(45, 100)
+			name  		: name[i % 9],
+			club  		: club[(i * 3) % 9],
+			age			: (i*30 + 18) % (45 - 18) + 18,	//Math.random(18, 45),
+			rating    	: (i*30 + 18) % (99 - 45) + 45,	//Math.random(45, 100)
 			contract: {
 				date: Date.now(),
-				years: 1
+				years: (i % 6) + 1
 			}
 		});
-		
 		players.createPlayer(player, function(err, result){
-			err ? next(err) : log.debug('Save new player \'' + result.Name + '\'');
+			err ? next(err) : log.debug('Save new player \'' + result.name + '\'');
 		});
 	}
-	log.info('Random ' + count + ' players was created');
-	res.status(200).send({ "message": "Random " + count + " players was created" });
+	log.info('Random players was created');
+	res.status(200).json({ "message": "Random players was created" });
 });
 
 // update contract player by id
@@ -164,6 +165,22 @@ router.put('/:id', function(req, res, next) {
 		});
 	}
 });
+
+/////////////////////////////////// DELETE REQUEST ///////////////////////////////////
+// delete all data
+router.delete('/delete', function(req, res, next) {
+	players.deletePlayers(function(err, result){
+		if (err) {
+			log.info("Request \'deletePlayers\':" + err);
+			res.status(400).send({"message": err.message});
+		}
+		else {	
+			log.info("Request \'deletePlayers\': Data was deleted");
+			res.status(200).send({"message": "Data was deleted"});
+		}
+	});
+});
+
 
 router.options('/live', function(req, res, next) {
 	res.status(200).send(null);

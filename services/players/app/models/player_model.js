@@ -45,6 +45,17 @@ Player.statics.createPlayer = function(player, callback) {
 	return player.save(callback);
 }
 
+Player.statics.deletePlayers = function(callback) {
+	this.remove({}, function(err){
+		if (err) {
+			callback(err, null);
+		}
+		else {
+			callback(null, null);
+		}
+	});
+}
+
 Player.statics.getPlayers = function(page = 0, count = 15, callback) {
 	return this.find(function(err, players) {
 		if (err)
@@ -81,7 +92,12 @@ Player.statics.updatePlayer = function(id, data, callback) {
 }
 
 Player.statics.updateContract = function(id, data, callback) {
-	return this.findByIdAndUpdate(id, { contract: { date: data.date, years: data.years } }, function(err, player) {
+	return this.findByIdAndUpdate(id, {
+			contract: { 
+				date: data.date,
+				years: data.years
+			} 
+		}, function(err, player) {
 		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
 	});
 }
