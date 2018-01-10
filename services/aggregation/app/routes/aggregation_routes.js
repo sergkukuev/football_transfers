@@ -87,49 +87,62 @@ router.get('/transfers', function(req, res, next) {
 
 // get transfer by id
 router.get('/transfers/:id', function(req, res, next) {
-	coord.getTransfer(req.params.id, function(err, statusCode, transfer) {
+	coord.getTransfer(req.params.id, function(err, statusCode, result) {
 		if (err)
-			next(err);
+			return next(err);
 		else {
-			let trans = JSON.parse(transfer);
-			coord.getPlayer(trans.PlayerID, function(err2, statusCode2, player) {
-				if (err2)
-					next(err2);
-				else {
-					coord.getScout(trans.ScoutID, function(err3, statusCode3, scout) {
-						let play = JSON.parse(player);
-						let sc = JSON.parse(scout);
-						if (err3)
-							next(err3);
-						else {
-							console.log(play);
-							let result = {
-								Player: {
-									"name"	: player.name,
-									"Club"	: play.club,
-									"Age"	: play.age,
-									"Rating": play.rating,
-									"Contract": {
-										"StartDate": play.contract.date,
-										"Years": play.contract.years
+			if (statusCode == 200) {
+				let transfer = JSON.parse(result);
+				coord.getPlayer(transfer.playerID, function(err2, statusCode2, result2) {
+					if (err2)
+						return next(err2);
+					else {
+						if (statusCode2 == 200) {
+							let player = JSON.parse(result2);
+							coord.getScout(transfer.scoutID, function(err3, statusCode3, result3) {
+								if (err3)
+									return next(err3);
+								else {
+									if (statusCode3 == 200) {
+										let scout = JSON.parse(result3);
+										let item = {
+											"Player" : {
+												"Name"		: player.name,
+												"Club"		: player.club,
+												"Age"		: player.age,
+												"Rating"	: player.rating,
+												"Contract"	: {
+													"StartDate"	: player.contract.date,
+													"Years"		: player.contract.years
+												}
+											},
+											"Scout"	: {
+												"Name"		: scout.name,
+												"Deals"		: scout.amount.deals,
+												"Contracts"	: scout.amount.contracts,
+												"Rank"		: scout.rank
+											},
+											"Cost"		: transfer.cost,
+											"DateOfSign": transfer.dateOfSign,
+											"Club"	: {
+												"To"	: transfer.club.to,
+												"From"	: transfer.club.from
+											}
+										};
+										res.status(200).send(item);
 									}
-								},
-								Scout:{
-									"Name"	: sc.came,
-									"Deals": sc.amount.deals,
-									"Contracts": sc.amount.contracts,
-									"Rank"	: sc.rank
-								},
-								Cost: trans.cost,
-								DateOfSign: trans.dateOfSign,
-								ClubTo: trans.club.to,
-								ClubFrom: trans.club.from
-							};
-							res.status(statusCode3).send(result);
+									else
+										res.status(statusCode3).send(result3);
+								}
+							});
 						}
-					});
-				}
-			});
+						else
+							res.status(statusCode2).send(result2);
+					}
+				});
+			}
+			else
+				res.status(statusCode).send(result);
 		}
 	});
 });
@@ -138,38 +151,67 @@ router.get('/transfers/:id', function(req, res, next) {
 // create transfer
 router.post('/transfers/create', function(req, res, next) {
 	const param = {
-		PlayerID: req.body.PlayerID,
-		ScoutID: req.body.ScoutID,
-		Cost: req.body.Cost,
-		DateOfSign: req.body.DateOfSign,
-		ClubTo: req.body.ClubTo
+		PlayerID 	: req.body.PlayerID,
+		ScoutID 	: req.body.ScoutID,
+		Cost 		: req.body.Cost,
+		DateOfSign 	: req.body.DateOfSign,
+		ClubTo 		: req.body.ClubTo, 
+		ClubFrom	: undefined,
+		ContractYears: req.body.ContractYears
 	};
 
-	coord.updateScout(param.ScoutID, function(err, statusCode, result) {
-		if (err)
-			next(err);
-		else
-			log.debug(result);
-	});
-	coord.updatePlayer(param.PlayerID, param.ClubTo, function(err, statusCode, result) {
-		if (err)
-			next(err);
-		else
-			log.debug(result);
-	});
-	coord.createTransfer(param, function(err, statusCode, transfer) {
+	coord.getPlayer(param.PlayerID, function(err, statusCode, result) {
 		if (err)
 			return next(err);
 		else {
-			log.info('Transfer created')
-			res.status(statusCode).send(transfer);
+			if (statusCode == 200) {
+				let player = JSON.parse(result);
+				param.ClubFrom = player.club;
+				coord.updateScoutDeals(param.ScoutID, function(err1, statusCode1, result1) {
+					if (err1)
+						return next (err1);
+					else {
+						if (statusCode1 == 200) {
+							coord.createTransfer(param, function(err2, statusCode2, result2) {
+								if (err2)
+									return next(err2);
+								else {
+									if (statusCode2 == 200) {
+										coord.updatePlayer(param.PlayerID, player_param, function(err3, statusCode3, result3) {
+											if (err3)
+												return next(err3);
+											else {
+												if (statusCode3 == 200)
+													res.status(statusCode2).send(result2);
+												else
+													res.status(statusCode3).send(result3);
+											}
+										});
+									}
+									else
+										res.status(statusCode2).send(result2);			
+								}
+							});
+							let player_param = {
+								ClubTo 		: param.ClubTo,
+								StartDate 	: param.DateOfSign,
+								Years 		: param.ContractYears
+							};
+						}
+						else
+							res.status(statusCode1).send(result1);
+					}
+				});
+			}
+			else
+				res.status(statusCode).send(result);
 		}
 	});
 });
 
 /////////////////////////////////// PUT REQUEST ///////////////////////////////////
 // update transfer info
-router.put('/transfers/update/:id', function(req, res, next) {
+/*router.put('/transfers/update/:id', function(req, res, next) {
 	const id = req.params.id;
 	const param = {
 		Cost: req.body.Cost,
@@ -193,12 +235,33 @@ router.put('/transfers/update/:id', function(req, res, next) {
 			res.status(statusCode).send(transfer);
 		}
 	});
-});
+});*/
 
 // update contract info
-router.put('/players/contracts/update/:id', function(req, res, next) {
-	const id = req.params.id;
-	const param = {
-
+router.put('/players/contract/', function(req, res, next) {
+	const data = {
+		StartDate: req.body.StartDate,
+		Years: req.body.Years
 	};
+
+	coord.updatePlayerContract(req.body.PlayerID, data, function(err, statusCode, result) {
+		if (err)
+			return next(err);
+		else {
+			if (statusCode == 200) {	
+				coord.updateScoutContracts(req.body.ScoutID, function(err1, statusCode1, result1) {
+					if (err1)
+						return next(err1);
+					else {
+						if (statusCode1 != 200)
+							res.status(statusCode1).send(result1);
+						else
+							res.status(statusCode).send(result);
+					}
+				});
+			}
+			else
+				res.status(statusCode).send(result);
+		}
+	});
 });

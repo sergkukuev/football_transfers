@@ -20,16 +20,46 @@ module.exports = {
         });
         return;
     },
-    getPlayerByName: function (name, callback) {
-        const url = PlayerHost + '/players/byname/' + name;
+    updatePlayerContract: function (id, data, callback) {
+        const url = PlayerHost + '/players/' + id + '/contract/';
+        const options = createOptions(url, "PUT");
+        createAndSendHttpPutWithFormRequest(options, data, function (err, status, response) {
+            return responseHandlerObject(err, status, response, callback);
+        });
+    },
+    updatePlayer: function (id, data, callback) {
+        const url = PlayerHost + '/players/' + id;
+        const options = createOptions(url, "PUT");
+        createAndSendHttpPutWithFormRequest(options, data, function (err, status, response) {
+            return responseHandlerObject(err, status, response, callback);
+        });
+    },
+    // Scouts service
+    getScouts: function (page, count, callback) {
+        const url = ScoutHost + '/scouts?page=' + page + '&count=' + count;
+        const options = createOptions(url, 'GET');
+        createAndSendGetHttpRequest(options, function (err, status, response) {
+            return responseHandlerArrayObject(err, status, response, callback);
+        });
+        return;
+    },
+    getScout: function (id, callback) {
+        const url = ScoutHost + '/scouts/' + id;
         const options = createOptions(url, "GET");
         createAndSendGetHttpRequest(options, function (err, status, response) {
             return responseHandlerObject(err, status, response, callback);
         });
         return;
     },
-    updatePlayer: function (id, clubTo, callback) {
-        const url = PlayerHost + '/players/' + id + '?ClubTo=' + clubTo;
+    updateScoutDeals: function (id, callback) {
+        const url = ScoutHost + '/scouts/' + id + '/deals';
+        const options = createOptions(url, "PUT");
+        createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
+            return responseHandlerObject(err, status, response, callback);
+        });
+    },
+    updateScoutContracts: function (id, callback) {
+        const url = ScoutHost + '/scouts/' + id + '/contracts';
         const options = createOptions(url, "PUT");
         createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
             return responseHandlerObject(err, status, response, callback);
@@ -45,7 +75,7 @@ module.exports = {
         return;
     },
     updateTransfer: function (id, data, callback) {
-        const url = TransferHost + '/transfers/update/' + id;
+        const url = TransferHost + '/transfers/' + id;
         const options = createOptions(url, "PUT");
         createAndSendHttpPutWithFormRequest(options, data, function (err, status, response) {
             return responseHandlerObject(err, status, response, callback);
@@ -67,38 +97,6 @@ module.exports = {
             return responseHandlerArrayObject(err, status, response, callback);
         });
         return;
-    },
-    // Scouts service
-    getScouts: function (page, count, callback) {
-        const url = ScoutHost + '/scouts?page=' + page + '&count=' + count;
-        const options = createOptions(url, 'GET');
-        createAndSendGetHttpRequest(options, function (err, status, response) {
-            return responseHandlerArrayObject(err, status, response, callback);
-        });
-        return;
-    },
-    getScout: function (id, callback) {
-        const url = ScoutHost + '/scouts/' + id;
-        const options = createOptions(url, "GET");
-        createAndSendGetHttpRequest(options, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
-        return;
-    },
-    getScoutByName: function (name, callback) {
-        const url = ScoutHost + '/scouts/byname/' + name;
-        const options = createOptions(url, "GET");
-        createAndSendGetHttpRequest(options, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
-        return;
-    },
-    updateScout: function (id, callback) {
-        const url = ScoutHost + '/scouts/' + id;
-        const options = createOptions(url, "PUT");
-        createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
     }
 }
 
