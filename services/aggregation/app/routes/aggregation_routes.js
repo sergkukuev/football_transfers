@@ -86,6 +86,7 @@ router.get('/transfers', function(req, res, next) {
 });
 
 // get transfer by id
+// Для этого запроса выполнять деградацию функциональности
 router.get('/transfers/:id', function(req, res, next) {
 	coord.getTransfer(req.params.id, function(err, statusCode, result) {
 		if (err)
@@ -149,6 +150,7 @@ router.get('/transfers/:id', function(req, res, next) {
 
 /////////////////////////////////// POST REQUEST ///////////////////////////////////
 // create transfer
+// Класть операции в очередь на выполнение
 router.post('/transfers/create', function(req, res, next) {
 	const param = {
 		PlayerID 	: req.body.PlayerID,
@@ -238,6 +240,7 @@ router.post('/transfers/create', function(req, res, next) {
 });*/
 
 // update contract info
+// Выполнить полный откат операции
 router.put('/players/contract/', function(req, res, next) {
 	const data = {
 		StartDate: req.body.StartDate,

@@ -23,12 +23,11 @@ let Transfer = new Schema({
 	}
 });
 
-Transfer.virtual('date')
-	.get(function() {
-		return this._id.getTimestamp();
-	});
+Transfer.virtual('date').get(function() {
+	return this._id.getTimestamp();
+});
 
-Transfer.statics.createTransfer = function(info, callback) {
+Transfer.statics.create = function(info, callback) {
 	let object = Object(info);
 	const check = checkRequiredFields(Object.keys(object));
 	
@@ -47,13 +46,19 @@ Transfer.statics.createTransfer = function(info, callback) {
 		return callback("Not found required fields", null);
 };
 
-Transfer.statics.deleteTransfers = function(callback) {
+Transfer.statics.delete = function(callback) {
 	this.remove({}, function(err){
 		err ? callback(err, null) : callback(null, null);
 	});
 }
 
-Transfer.statics.updateTransfer = function(id, data, callback) {
+Transfer.statics.deleteById = function(callback) {
+	this.findByIdAndRemove(id, function(err) {
+		err ? callback(err, null) : callback(null, null);
+	});
+}
+
+Transfer.statics.updateById = function(id, data, callback) {
 	return this.findByIdAndUpdate(id, {
 		cost: data.cost,
 		dateOfSign: data.dateOfSign,
@@ -66,8 +71,7 @@ Transfer.statics.updateTransfer = function(id, data, callback) {
 	});
 };
 
-
-Transfer.statics.getTransfers = function(page, count, callback){
+Transfer.statics.getAll = function(page, count, callback){
 	return this.find(function(err, transfers) {
 		if (err)
 			callback(err, null);
@@ -85,7 +89,7 @@ Transfer.statics.getTransfers = function(page, count, callback){
   	}).skip(page * count).limit(count); 
 };
 
-Transfer.statics.getTransfer = function(id, callback) {
+Transfer.statics.getById = function(id, callback) {
 	return this.findById(id, function(err, result) {
 		err ? callback(err, null) : (result ? callback(null, getTransfer(result)) : callback(null, null));
 	});
@@ -113,22 +117,22 @@ function createTransfer(object) {
 
 	for (key in object) {
 		switch (key) {
-			case "PlayerID":
+			case "playerID":
 				result.playerID = mongoose.Types.ObjectId(object[key]);
 				break;
-			case "ScoutID":
+			case "scoutID":
 				result.scoutID = mongoose.Types.ObjectId(object[key]);
 				break;
-			case "Cost":
+			case "cost":
 				result.cost = new Number(object[key]);
 				break;
-			case "ClubTo":
+			case "clubTo":
 				result.club.to = new String(object[key]);
 				break;
-			case "ClubFrom":
+			case "clubFrom":
 				result.club.from = new String(object[key]);
 				break;
-			case "DateOfSign":
+			case "dateOfSign":
 				result.dateOfSign = new Date(object[key]);
 				break;
 			default:
@@ -144,7 +148,7 @@ function createTransfer(object) {
 
 function checkRequiredFields(objectKeys){
 	const keys = Array.from(objectKeys);
-	const requiredField = ["PlayerID", "ScoutID", "ClubFrom"];
+	const requiredField = ["playerID", "scoutID", "clubFrom"];
 	let flag = 0;
 	
 	for(let i = 0; i < keys.length; i++ )
