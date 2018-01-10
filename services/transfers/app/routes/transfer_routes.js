@@ -54,6 +54,7 @@ router.get('/:id', function(req, res, next) {
 		});
 	}
 });
+
 /////////////////////////////////// PUT REQUEST ///////////////////////////////////
 router.put('/:id', function(req, res, next) {
 	const id = req.params.id;
@@ -87,13 +88,13 @@ router.put('/:id', function(req, res, next) {
 			else {
 				if (result) {
 					log.debug('Request \'updateTransfer\' was successfully executed');
-					res.status(201).send(result);	
+					res.status(200).send(result);
 				}
 				else {
-					log.debug('Request \'updateTransfer\': Unknown error');
-					res.status(500).send({ "message": "Unknown error" });
+					log.debug('Request \'updateTransfer\': Transfer not found');
+					res.status(400).send({ "message": "Transfer not found" });	
 				}
-			}
+			}	
 		});
 	}
 });
@@ -118,8 +119,8 @@ router.post('/create', function(req, res, next) {
 			flag = true;
 
 	if (flag) {
-		log.debug('Request \'createTransfer\': incorrect fields');
-		res.status(400).send({ "message": "Bad request: incorrect fields" });
+		log.debug('Request \'createTransfer\': Incorrect fields');
+		res.status(400).send({ "message": "Bad request: Incorrect fields" });
 	} else {
 		transfers.createTransfer(item, function(err, result) {
 			if (err) {
@@ -127,15 +128,25 @@ router.post('/create', function(req, res, next) {
 				next(err);
 			}
 			else {
-				if (result) {
-					log.debug('Request \'createTransfer\' was successfully executed');
-					res.status(201).send(result);	
-				}
-				else {
-					log.debug('Request \'createTransfer\': Unknown error');
-					res.status(500).send({ "message": "Unknown error" });
-				}
+				log.debug('Request \'createTransfer\' was successfully executed');
+				res.status(200).send(result);	
 			}
 		});
 	}
+});
+
+
+/////////////////////////////////// DELETE REQUEST ///////////////////////////////////
+// delete all data
+router.delete('/delete', function(req, res, next) {
+	transfers.deleteTransfers(function(err, result){
+		if (err) {
+			log.info("Request \'deleteTransfers\':" + err);
+			res.status(400).send({"message": err.message});
+		}
+		else {	
+			log.info("Request \'deleteTransfers\': Data was deleted");
+			res.status(200).send({"message": "Data was deleted"});
+		}
+	});
 });
