@@ -51,7 +51,7 @@ module.exports = function(app, config) {
     res.status(err.status || 500);
       res.send({
         status: 'Error',
-        message: err.message,
+        message: err.message
       });
   });
 
