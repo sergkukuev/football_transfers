@@ -152,7 +152,7 @@ router.put('/:id/deals/cancel', function(req, res, next) {
 					if (result) {
 						log.info('Request \'cancelDeals\': completed');
 						let msg = "Deal was canceled by a " + result.name;
-						res.status(200).send({ status: "Ok", message: msg });//result);
+						res.status(200).send(/*{ status: "Ok", message: msg });*/result);
 					}
 					else {
 						log.debug('Request \'cancelDeals\': Scout not found');
@@ -192,7 +192,7 @@ router.put('/:id/contracts/confirm', function(req, res, next) {
 					if (result) {
 						log.info('Request \'confirmContract\': completed');
 						let msg = "Contract was confirm by a " + result.name;
-						res.status(200).send({ status: "Ok", message: msg });//result);
+						res.status(200).send(/*{ status: "Ok", message: msg }*/result);
 					}
 					else {
 						log.debug('Request \'confirmContract\': Scout not found');
@@ -232,7 +232,7 @@ router.put('/:id/contracts/cancel', function(req, res, next) {
 					if (result) {
 						log.info('Request \'cancelContract\': completed');
 						let msg = "Contract was canceled by a " + result.name;
-						res.status(200).send({ status: "Ok", message: msg });//result);
+						res.status(200).send(/*{ status: "Ok", message: msg });*/result);
 					}
 					else {
 						log.debug('Request \'cancelContract\': Scout not found');
