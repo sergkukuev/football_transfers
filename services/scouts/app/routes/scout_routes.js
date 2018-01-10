@@ -110,8 +110,14 @@ router.put('/:id/deals', function(req, res, next) {
 						}
 					}
 					else {
-						log.info('Request \'updateScoutDeals\' was successfully executed');
-						res.status(200).send({ "message": result.name + " made deal"}); 
+						if (result) {
+							log.info('Request \'updateScoutDeals\' was successfully executed');
+							res.status(200).send({ "message": result.name + " made deal"}); 
+						}
+						else {
+							log.debug('Request \'updateScoutDeals\': Scout not found');
+							res.status(400).send({ "message": "Scout not found" });	
+						}
 					}
 				});
 			}
@@ -149,8 +155,14 @@ router.put('/:id/contracts', function(req, res, next) {
 						}
 					}
 					else {
-						log.info('Request \'updateScoutContracts\' was successfully executed');
-						res.status(200).send({ "message": result.name + " made contract"}); 
+						if (result) {
+							log.info('Request \'updateScoutContracts\' was successfully executed');
+							res.status(200).send({ "message": result.name + " made contract"});
+						}
+						else {
+							log.debug('Request \'updateScoutContracts\': Scout not found');
+							res.status(400).send({ "message": "Scout not found" });	
+						} 
 					}
 				});
 			}

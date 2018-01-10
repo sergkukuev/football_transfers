@@ -87,6 +87,7 @@ Player.statics.updatePlayer = function(id, data, callback) {
 				years: data.years
 			} 
 		}, function(err, player) {
+			console.log(player);
 		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
 	});
 }

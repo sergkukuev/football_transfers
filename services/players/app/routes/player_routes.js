@@ -114,9 +114,15 @@ router.put('/:id/contract/', function(req, res, next) {
 				}
 			}
 			else {
-				log.info('Request \'updateContractById\' was successfully executed');
-				let msg = "Contract " + result.name + " was updated";
-				res.status(200).send({ "message": msg });
+				if (result) {
+					log.info('Request \'updateContractById\' was successfully executed');
+					let msg = "Contract " + result.name + " was updated";
+					res.status(200).send({ "message": msg });
+				}
+				else {
+					log.debug('Request \'updateContractById\': Player not found');
+					res.status(400).send({ "message": "Player not found" });	
+				}
 			} 
 		});
 	}
@@ -159,8 +165,14 @@ router.put('/:id', function(req, res, next) {
 				}
 			}
 			else {
-				log.info('Request \'updatePlayerById\' was successfully executed');
-				res.status(200).send({ "message": result.name + " moved to " + data.clubTo });
+				if (result) {
+					log.info('Request \'updatePlayerById\' was successfully executed');
+					res.status(200).send({ "message": result.name + " moved to " + data.clubTo });
+				}
+				else {
+					log.debug('Request \'updatePlayerById\': Player not found');
+					res.status(400).send({ "message": "Player not found" });	
+				}
 			} 
 		});
 	}
