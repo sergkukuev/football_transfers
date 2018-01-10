@@ -56,7 +56,7 @@ router.get('/:id', function(req, res, next) {
 	}
 });
 
-/////////////////////////////////// PUT REQUEST ///////////////////////////////////
+/////////////////////////////////// POST REQUEST ///////////////////////////////////
 // generate test players
 router.post('/test_generate', function (req, res, next) {
 	let name = ["Roberto", "Sanches", "Morata", "Bakary", "Handanovich", "Messi", "Rivaldo", "Jo", "Lee", "Yamaho"];
@@ -82,6 +82,7 @@ router.post('/test_generate', function (req, res, next) {
 	res.status(200).json({ "message": "Random players was created" });
 });
 
+/////////////////////////////////// PUT REQUEST ///////////////////////////////////
 // update contract player by id
 router.put('/:id/contract/', function(req, res, next) {
 	const id = req.params.id;
