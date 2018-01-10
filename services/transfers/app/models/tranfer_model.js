@@ -3,8 +3,8 @@ var mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 
 let Transfer = new Schema({
-	PlayerID: Schema.Types.ObjectId,
-	ScoutID: Schema.Types.ObjectId,
+	playerID: Schema.Types.ObjectId,
+	scoutID: Schema.Types.ObjectId,
 	cost: {
 		type: Number,
 		min: 0,
@@ -74,8 +74,10 @@ Transfer.statics.getTransfers = function(page, count, callback){
 		else {
 			if (transfers) {
 				let result = [];
-				for (let i = 0; i < transfers.length; i++)
-	        		result[i] = getTransfer(transfers[i]);
+				for (let i = 0; i < transfers.length; i++) {
+					let item = getTransfer(transfers[i]);
+	        		result[i] = item;	
+				}
 	      		callback(null, result);
 			} else
 	      		callback(null, null);
