@@ -32,6 +32,12 @@ Scout.statics.createScout = function(scout, callback) {
 	return scout.save(callback);
 }
 
+Scout.statics.deleteScouts = function(callback) {
+	this.remove({}, function(err){
+		err ? callback(err, null) : callback(null, null);
+	});
+}
+
 Scout.statics.getScouts = function(page = 0, count = 10, callback) {
 	return this.find(function(err, scouts) {
 		if (err)
@@ -56,7 +62,6 @@ Scout.statics.getScout = function(id, callback) {
 }
 
 Scout.statics.updateScout = function(id, data, callback) {
-	console.log(data);
 	return this.findByIdAndUpdate(id, { 
 			amount:  {
 				deals: data.deal,

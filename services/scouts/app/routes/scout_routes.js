@@ -56,17 +56,18 @@ router.get('/:id', function(req, res, next) {
 	}
 });
 
-/////////////////////////////////// PUT REQUEST ///////////////////////////////////
+/////////////////////////////////// POST REQUEST ///////////////////////////////////
 // generate test scouts
-router.put('/test_generate', function (req, res, next) {
+router.post('/test_generate', function (req, res, next) {
+	let name = ["Carlito", "Sanches", "Paul", "Bakary", "Irvin", "Ops", "Albo", "Joshua", "King", "Yamaho"];
 	let count = validator.checkInt(req.query.count);
 	count = validator.checkValue(count) ? count : 10;
 	for (let i = 0; i < count; i++){
 		let scout = new scouts({
-			name  			: 'Scout' + i.toString(),
-			amount: {
-				deals: (i * 43) % 100,
-				contracts: (i * 43) % 100 
+			name	: name[(i * 2) % 10],
+			amount	: {
+				deals: (i * 35) % 100,
+				contracts: (i * 24) % 100 
 			}
 		});
 		
@@ -74,10 +75,11 @@ router.put('/test_generate', function (req, res, next) {
 			err ? next(err) : log.debug('Save new scout \'' + result.name + '\'');
 		});
 	}
-	log.info('Random ' + count + ' scouts was created');
-	res.status(200).send({ "message": "Random " + count + " scouts was created" });
+	log.info('Random scouts was created');
+	res.status(200).send({ "message": "Random scouts was created" });
 });
 
+/////////////////////////////////// PUT REQUEST ///////////////////////////////////
 // update deals scout by id
 router.put('/:id/deals', function(req, res, next) {
 	const id = req.params.id;
@@ -154,6 +156,21 @@ router.put('/:id/contracts', function(req, res, next) {
 			}
 		});
 	}
+});
+
+/////////////////////////////////// DELETE REQUEST ///////////////////////////////////
+// delete all data
+router.delete('/delete', function(req, res, next) {
+	scouts.deleteScouts(function(err, result){
+		if (err) {
+			log.info("Request \'deleteScouts\':" + err);
+			res.status(400).send({"message": err.message});
+		}
+		else {	
+			log.info("Request \'deleteScouts\': Data was deleted");
+			res.status(200).send({"message": "Data was deleted"});
+		}
+	});
 });
 
 router.options('/live', function(req, res, next) {
