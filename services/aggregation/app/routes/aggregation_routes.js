@@ -30,7 +30,7 @@ router.get('/players', function(req, res, next) {
 	const count = validator.checkInt(req.query.count);
 	coord.getPlayers(page, count, function(err, statusCode, players) {
 		if (err) {
-			log.debug(err);
+			log.error(err);
 			return next(err);
 		}
 		else {
@@ -44,7 +44,7 @@ router.get('/players', function(req, res, next) {
 router.get('/players/:id', function(req, res, next) {
 	coord.getPlayer(req.params.id, function(err, statusCode, player) {
 		if (err) {
-			log.debug(err);
+			log.error(err);
 			return next(err);
 		}
 		else {
@@ -60,7 +60,7 @@ router.get('/scouts', function(req, res, next) {
 	const count = validator.checkInt(req.query.count);
 	coord.getScouts(page, count, function(err, statusCode, scouts) {
 		if (err) {
-			log.debug(err);
+			log.error(err);
 			return next(err);
 		}
 		else {
@@ -74,7 +74,7 @@ router.get('/scouts', function(req, res, next) {
 router.get('/scouts/:id', function(req, res, next) {
 	coord.getScout(req.params.id, function(err, statusCode, scout) {
 		if (err) {
-			log.debug(err);
+			log.error(err);
 			return next(err);
 		}
 		else {
@@ -90,7 +90,7 @@ router.get('/transfers', function(req, res, next) {
 	const count = validator.checkInt(req.query.count);
 	coord.getTransfers(page, count, function(err, statusCode, transfers) {
 		if (err){
-			log.debug(err);
+			log.error(err);
 			next(err);
 		}
 		else {
@@ -100,8 +100,7 @@ router.get('/transfers', function(req, res, next) {
 	});
 });
 
-// get transfer by id
-// Для этого запроса выполнять деградацию функциональности
+// get transfer by id (деградация функциональности)
 router.get('/transfers/:id', function(req, res, next) {
 	coord.getTransfer(req.params.id, function(err, statusCode, result) {
 		if (err) {
@@ -301,8 +300,7 @@ router.get('/transfers/:id', function(req, res, next) {
 });
 
 /////////////////////////////////// POST REQUEST ///////////////////////////////////
-// create transfer
-// Класть операции в очередь на выполнение
+// create transfer (класть операцию в очередь)
 router.post('/transfers/create', function(req, res, next) {
 	const param = {
 		playerID 	: req.body.playerID,
@@ -377,7 +375,7 @@ router.post('/transfers/create', function(req, res, next) {
 			if (err)
 				next(err);
 			else
-				log.debug(result);
+				log.error(result);
 		});
 	});
 	coord.updateTransfer(id, param, function(err, statusCode, transfer) {
@@ -390,32 +388,38 @@ router.post('/transfers/create', function(req, res, next) {
 	});
 });*/
 
-// update contract info
-// Выполнить полный откат операции
-router.put('/players/contract/', function(req, res, next) {
+// update contract info (полный откат операции)
+router.put('/players/:id/contract/', function(req, res, next) {
 	const data = {
 		date: req.body.date,
 		years: req.body.years
 	};
-
-	coord.updatePlayerContract(req.body.playerID, data, function(err, statusCode, result) {
-		if (err)
-			return next(err);
+	coord.incScoutContracts(req.body.scoutID, function(err, statusCode, result) {
+		if (err) {
+			res.status(500).send({ status: "Error", message: "Scout service unavailable", action: "Rollback operation"});
+			//return next (err);
+		}
 		else {
-			if (statusCode == 200) {	
-				coord.incScoutContracts(req.body.scoutID, function(err1, statusCode1, result1) {
-					if (err1)
-						return next(err1);
-					else {
-						if (statusCode1 != 200)
-							res.status(statusCode1).send(result1);
-						else
-							res.status(statusCode).send(result);
+			coord.updatePlayerContract(req.params.id, data, function(err1, statusCode1, result1) {
+				if (err1) {
+					coord.decScoutContracts(req.body.scoutID, function(err2, statusCode2, result2) {
+						if (err) {
+							return next(err);
+						}
+						else {
+							res.status(500).send({ status: "Error", message: "Player service unavailable", action: "Rollback operation" });
+						}
+					});
+				}
+				else {
+					if (statusCode1 == 200) {
+						res.status(statusCode1).send({status: "Ok", message: "Contract player \'" + req.params.id + "\' was updated"});
 					}
-				});
-			}
-			else
-				res.status(statusCode).send(result);
+					else {
+						res.status(statusCode1).send(result1);
+					}
+				}
+			});
 		}
 	});
 });
