@@ -52,16 +52,16 @@ Transfer.statics.delete = function(callback) {
 	});
 }
 
-Transfer.statics.deleteById = function(callback) {
-	this.findByIdAndRemove(id, function(err) {
-		err ? callback(err, null) : callback(null, null);
+Transfer.statics.deleteById = function(id, callback) {
+	this.findByIdAndRemove(id, function(err, transfer) {
+		err ? callback(err, null) : (transfer ? callback(null, "Ok") : callback(null, null));
 	});
 }
 
 Transfer.statics.updateById = function(id, data, callback) {
 	return this.findByIdAndUpdate(id, {
 		cost: data.cost,
-		dateOfSign: data.dateOfSign,
+		dateOfSign: data.date,
 		club: {
 			from: data.clubFrom, 
 			to: data.clubTo
