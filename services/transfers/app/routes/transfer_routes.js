@@ -138,8 +138,14 @@ router.post('/create', function(req, res, next) {
 				res.status(400).send({ status: "Error", message: err});
 			}
 			else {
-				log.error('Request \'create\': completed');
-				res.status(201).send(result);	
+				if (result) {
+					log.info('Request \'create\': completed');
+					res.status(201).send(result);
+				}	
+				else {
+					log.error('Request \'create\': Transfer did not created');
+					res.status(500).send({ status: "Error", message: "Transfer did not created"});
+				}
 			}
 		});
 	}
