@@ -174,8 +174,8 @@ router.put('/:id/contracts/confirm', function(req, res, next) {
 		}
 		else {
 			let data = {
-				deal: scout.amount.deals + 1,
-				contract: scout.amount.contracts
+				deal: scout.amount.deals,
+				contract: scout.amount.contracts + 1
 			};
 			scouts.updateById(id, data, function(err, result) {
 				if (err) {
@@ -214,8 +214,8 @@ router.put('/:id/contracts/cancel', function(req, res, next) {
 		}
 		else {
 			let data = {
-				deal: scout.amount.deals - 1,
-				contract: scout.amount.contracts
+				deal: scout.amount.deals,
+				contract: scout.amount.contracts - 1
 			};
 			scouts.updateById(id, data, function(err, result) {
 				if (err) {
