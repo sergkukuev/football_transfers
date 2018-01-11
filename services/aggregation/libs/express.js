@@ -38,8 +38,8 @@ module.exports = function(app, config) {
     app.use(function (err, req, res, next) {
       res.status(err.status || 500);
       res.send({
-        message: err.message,
-        error: {}
+      	status: "Error",
+        message: err.message
       });
     });
   }
@@ -47,8 +47,8 @@ module.exports = function(app, config) {
   app.use(function (err, req, res, next) {
     res.status(err.status || 500);
       res.send({
-        message: err.message,
-        error: {}
+      	status: "Error",
+        message: err.message
       });
   });
 
