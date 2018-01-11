@@ -59,15 +59,29 @@ module.exports = {
         });
         return;
     },
-    updateScoutDeals: function (id, callback) {
-        const url = ScoutHost + '/scouts/' + id + '/deals';
+    incScoutDeals: function (id, callback) {
+        const url = ScoutHost + '/scouts/' + id + '/deals/confirm';
         const options = createOptions(url, "PUT");
         createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
             return responseHandlerObject(err, status, response, callback);
         });
     },
-    updateScoutContracts: function (id, callback) {
-        const url = ScoutHost + '/scouts/' + id + '/contracts';
+    decScoutDeals: function (id, callback) {
+        const url = ScoutHost + '/scouts/' + id + '/deals/cancel';
+        const options = createOptions(url, "PUT");
+        createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
+            return responseHandlerObject(err, status, response, callback);
+        });
+    },
+    incScoutContracts: function (id, callback) {
+        const url = ScoutHost + '/scouts/' + id + '/contracts/confirm';
+        const options = createOptions(url, "PUT");
+        createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
+            return responseHandlerObject(err, status, response, callback);
+        });
+    },
+    decScoutContracts: function (id, callback) {
+        const url = ScoutHost + '/scouts/' + id + '/contracts/cancel';
         const options = createOptions(url, "PUT");
         createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
             return responseHandlerObject(err, status, response, callback);
@@ -120,6 +134,7 @@ module.exports = {
         createAndSendDeleteHttpRequest(options, function(err, status, response) {
             return responseHandlerObject(err, status, response, callback);
         });
+        return;
     },
     liveTransferService: function(callback) {
         const url = PlayerHost + '/transfers/live';
