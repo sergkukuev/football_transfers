@@ -34,6 +34,14 @@ module.exports = {
             return responseHandlerObject(err, status, response, callback);
         });
     },
+    livePlayerService: function(callback) {
+        const url = PlayerHost + '/players/live';
+        const options = createOptions(url, 'HEAD');
+        createAndSendHeadHttpRequest(options, function(err, status) {
+            return callback(err, status);
+        });
+        return;
+    },
     // Scouts service
     getScouts: function (page, count, callback) {
         const url = ScoutHost + '/scouts?page=' + page + '&count=' + count;
@@ -65,6 +73,14 @@ module.exports = {
             return responseHandlerObject(err, status, response, callback);
         });
     },
+    liveScoutService: function(callback) {
+        const url = ScoutHost + '/scouts/live';
+        const options = createOptions(url, 'HEAD');
+        createAndSendHeadHttpRequest(options, function(err, status) {
+            return callback(err, status);
+        });
+        return;
+    },
     // Transfers service
     createTransfer: function (object, callback) {
         const url = TransferHost + '/transfers/create';
@@ -95,6 +111,14 @@ module.exports = {
         const options = createOptions(url, "GET");
         createAndSendGetHttpRequest(options, function (err, status, response) {
             return responseHandlerArrayObject(err, status, response, callback);
+        });
+        return;
+    },
+    liveTransferService: function(callback) {
+        const url = PlayerHost + '/transfers/live';
+        const options = createOptions(url, 'HEAD');
+        createAndSendHeadHttpRequest(options, function(err, status) {
+            return callback(err, status);
         });
         return;
     }
@@ -129,6 +153,17 @@ function createAndSendGetHttpRequest(options, callback) {
             callback(errors, null, null);
         } else {
             callback(null, response.statusCode, body);
+        }
+    });
+}
+
+function createAndSendHeadHttpRequest(options, callback){
+    const request = require('request');
+    request.head(options.uri, options, function(errors, response, body){
+        if (errors){
+            return callback(errors, null, null);
+        } else {
+            return callback(null, response.statusCode, body);
         }
     });
 }
