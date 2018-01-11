@@ -9,6 +9,10 @@ module.exports = function(app) {
 	app.use('/transfers', router);
 };
 
+router.head('/live', function(req, res, next) {
+	res.status(200).send({ status: "Ok", message: "I'm a live" });
+});
+
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
 // get all transfers
 router.get('/', function(req, res, next) {
