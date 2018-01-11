@@ -114,6 +114,13 @@ module.exports = {
         });
         return;
     },
+    deleteTransfer: function (id, callback) {
+        const url = TransferHost + '/transfers/' + id;
+        const options = createOptions(url, "DELETE");
+        createAndSendDeleteHttpRequest(options, function(err, status, response) {
+            return responseHandlerObject(err, status, response, callback);
+        });
+    },
     liveTransferService: function(callback) {
         const url = PlayerHost + '/transfers/live';
         const options = createOptions(url, 'HEAD');
@@ -164,6 +171,17 @@ function createAndSendHeadHttpRequest(options, callback){
             return callback(errors, null, null);
         } else {
             return callback(null, response.statusCode, body);
+        }
+    });
+}
+
+function createAndSendDeleteHttpRequest(options, callback) {
+    const request = require('request');
+    request.delete(options.uri, options, function (errors, response, body) {
+        if (errors) {
+            callback(errors, null, null);
+        } else {
+            callback(null, response.statusCode, body);
         }
     });
 }
