@@ -366,11 +366,11 @@ router.post('/transfers/create', function(req, res, next) {
 	};
 
 	coord.updatePlayer(param.playerID, player_param, function(err, statusCode, result) {
-		if (err3)
-			return next(err3);
+		if (err)
+			return next(err);
 		else {
 			if (statusCode == 200) {
-				let player = JSON.parse(player);
+				let player = JSON.parse(result);
 				param.clubFrom = player.club;
 				coord.incScoutDeals(param.scoutID, function(err1, statusCode1, result1) {
 					if (err1)
@@ -382,10 +382,7 @@ router.post('/transfers/create', function(req, res, next) {
 									addToQueue("Transfers", data);
 									//return next(err2);
 								else {
-									if (statusCode2 == 201)
-										res.status(statusCode2).send(result2);
-									else
-										res.status(statusCode2).send(result2);			
+									res.status(statusCode2).send(result2);			
 								}
 							});
 						}
