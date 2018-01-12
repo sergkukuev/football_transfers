@@ -137,7 +137,7 @@ module.exports = {
         return;
     },
     liveTransferService: function(callback) {
-        const url = PlayerHost + '/transfers/live';
+        const url = TransferHost + '/transfers/live';
         const options = createOptions(url, 'HEAD');
         createAndSendHeadHttpRequest(options, function(err, status) {
             return callback(err, status);

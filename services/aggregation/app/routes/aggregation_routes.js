@@ -13,7 +13,7 @@ module.exports = function(app) {
 var interval1 = 500, interval2 = 1000;
 
 function addToQueue(nameService, info) {
-	rabbitMQ.connect('amqp://localhost', function(err, conn) {
+	rabbitMQ.connect('amqp://guest:guest@localhost:5672', function(err, conn) {
 		conn.createChannel(function(err, ch) {
 			let name = 'services';
 			let data = {
@@ -21,15 +21,15 @@ function addToQueue(nameService, info) {
 				param: info
 			}
 			ch.assertQueue(name, { durable: false });
-			ch.sendToQueue(name, Buffer.from(data), { persistent: true });
+			ch.sendToQueue(name, Buffer.from(JSON.stringify(data)), { persistent: true });
 			log.info("Operation service " + nameService + " push to queue [" + name +"]");
 		});
 		setTimeout(function() { conn.close() }, interval1);
 	});
 }
 
-function reveiceFromQueue(callback){
-	amqp.connect('amqp://localhost', function(err, conn){
+function receiveFromQueue(callback){
+	rabbitMQ.connect('amqp://localhost', function(err, conn){
 		conn.createChannel(function(err, ch){
 			var name = 'services';
 
@@ -37,7 +37,7 @@ function reveiceFromQueue(callback){
 			ch.consume(name, function(data) {
 				let string = data.content.toString('utf-8');
 				let result = JSON.parse(string);
-				log.info("Operation service " + data.service + " pop to queue [" + name +"]");
+				log.info("Operation service " + result.service + " pop to queue [" + name +"]");
 				callback(result);
 			}, {noAck : true});
 			setTimeout(function() { 
@@ -53,17 +53,13 @@ setInterval(function(){
 	coord.liveTransferService(function(err, status){
 		if (status == 200){
 			receiveFromQueue(function(data){
-				if (data){
-					coord.createTransfer(param, function(err2, statusCode2, result2) {
-						if (err2)
-							addToQueue("Transfers", data);
-							//return next(err2);
-						else {
-							if (statusCode2 == 201)
-								res.status(statusCode2).send(result2);
-							else
-								res.status(statusCode2).send(result2);			
+				if (data){ 
+					coord.createTransfer(data.param, function(err2, statusCode2, result2) {
+						if (err2){
+							addToQueue("Transfers", data.param);
 						}
+						else
+							log.info("Request \'createTransfer\': completed.\n\nStatus: " + statusCode2 + "\nResult:\n" + result2);
 					});
 				}
 			});
@@ -378,9 +374,11 @@ router.post('/transfers/create', function(req, res, next) {
 					else {
 						if (statusCode1 == 200) {
 							coord.createTransfer(param, function(err2, statusCode2, result2) {
-								if (err2)
+								if (err2) {
 									addToQueue("Transfers", param);
+									res.status(202).send({ status: "Accepted", message: "Request 'createTransfer' added to queue"});
 									//return next(err2);
+								}
 								else {
 									res.status(statusCode2).send(result2);			
 								}
