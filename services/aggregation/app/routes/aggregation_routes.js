@@ -12,32 +12,28 @@ module.exports = function(app) {
 /////////////////////////////////// QUEVE ///////////////////////////////////
 var interval1 = 500, interval2 = 1000;
 
-function addToQueue(nameService, info) {
+function addToQueue(data) {
 	rabbitMQ.connect('amqp://guest:guest@localhost:5672', function(err, conn) {
 		conn.createChannel(function(err, ch) {
-			let name = 'services';
-			let data = {
-				service: nameService,
-				param: info
-			}
+			let name = 'transfers';
 			ch.assertQueue(name, { durable: false });
 			ch.sendToQueue(name, Buffer.from(JSON.stringify(data)), { persistent: true });
-			log.info("Operation service " + nameService + " push to queue [" + name +"]");
+			log.info("Operation \'createTransfer\' push to queue [" + name +"]");
 		});
 		setTimeout(function() { conn.close() }, interval1);
 	});
 }
 
 function receiveFromQueue(callback){
-	rabbitMQ.connect('amqp://localhost', function(err, conn){
+	rabbitMQ.connect('amqp://guest:guest@localhost:5672', function(err, conn){
 		conn.createChannel(function(err, ch){
-			var name = 'services';
+			var name = 'transfers';
 
 			ch.assertQueue(name, { durable: false });
 			ch.consume(name, function(data) {
 				let string = data.content.toString('utf-8');
 				let result = JSON.parse(string);
-				log.info("Operation service " + result.service + " pop to queue [" + name +"]");
+				log.info("Operation \'createTransfer\' pop to queue [" + name +"]");
 				callback(result);
 			}, {noAck : true});
 			setTimeout(function() { 
@@ -50,8 +46,55 @@ function receiveFromQueue(callback){
 
 // create transfers (queue)
 setInterval(function(){
-	coord.liveTransferService(function(err, status){
-		if (status == 200){
+	coord.liveTransferService(function(err, status) {
+		coord.liveScoutService(function(err1, status1) {
+			coord.livePlayerService(function(err2, status2) {
+				if (status == 200 && status1 == 200 && status2 == 200) {
+					receiveFromQueue(function(param){
+						if (param) {
+							let player_param = {
+								clubTo 	: param.clubTo,
+								date 	: param.date,
+								years 	: param.years
+							};
+							coord.updatePlayer(param.playerID, player_param, function(err, statusCode, result) {
+								if (err)
+									return next(err);
+								else {
+									if (statusCode == 200) {
+										let player = JSON.parse(result);
+										param.clubFrom = player.club;
+										coord.incScoutDeals(param.scoutID, function(err1, statusCode1, result1) {
+											if (err1)
+												return next (err1);
+											else {
+												if (statusCode1 == 200) {
+													coord.createTransfer(param, function(err2, statusCode2, result2) {
+														if (err2) {
+															return next(err2);
+														}
+														else {
+															log.debug("Status: " + statusCode2 + "\nResult: " + result2);			
+														}
+													});
+												}
+												else {
+													log.debug("Status: " + statusCode1 + "\nResult: " + result1);
+												}
+											}
+										});
+									}
+									else
+										log.debug("Status: " + statusCode + "\nResult: " + result);
+								}
+							});
+						}
+					});
+				}
+			});
+		});
+	});
+		/*if (status == 200){
 			receiveFromQueue(function(data){
 				if (data){ 
 					coord.createTransfer(data.param, function(err2, statusCode2, result2) {
@@ -63,8 +106,7 @@ setInterval(function(){
 					});
 				}
 			});
-		}
-	});
+		}*/
 }, interval2);
 
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
@@ -351,15 +393,27 @@ router.post('/transfers/create', function(req, res, next) {
 		scoutID 	: req.body.scoutID,
 		cost 		: req.body.cost,
 		date 		: req.body.date,
-		clubTo 		: req.body.clubTo, 
-		clubFrom	: undefined,
+		clubTo 		: req.body.clubTo,
+		years 		: req.body.years,
+		clubFrom	: undefined
 	};
 
 	let player_param = {
 		clubTo 	: param.clubTo,
 		date 	: param.date,
-		years 	: req.body.years
+		years 	: param.years
 	};
+
+	coord.liveTransferService(function(err, status) {
+		coord.liveScoutService(function(err1, status1) {
+			coord.livePlayerService(function(err2, status2) {
+				if (status != 200 || status1 != 200 || status2 != 200) {
+					addToQueue(param);
+					res.status(202).send({status: "Accepted", message: "Operation \'createTransfer\' accepted for processing"});
+				}
+			});
+		});
+	});
 
 	coord.updatePlayer(param.playerID, player_param, function(err, statusCode, result) {
 		if (err)
@@ -375,9 +429,7 @@ router.post('/transfers/create', function(req, res, next) {
 						if (statusCode1 == 200) {
 							coord.createTransfer(param, function(err2, statusCode2, result2) {
 								if (err2) {
-									addToQueue("Transfers", param);
-									res.status(202).send({ status: "Accepted", message: "Request 'createTransfer' added to queue"});
-									//return next(err2);
+									return next(err2);
 								}
 								else {
 									res.status(statusCode2).send(result2);			
