@@ -119,14 +119,14 @@ router.post('/create', function(req, res, next) {
 		clubTo 	: req.body.clubTo
 	};
 
-	let keys = Array.from(data);
-	let flag = false;
+	let keys = [data.playerID, data.scoutID, data.cost, data.dateOfSign, data.clubFrom, data.clubTo];
+	let flag = 0;
 
 	for (let i = 0; i < keys.length; i++)
-		if (!validator.checkValue(keys[i]))
-			flag = true;
+		if (validator.checkValue(keys[i]))
+			flag++;
 
-	if (flag) {
+	if (flag != keys.length) {
 		log.error('Request \'create\': Incorrect one or more parameters');
 		res.status(400).send({ status: "Error", message: "Incorrect one or more parameters",
 			parameters: "playerID, scoutID, cost, date, clubTo, clubFrom" });
