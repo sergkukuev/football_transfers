@@ -379,7 +379,7 @@ router.post('/transfers/create', function(req, res, next) {
 						if (statusCode1 == 200) {
 							coord.createTransfer(param, function(err2, statusCode2, result2) {
 								if (err2)
-									addToQueue("Transfers", data);
+									addToQueue("Transfers", param);
 									//return next(err2);
 								else {
 									res.status(statusCode2).send(result2);			
