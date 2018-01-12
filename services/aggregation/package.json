@@ -18,10 +18,11 @@
     "gulp-plumber": "^1.0.0",
     "jsesc": "^2.5.1",
     "mocha": "^3.0.2",
-    "nyc": "^8.1.0",
+    "nyc": "^8.4.0",
     "supertest": "^2.0.0"
   },
   "dependencies": {
+    "amqplib": "^0.5.2",
     "body-parser": "^1.13.3",
     "chai-http": "^3.0.0",
     "compression": "^1.5.2",
