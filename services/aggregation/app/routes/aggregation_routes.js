@@ -2,26 +2,74 @@ var express		= require('express'),
 	router 		= express.Router(),
 	log 		= require('./../../libs/log')(module),
 	coord		= require('./../coordinator/aggregation_coord'),
-	validator	= require('./../validators');//, 
-	//rabbitMQ 	= require('amqplib/callback_api');
+	validator	= require('./../validators'), 
+	rabbitMQ 	 = require('amqplib/callback_api');
 
 module.exports = function(app) {
 	app.use('/', router);
 };
 
 /////////////////////////////////// QUEVE ///////////////////////////////////
+var interval1 = 500, interval2 = 1000;
 
-/*setInterval(function() {
-	coord.liveTransferService(function(err, status) {
-		if (status == 200) {
-			receiveFromQueve(function(id) {
-				if (id) {
-					coord.
+function addToQueue(nameService, info) {
+	rabbitMQ.connect('amqp://localhost', function(err, conn) {
+		conn.createChannel(function(err, ch) {
+			let name = 'services';
+			let data = {
+				service: nameService,
+				param: info
+			}
+			ch.assertQueue(name, { durable: false });
+			ch.sendToQueue(name, Buffer.from(data), { persistent: true });
+			log.info("Operation service " + nameService + " push to queue [" + name +"]");
+		});
+		setTimeout(function() { conn.close() }, interval1);
+	});
+}
+
+function reveiceFromQueue(callback){
+	amqp.connect('amqp://localhost', function(err, conn){
+		conn.createChannel(function(err, ch){
+			var name = 'services';
+
+			ch.assertQueue(name, { durable: false });
+			ch.consume(name, function(data) {
+				let string = data.content.toString('utf-8');
+				let result = JSON.parse(string);
+				log.info("Operation service " + data.service + " pop to queue [" + name +"]");
+				callback(result);
+			}, {noAck : true});
+			setTimeout(function() { 
+				conn.close();
+				callback(null); 
+			}, interval1);
+		});
+	});
+}
+
+// create transfers (queue)
+setInterval(function(){
+	coord.liveTransferService(function(err, status){
+		if (status == 200){
+			receiveFromQueue(function(data){
+				if (data){
+					coord.createTransfer(param, function(err2, statusCode2, result2) {
+						if (err2)
+							addToQueue("Transfers", data);
+							//return next(err2);
+						else {
+							if (statusCode2 == 201)
+								res.status(statusCode2).send(result2);
+							else
+								res.status(statusCode2).send(result2);			
+						}
+					});
 				}
 			});
 		}
 	});
-});*/
+}, interval2);
 
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
 // get all players
@@ -311,12 +359,18 @@ router.post('/transfers/create', function(req, res, next) {
 		clubFrom	: undefined,
 	};
 
-	coord.getPlayer(param.playerID, function(err, statusCode, result) {
-		if (err)
-			return next(err);
+	let player_param = {
+		clubTo 	: param.clubTo,
+		date 	: param.date,
+		years 	: req.body.years
+	};
+
+	coord.updatePlayer(param.playerID, player_param, function(err, statusCode, result) {
+		if (err3)
+			return next(err3);
 		else {
 			if (statusCode == 200) {
-				let player = JSON.parse(result);
+				let player = JSON.parse(player);
 				param.clubFrom = player.club;
 				coord.incScoutDeals(param.scoutID, function(err1, statusCode1, result1) {
 					if (err1)
@@ -325,32 +379,19 @@ router.post('/transfers/create', function(req, res, next) {
 						if (statusCode1 == 200) {
 							coord.createTransfer(param, function(err2, statusCode2, result2) {
 								if (err2)
-									return next(err2);
+									addToQueue("Transfers", data);
+									//return next(err2);
 								else {
-									if (statusCode2 == 201) {
-										let player_param = {
-											clubTo 	: param.clubTo,
-											date 	: param.date,
-											years 	: req.body.years
-										};
-										coord.updatePlayer(param.playerID, player_param, function(err3, statusCode3, result3) {
-											if (err3)
-												return next(err3);
-											else {
-												if (statusCode3 == 200)
-													res.status(statusCode2).send(result2);
-												else
-													res.status(statusCode3).send(result3);
-											}
-										});
-									}
+									if (statusCode2 == 201)
+										res.status(statusCode2).send(result2);
 									else
 										res.status(statusCode2).send(result2);			
 								}
 							});
 						}
-						else
+						else {
 							res.status(statusCode1).send(result1);
+						}
 					}
 				});
 			}
@@ -396,7 +437,7 @@ router.put('/players/:id/contract/', function(req, res, next) {
 	};
 	coord.incScoutContracts(req.body.scoutID, function(err, statusCode, result) {
 		if (err) {
-			res.status(500).send({ status: "Error", message: "Scout service unavailable", action: "Rollback operation"});
+			res.status(503).send({ status: "Error", message: "Scout service unavailable", action: "Rollback operation"});
 			//return next (err);
 		}
 		else {
@@ -407,7 +448,7 @@ router.put('/players/:id/contract/', function(req, res, next) {
 							return next(err);
 						}
 						else {
-							res.status(500).send({ status: "Error", message: "Player service unavailable", action: "Rollback operation" });
+							res.status(503).send({ status: "Error", message: "Player service unavailable", action: "Rollback operation" });
 						}
 					});
 				}
