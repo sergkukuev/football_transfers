@@ -10,29 +10,27 @@ module.exports = function(app) {
 };
 
 /////////////////////////////////// QUEVE ///////////////////////////////////
-var interval1 = 500, interval2 = 1000;
+var interval1 = 500, interval2 = 2000; //20s
 
-function addToQueue(data) {
+function addToQueue(name, func, data) {
 	rabbitMQ.connect('amqp://guest:guest@localhost:5672', function(err, conn) {
 		conn.createChannel(function(err, ch) {
-			let name = 'transfers';
 			ch.assertQueue(name, { durable: false });
 			ch.sendToQueue(name, Buffer.from(JSON.stringify(data)), { persistent: true });
-			log.info("Operation \'createTransfer\' push to queue [" + name +"]");
+			log.info("Operation \'" + func + "\' push to queue [" + name +"]");
 		});
 		setTimeout(function() { conn.close() }, interval1);
 	});
 }
 
-function receiveFromQueue(callback){
+function receiveFromQueue(name, func, callback){
 	rabbitMQ.connect('amqp://guest:guest@localhost:5672', function(err, conn){
 		conn.createChannel(function(err, ch){
-			var name = 'transfers';
 			ch.assertQueue(name, { durable: false });
 			ch.consume(name, function(data) {
 				let string = data.content.toString('utf-8');
 				let result = JSON.parse(string);
-				log.info("Operation \'createTransfer\' pop to queue [" + name +"]");
+				log.info("Operation \'" + func + "\' pop to queue [" + name +"]");
 				callback(result);
 			}, {noAck : true});
 			setTimeout(function() { 
@@ -45,7 +43,7 @@ function receiveFromQueue(callback){
 
 // create transfers (queue)
 setInterval(function(){
-	coord.liveTransferService(function(trans_err, trans_code) {
+	/*coord.liveTransferService(function(trans_err, trans_code) {
 		coord.liveScoutService(function(scout_err, scout_code) {
 			coord.livePlayerService(function(player_err, player_code) {
 				if (trans_code == 200 && scout_code == 200 && player_code == 200) {
@@ -57,6 +55,30 @@ setInterval(function(){
 				}
 			});
 		});
+	});*/
+	coord.livePlayerService(function(err, code) {
+		if (code == 200) {
+			receiveFromQueue("players", "updatePlayer", function(data){
+				if (data)
+					updatePlayer(data);
+			});
+		}
+	});
+	coord.liveScoutService(function(err, code) {
+		if (code == 200) {
+			receiveFromQueue("scouts", "confirmScoutDeals", function(data){
+				if (data)
+					confirmScoutDeals(data);
+			});
+		}
+	});
+	coord.liveTransferService(function(err, code) {
+		if (code == 200) {
+			receiveFromQueue("transfers", "createTransfer", function(data){
+				if (data)
+					createTransfer(data);
+			});
+		}
 	});
 }, interval2);
 
@@ -316,7 +338,7 @@ router.post('/transfers/create', function(req, res, next) {
 		clubFrom	: undefined
 	};
 
-	coord.liveTransferService(function(trans_err, trans_code) {
+	/*coord.liveTransferService(function(trans_err, trans_code) {
 		coord.liveScoutService(function(scout_err, scout_code) {
 			coord.livePlayerService(function(player_err, player_code) {
 				if (trans_code != 200 || scout_code != 200 || player_code != 200) {
@@ -325,7 +347,7 @@ router.post('/transfers/create', function(req, res, next) {
 				}
 			});
 		});
-	});
+	});*/
 
 	let player_data = {
 		clubTo 	: data.clubTo,
@@ -334,20 +356,29 @@ router.post('/transfers/create', function(req, res, next) {
 	};
 
 	coord.updatePlayer(data.playerID, player_data, function(player_err, player_code, player_res) {
-		if (player_err)
-			return next(player_err);
+		if (player_err) { 
+			addToQueue("players", "updatePlayer", data);
+			res.status(202).send({status: "Accepted", message: "Operation \'updatePlayer\' accepted for processing"});
+			//return next(player_err);
+		}
 		else {
 			if (player_code == 200) {
 				let player = JSON.parse(player_res);
 				data.clubFrom = player.club;
 				coord.incScoutDeals(data.scoutID, function(scout_err, scout_code, scout_res) {
-					if (scout_err)
-						return next (scout_err);
+					if (scout_err) {
+						addToQueue("scouts", "confirmScoutDeals", data);
+						res.status(202).send({status: "Accepted", message: "Operation \'confirmScoutDeals\' accepted for processing"});
+						//return next (scout_err);
+					}
 					else {
 						if (scout_code == 200) {
 							coord.createTransfer(data, function(trans_err, trans_code, trans_res) {
-								if (trans_err)
-									return next(trans_err);
+								if (trans_err) {
+									addToQueue("transfers", "createTransfer", data);
+									res.status(202).send({status: "Accepted", message: "Operation \'createTransfer\' accepted for processing"});
+									//return next(trans_err);
+								}
 								else
 									res.status(trans_code).send(trans_res);
 							});
@@ -363,7 +394,7 @@ router.post('/transfers/create', function(req, res, next) {
 	});
 });
 
-function createTransfer(data) {
+function updatePlayer(data) {
 	let player_data = {
 		clubTo 	: data.clubTo,
 		date 	: data.date,
@@ -371,19 +402,19 @@ function createTransfer(data) {
 	};
 	coord.updatePlayer(data.playerID, player_data, function(player_err, player_code, player_res) {
 		if (player_err)
-			return next(player_err);
+			addToQueue("players", "updatePlayer", data);
 		else {
-			if (statusCode == 200) {
+			if (player_code == 200) {
 				let player = JSON.parse(player_res);
 				data.clubFrom = player.club;
 				coord.incScoutDeals(data.scoutID, function(scout_err, scout_code, scout_res) {
 					if (scout_err)
-						return next (scout_err);
+						addToQueue("scouts", "confirmScoutDeals", data);
 					else {
 						if (scout_code == 200) {
 							coord.createTransfer(data, function(trans_err, trans_code, trans_res) {
 								if (trans_err)
-									return next(trans_err);
+									addToQueue("transfers", "createTransfer", data);
 								else
 									log.debug("Status: " + trans_code + "\nResult: " + trans_res);
 							});
@@ -396,6 +427,34 @@ function createTransfer(data) {
 			else
 				log.debug("Status: " + player_code + "\nResult: " + player_res);
 		}
+	});
+}
+
+function confirmScoutDeals(data) {
+	coord.incScoutDeals(data.scoutID, function(scout_err, scout_code, scout_res) {
+		if (scout_err)
+			addToQueue("scouts", "confirmScoutDeals", data);
+		else {
+			if (scout_code == 200) {
+				coord.createTransfer(data, function(trans_err, trans_code, trans_res) {
+					if (trans_err)
+						addToQueue("transfers", "createTransfer", data);
+					else
+						log.debug("Status: " + trans_code + "\nResult: " + trans_res);
+				});
+			}
+			else
+				log.debug("Status: " + scout_code + "\nResult: " + scout_res);
+		}
+	});
+}
+
+function createTransfer(data){
+	coord.createTransfer(data, function(trans_err, trans_code, trans_res) {
+		if (trans_err)
+			addToQueue("transfers", "createTransfer", data);
+		else
+			log.debug("Status: " + trans_code + "\nResult: " + trans_res);
 	});
 }
 
