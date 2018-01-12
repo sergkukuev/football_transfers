@@ -39,7 +39,7 @@ router.get('/:id', function(req, res, next) {
 	const id = req.params.id;
 	players.getById(id, function(err, result) {
 		if (err) {
-			if (err.kind == "ObjectID") {
+			if (validator.checkValue(err.value)) {
 				log.error('Request \'getById\': Incorrect ID');
 				res.status(400).send({ status: "Error", message: "Incorrect ID"});
 			} 
@@ -107,7 +107,7 @@ router.put('/:id/contract/', function(req, res, next) {
 	else {
 		players.updateContractById(id, data, function(err, result) {
 			if (err) {
-				if (err.kind == "ObjectID") {
+				if (err.kind == "ObjectId") {
 					log.error('Request \'updateContractById\': Incorrect ID');
 					res.status(400).send({ status: "Error", message: "Incorrect ID"});
 				} 
@@ -123,7 +123,7 @@ router.put('/:id/contract/', function(req, res, next) {
 					res.status(200).send(/*{ status: "Ok", message: msg }*/result);
 				}
 				else {
-					log.debug('Request \'updateContractById\': Player not found');
+					log.error('Request \'updateContractById\': Player not found');
 					res.status(404).send({ status: "Error", message: "Player not found" });	
 				}
 			} 
@@ -141,26 +141,26 @@ router.put('/:id', function(req, res, next) {
 	};
 
 	if (!validator.checkValue(data.date)) {
-		log.debug('Request \'updateById\': Invalid parameter (date)');
+		log.error('Request \'updateById\': Invalid parameter (date)');
 		res.status(400).send({ status: "Error", message: "Invalid parameter (date)"});
 	}
 	else if (!validator.checkValue(data.years)) {
-		log.debug('Request \'updateById\': Invalid parameter (years)');
+		log.error('Request \'updateById\': Invalid parameter (years)');
 		res.status(400).send({ status: "Error", message: "Invalid parameter (years)"});
 	}
 	else if (!validator.checkValue(data.clubTo)) {
-		log.debug('Request \'updateById\': Invalid parameter (clubTo)');
+		log.error('Request \'updateById\': Invalid parameter (clubTo)');
 		res.status(400).send({ status: "Error", message: "Invalid parameter (clubTo)"});
 	}
 	else {
 		players.updateById(id, data, function(err, result) {
 			if (err) {
-				if (err.kind == "ObjectID") {
-					log.debug('Request \'updateById\': Incorrect ID');
+				if (err.kind == "ObjectId") {
+					log.error('Request \'updateById\': Incorrect ID');
 					res.status(400).send({ status: "Error", message: "Incorrect ID"});
 				} 
 				else { 
-					log.debug('Request \'updateById\': ' + err);
+					log.error('Request \'updateById\': ' + err);
 					res.status(400).send({ status: "Error", message: err});
 				}
 			}
@@ -170,7 +170,7 @@ router.put('/:id', function(req, res, next) {
 					res.status(200).send(result);
 				}
 				else {
-					log.debug('Request \'updateById\': Player not found');
+					log.error('Request \'updateById\': Player not found');
 					res.status(404).send({ status: "Error", message: "Player not found" });	
 				}
 			} 

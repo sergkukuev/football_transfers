@@ -38,7 +38,7 @@ router.get('/:id', function(req, res, next) {
 	const id = req.params.id;
 	scouts.getById(id, function(err, result) {
 		if (err) {
-			if (err.kind == "ObjectID") {
+			if (err.kind == "ObjectId") {
 				log.error('Request \'getById\': Incorrect ID');
 				res.status(400).send({ status: "Error", message: "Incorrect ID"});
 			} 
@@ -99,7 +99,7 @@ router.put('/:id/deals/confirm', function(req, res, next) {
 			};
 			scouts.updateById(id, data, function(err, result) {
 				if (err) {
-					if (err.kind == "ObjectID") {
+					if (err.kind == "ObjectId") {
 						log.error('Request \'confirmDeals\': Incorrect ID');
 						res.status(400).send({ status: "Error", message: "Incorrect ID"});
 					} 
@@ -115,7 +115,7 @@ router.put('/:id/deals/confirm', function(req, res, next) {
 						res.status(200).send(/*{ status: "Ok", message: msg }*/result);
 					}
 					else {
-						log.debug('Request \'confirmDeals\': Scout not found');
+						log.error('Request \'confirmDeals\': Scout not found');
 						res.status(404).send({ status: "Error", message: "Scout not found" });	
 					}
 				} 
@@ -139,7 +139,7 @@ router.put('/:id/deals/cancel', function(req, res, next) {
 			};
 			scouts.updateById(id, data, function(err, result) {
 				if (err) {
-					if (err.kind == "ObjectID") {
+					if (err.kind == "ObjectId") {
 						log.error('Request \'cancelDeals\': Incorrect ID');
 						res.status(400).send({ status: "Error", message: "Incorrect ID"});
 					} 
@@ -155,7 +155,7 @@ router.put('/:id/deals/cancel', function(req, res, next) {
 						res.status(200).send(/*{ status: "Ok", message: msg });*/result);
 					}
 					else {
-						log.debug('Request \'cancelDeals\': Scout not found');
+						log.error('Request \'cancelDeals\': Scout not found');
 						res.status(404).send({ status: "Error", message: "Scout not found" });	
 					}
 				} 
@@ -179,7 +179,7 @@ router.put('/:id/contracts/confirm', function(req, res, next) {
 			};
 			scouts.updateById(id, data, function(err, result) {
 				if (err) {
-					if (err.kind == "ObjectID") {
+					if (err.kind == "ObjectId") {
 						log.error('Request \'confirmContract\': Incorrect ID');
 						res.status(400).send({ status: "Error", message: "Incorrect ID"});
 					} 
@@ -195,7 +195,7 @@ router.put('/:id/contracts/confirm', function(req, res, next) {
 						res.status(200).send(/*{ status: "Ok", message: msg }*/result);
 					}
 					else {
-						log.debug('Request \'confirmContract\': Scout not found');
+						log.error('Request \'confirmContract\': Scout not found');
 						res.status(404).send({ status: "Error", message: "Scout not found" });	
 					}
 				} 
@@ -219,7 +219,7 @@ router.put('/:id/contracts/cancel', function(req, res, next) {
 			};
 			scouts.updateById(id, data, function(err, result) {
 				if (err) {
-					if (err.kind == "ObjectID") {
+					if (err.kind == "ObjectId") {
 						log.error('Request \'cancelContract\': Incorrect ID');
 						res.status(400).send({ status: "Error", message: "Incorrect ID"});
 					} 
@@ -235,7 +235,7 @@ router.put('/:id/contracts/cancel', function(req, res, next) {
 						res.status(200).send(/*{ status: "Ok", message: msg });*/result);
 					}
 					else {
-						log.debug('Request \'cancelContract\': Scout not found');
+						log.error('Request \'cancelContract\': Scout not found');
 						res.status(404).send({ status: "Error", message: "Scout not found" });	
 					}
 				} 

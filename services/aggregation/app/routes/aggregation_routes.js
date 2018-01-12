@@ -337,7 +337,7 @@ router.post('/transfers/create', function(req, res, next) {
 		if (player_err)
 			return next(player_err);
 		else {
-			if (statusCode == 200) {
+			if (player_code == 200) {
 				let player = JSON.parse(player_res);
 				data.clubFrom = player.club;
 				coord.incScoutDeals(data.scoutID, function(scout_err, scout_code, scout_res) {

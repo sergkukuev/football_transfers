@@ -37,7 +37,7 @@ router.get('/:id', function(req, res, next) {
 	const id = req.params.id;
 	transfers.getById(id, function(err, result) {
 		if (err) {
-			if (err.kind == "ObjectID") {
+			if (err.kind == "ObjectId") {
 				log.error('Request \'getById\': ID is invalid');
 				res.status(400).send({ status: "Error", message: "Bad request: ID is invalid"});
 			} 
@@ -69,14 +69,14 @@ router.put('/:id', function(req, res, next) {
 		clubFrom: req.body.clubFrom
 	};
 
-	let keys = Array.from(data);
-	let flag = false;
+	let keys = [data.cost, data.date, data.clubTo, data.clubFrom];
+	let flag = 0;
 
 	for (let i = 0; i < keys.length; i++)
-		if (!validator.checkValue(keys[i]))
-			flag = true;
+		if (validator.checkValue(keys[i]))
+			flag++;
 
-	if (flag) {
+	if (flag != keys.length) {
 		log.error('Request \'updateById\': Incorrect one or more parameters');
 		res.status(400).send({ status: "Error", message: "Incorrect one or more parameters", 
 			parameters: "cost, date, clubTo, clubFrom" });
@@ -84,7 +84,7 @@ router.put('/:id', function(req, res, next) {
 	else {
 		transfers.updateById(id, data, function(err, result) {
 			if (err) {
-				if (err.kind == "ObjectID") {
+				if (err.kind == "ObjectId") {
 					log.error('Request \'updateById\': Incorrect ID');
 					res.status(400).send({ status: "Error", message: "Incorrect ID"});
 				} 
@@ -162,12 +162,12 @@ router.delete('/', function(req, res, next) {
 		}
 		else {	
 			log.info("Request \'delete\': All data was deleted");
-			res.status(200).send({status: "Error", message: "All data was deleted"});
+			res.status(200).send({status: "Ok", message: "All data was deleted"});
 		}
 	});
 });
 
-// delete all data
+// delete data by id
 router.delete('/:id', function(req, res, next) {
 	const id = req.params.id;
 	console.log(id);
