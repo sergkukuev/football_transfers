@@ -28,7 +28,6 @@ function receiveFromQueue(callback){
 	rabbitMQ.connect('amqp://guest:guest@localhost:5672', function(err, conn){
 		conn.createChannel(function(err, ch){
 			var name = 'transfers';
-
 			ch.assertQueue(name, { durable: false });
 			ch.consume(name, function(data) {
 				let string = data.content.toString('utf-8');
@@ -46,67 +45,19 @@ function receiveFromQueue(callback){
 
 // create transfers (queue)
 setInterval(function(){
-	coord.liveTransferService(function(err, status) {
-		coord.liveScoutService(function(err1, status1) {
-			coord.livePlayerService(function(err2, status2) {
-				if (status == 200 && status1 == 200 && status2 == 200) {
-					receiveFromQueue(function(param){
-						if (param) {
-							let player_param = {
-								clubTo 	: param.clubTo,
-								date 	: param.date,
-								years 	: param.years
-							};
-							coord.updatePlayer(param.playerID, player_param, function(err, statusCode, result) {
-								if (err)
-									return next(err);
-								else {
-									if (statusCode == 200) {
-										let player = JSON.parse(result);
-										param.clubFrom = player.club;
-										coord.incScoutDeals(param.scoutID, function(err1, statusCode1, result1) {
-											if (err1)
-												return next (err1);
-											else {
-												if (statusCode1 == 200) {
-													coord.createTransfer(param, function(err2, statusCode2, result2) {
-														if (err2) {
-															return next(err2);
-														}
-														else {
-															log.debug("Status: " + statusCode2 + "\nResult: " + result2);			
-														}
-													});
-												}
-												else {
-													log.debug("Status: " + statusCode1 + "\nResult: " + result1);
-												}
-											}
-										});
-									}
-									else
-										log.debug("Status: " + statusCode + "\nResult: " + result);
-								}
-							});
+	coord.liveTransferService(function(trans_err, trans_code) {
+		coord.liveScoutService(function(scout_err, scout_code) {
+			coord.livePlayerService(function(player_err, player_code) {
+				if (trans_code == 200 && scout_code == 200 && player_code == 200) {
+					receiveFromQueue(function(data){
+						if (data) {
+							createTransfer(data);
 						}
 					});
 				}
 			});
 		});
 	});
-		/*if (status == 200){
-			receiveFromQueue(function(data){
-				if (data){ 
-					coord.createTransfer(data.param, function(err2, statusCode2, result2) {
-						if (err2){
-							addToQueue("Transfers", data.param);
-						}
-						else
-							log.info("Request \'createTransfer\': completed.\n\nStatus: " + statusCode2 + "\nResult:\n" + result2);
-					});
-				}
-			});
-		}*/
 }, interval2);
 
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
@@ -187,9 +138,97 @@ router.get('/transfers', function(req, res, next) {
 });
 
 // get transfer by id (деградация функциональности)
+function getTransfer(transfer, player, scout) {
+	let item = {
+		"ID"	: transfer.ID,
+		"Player" : {
+			"Name"		: player.name,
+			"Club"		: player.club,
+			"Age"		: player.age,
+			"Rating"	: player.rating,
+			"Contract"	: {
+				"StartDate"	: player.contract.date,
+				"Years"		: player.contract.years
+			}
+		},
+		"Scout"	: {
+			"Name"		: scout.name,
+			"Deals"		: scout.amount.deals,
+			"Contracts"	: scout.amount.contracts,
+			"Rank"		: scout.rank
+		},
+		"Cost"		: transfer.cost,
+		"DateOfSign": transfer.dateOfSign,
+		"Club"	: {
+			"To"	: transfer.club.to,
+			"From"	: transfer.club.from
+		}
+	};
+	return item;
+}
+
+function getTransferWithoutPlayer(transfer, insteadPlayer, scout) {
+	let item = {
+		"ID"	: transfer.ID,
+		"Player" : insteadPlayer,
+		"Scout"	: {
+			"Name"		: scout.name,
+			"Deals"		: scout.amount.deals,
+			"Contracts"	: scout.amount.contracts,
+			"Rank"		: scout.rank
+		},
+		"Cost"		: transfer.cost,
+		"DateOfSign": transfer.dateOfSign,
+		"Club"	: {
+			"To"	: transfer.club.to,
+			"From"	: transfer.club.from
+		}
+	};
+	return item;
+}
+
+function getTransferWithoutScout(transfer, player, insteadScout) {
+	let item = {
+		"ID"	: transfer.ID,
+		"Player" : {
+			"Name"		: player.name,
+			"Club"		: player.club,
+			"Age"		: player.age,
+			"Rating"	: player.rating,
+			"Contract"	: {
+				"StartDate"	: player.contract.date,
+				"Years"		: player.contract.years
+			}
+		},
+		"Scout"	: insteadScout,
+		"Cost"		: transfer.cost,
+		"DateOfSign": transfer.dateOfSign,
+		"Club"	: {
+			"To"	: transfer.club.to,
+			"From"	: transfer.club.from
+		}
+	};
+	return item;
+}
+
+function getTransferWithoutBoth(transfer, insteadPlayer, insteadScout) {
+	let item = {
+		"ID"	: transfer.ID,
+		"Player" : insteadPlayer,
+		"Scout"	: insteadScout,
+		"Cost"		: transfer.cost,
+		"DateOfSign": transfer.dateOfSign,
+		"Club"	: {
+			"To"	: transfer.club.to,
+			"From"	: transfer.club.from
+		}
+	};
+	return item;
+}
+
 router.get('/transfers/:id', function(req, res, next) {
-	coord.getTransfer(req.params.id, function(err, statusCode, result) {
-		if (err) {
+	coord.getTransfer(req.params.id, function(trans_err, trans_code, trans_res) {
+		if (trans_err) {
 			let item = {
 				"ID"		: req.params.id,
 				"PlayerID" 	: 'undefined',
@@ -204,191 +243,70 @@ router.get('/transfers/:id', function(req, res, next) {
 			res.status(500).send(item);
 		}
 		else {
-			if (statusCode == 200) {
-				let transfer = JSON.parse(result);
-				coord.getPlayer(transfer.playerID, function(err2, statusCode2, result2) {
-					coord.getScout(transfer.scoutID, function(err3, statusCode3, result3) {
-						let player = JSON.parse(result2);
-						let scout = JSON.parse(result3);
+			if (trans_code == 200) {
+				let transfer = JSON.parse(trans_res);
+				coord.getPlayer(transfer.playerID, function(player_err, player_code, player_res) {
+					coord.getScout(transfer.scoutID, function(scout_err, scout_code, scout_res) {
+						let player = JSON.parse(player_res);
+						let scout = JSON.parse(scout_res);
 						// Оба сервиса недоступны
-						if (err2 && err3)	
-							res.status(statusCode).send(transfer);
+						if (player_err && scout_err)	
+							res.status(trans_code).send(transfer);
 						// Недоступен сервис игроков
-						else if (err2 && !err3) { 
-							if (statusCode3 == 200) {
-								let item = {
-									"ID"	: transfer.ID,
-									"PlayerID" : transfer.playerID,
-									"Scout"	: {
-										"Name"		: scout.name,
-										"Deals"		: scout.amount.deals,
-										"Contracts"	: scout.amount.contracts,
-										"Rank"		: scout.rank
-									},
-									"Cost"		: transfer.cost,
-									"DateOfSign": transfer.dateOfSign,
-									"Club"	: {
-										"To"	: transfer.club.to,
-										"From"	: transfer.club.from
-									}
-								};
-								res.status(statusCode).send(item);
+						else if (player_err && !scout_err) { 
+							if (scout_code == 200) {
+								let item = getTransferWithoutPlayer(transfer, transfer.playerID, scout); 
+								res.status(trans_code).send(item);
 							}
 							else {
-								let item = {
-									"ID"	: transfer.ID,
-									"PlayerID" : transfer.playerID,
-									"Scout"	: "Not Found",
-									"Cost"		: transfer.cost,
-									"DateOfSign": transfer.dateOfSign,
-									"Club"	: {
-										"To"	: transfer.club.to,
-										"From"	: transfer.club.from
-									}
-								};
-								res.status(statusCode).send(item);
+								let item = getTransferWithoutBoth(transfer, transfer.playerID, "Not Found");
+								res.status(trans_code).send(item);
 							}
 						}
 						// Недоступен сервис скаутов
-						else if (!err2 && err3) {
-							if (statusCode2 == 200) {
-								let item = {
-									"ID"	: transfer.ID,
-									"Player": {
-										"Name"		: player.name,
-										"Club"		: player.club,
-										"Age"		: player.age,
-										"Rating"	: player.rating,
-										"Contract"	: {
-											"StartDate"	: player.contract.date,
-											"Years"		: player.contract.years
-										}
-									},
-									"ScoutID"	: transfer.scoutID,  
-									"Cost"		: transfer.cost,
-									"DateOfSign": transfer.dateOfSign,
-									"Club"	: {
-										"To"	: transfer.club.to,
-										"From"	: transfer.club.from
-									}
-								};
-								res.status(statusCode).send(item);
+						else if (!player_err && scout_err) {
+							if (player_code == 200) {
+								let item = getTransferWithoutScout(transfer, player, transfer.scoutID); 
+								res.status(trans_code).send(item);
 							}
 							else {
-								let item = {
-									"ID"		: transfer.ID,
-									"PlayerID" 	: "Not Found",
-									"ScoutID"	: transfer.scoutID,
-									"Cost"		: transfer.cost,
-									"DateOfSign": transfer.dateOfSign,
-									"Club"	: {
-										"To"	: transfer.club.to,
-										"From"	: transfer.club.from
-									}
-								};
-								res.status(statusCode).send(item);
+								let item = getTransferWithoutBoth(transfer, "Not Found", transfer.scoutID); 
+								res.status(trans_code).send(item);
 							}
 						}
 						// Все сервисы доступны
 						else {
-							if (statusCode2 == 200 && statusCode3 == 200) {
-								let item = {
-									"ID"	: transfer.ID,
-									"Player" : {
-										"Name"		: player.name,
-										"Club"		: player.club,
-										"Age"		: player.age,
-										"Rating"	: player.rating,
-										"Contract"	: {
-											"StartDate"	: player.contract.date,
-											"Years"		: player.contract.years
-										}
-									},
-									"Scout"	: {
-										"Name"		: scout.name,
-										"Deals"		: scout.amount.deals,
-										"Contracts"	: scout.amount.contracts,
-										"Rank"		: scout.rank
-									},
-									"Cost"		: transfer.cost,
-									"DateOfSign": transfer.dateOfSign,
-									"Club"	: {
-										"To"	: transfer.club.to,
-										"From"	: transfer.club.from
-									}
-								};
-								res.status(statusCode).send(item);
+							if (player_code == 200 && scout_code == 200) {
+								let item = getTransfer(transfer, player, scout);
+								res.status(trans_code).send(item);
 							}
-							else if (statusCode2 != 200) {
-								let item = {
-									"ID"	: transfer.ID,
-									"Player" :"Not Found",
-									"Scout"	: {
-										"Name"		: scout.name,
-										"Deals"		: scout.amount.deals,
-										"Contracts"	: scout.amount.contracts,
-										"Rank"		: scout.rank
-									},
-									"Cost"		: transfer.cost,
-									"DateOfSign": transfer.dateOfSign,
-									"Club"	: {
-										"To"	: transfer.club.to,
-										"From"	: transfer.club.from
-									}
-								};
-								res.status(statusCode).send(item);
+							else if (player_code != 200) {
+								let item  = getTransferWithoutPlayer(transfer, "Not Found", scout);
+								res.status(trans_code).send(item);
 							}
-							else if (statusCode3 != 200) {
-								let item = {
-									"ID"	: transfer.ID,
-									"Player" : {
-										"Name"		: player.name,
-										"Club"		: player.club,
-										"Age"		: player.age,
-										"Rating"	: player.rating,
-										"Contract"	: {
-											"StartDate"	: player.contract.date,
-											"Years"		: player.contract.years
-										}
-									},
-									"Scout"	: "Not Found",
-									"Cost"		: transfer.cost,
-									"DateOfSign": transfer.dateOfSign,
-									"Club"	: {
-										"To"	: transfer.club.to,
-										"From"	: transfer.club.from
-									}
-								};
-								res.status(statusCode).send(item);
+							else if (scout_code != 200) {
+								let item = getTransferWithoutScout(transfer, player, "Not Found");
+								res.status(trans_code).send(item);
 							}
 							else {
-								let item = {
-									"ID"	: transfer.ID,
-									"Player" : "Not Found",
-									"Scout"	: "Not Found",
-									"Cost"		: transfer.cost,
-									"DateOfSign": transfer.dateOfSign,
-									"Club"	: {
-										"To"	: transfer.club.to,
-										"From"	: transfer.club.from
-									}
-								};
-								res.status(statusCode).send(item);
+								let item = getTransferWithoutBoth(transfer, "Not Found", "Not Found");
+								res.status(trans_code).send(item);
 							}
 						}
 					});
 				});
 			}
 			else
-				res.status(statusCode).send(result);
+				res.status(trans_code).send(trans_res);
 		}
 	});
 });
 
+
 /////////////////////////////////// POST REQUEST ///////////////////////////////////
 // create transfer (класть операцию в очередь)
 router.post('/transfers/create', function(req, res, next) {
-	const param = {
+	const data = {
 		playerID 	: req.body.playerID,
 		scoutID 	: req.body.scoutID,
 		cost 		: req.body.cost,
@@ -398,55 +316,88 @@ router.post('/transfers/create', function(req, res, next) {
 		clubFrom	: undefined
 	};
 
-	let player_param = {
-		clubTo 	: param.clubTo,
-		date 	: param.date,
-		years 	: param.years
-	};
-
-	coord.liveTransferService(function(err, status) {
-		coord.liveScoutService(function(err1, status1) {
-			coord.livePlayerService(function(err2, status2) {
-				if (status != 200 || status1 != 200 || status2 != 200) {
-					addToQueue(param);
+	coord.liveTransferService(function(trans_err, trans_code) {
+		coord.liveScoutService(function(scout_err, scout_code) {
+			coord.livePlayerService(function(player_err, player_code) {
+				if (trans_code != 200 || scout_code != 200 || player_code != 200) {
+					addToQueue(data);
 					res.status(202).send({status: "Accepted", message: "Operation \'createTransfer\' accepted for processing"});
 				}
 			});
 		});
 	});
 
-	coord.updatePlayer(param.playerID, player_param, function(err, statusCode, result) {
-		if (err)
-			return next(err);
+	let player_data = {
+		clubTo 	: data.clubTo,
+		date 	: data.date,
+		years 	: data.years
+	};
+
+	coord.updatePlayer(data.playerID, player_data, function(player_err, player_code, player_res) {
+		if (player_err)
+			return next(player_err);
 		else {
 			if (statusCode == 200) {
-				let player = JSON.parse(result);
-				param.clubFrom = player.club;
-				coord.incScoutDeals(param.scoutID, function(err1, statusCode1, result1) {
-					if (err1)
-						return next (err1);
+				let player = JSON.parse(player_res);
+				data.clubFrom = player.club;
+				coord.incScoutDeals(data.scoutID, function(scout_err, scout_code, scout_res) {
+					if (scout_err)
+						return next (scout_err);
 					else {
-						if (statusCode1 == 200) {
-							coord.createTransfer(param, function(err2, statusCode2, result2) {
-								if (err2) {
-									return next(err2);
-								}
-								else {
-									res.status(statusCode2).send(result2);			
-								}
+						if (scout_code == 200) {
+							coord.createTransfer(data, function(trans_err, trans_code, trans_res) {
+								if (trans_err)
+									return next(trans_err);
+								else
+									res.status(trans_code).send(trans_res);
 							});
 						}
-						else {
-							res.status(statusCode1).send(result1);
-						}
+						else
+							res.status(scout_code).send(scout_res);
 					}
 				});
 			}
 			else
-				res.status(statusCode).send(result);
+				res.status(player_code).send(player_res);
 		}
 	});
 });
+
+function createTransfer(data) {
+	let player_data = {
+		clubTo 	: data.clubTo,
+		date 	: data.date,
+		years 	: data.years
+	};
+	coord.updatePlayer(data.playerID, player_data, function(player_err, player_code, player_res) {
+		if (player_err)
+			return next(player_err);
+		else {
+			if (statusCode == 200) {
+				let player = JSON.parse(player_res);
+				data.clubFrom = player.club;
+				coord.incScoutDeals(data.scoutID, function(scout_err, scout_code, scout_res) {
+					if (scout_err)
+						return next (scout_err);
+					else {
+						if (scout_code == 200) {
+							coord.createTransfer(data, function(trans_err, trans_code, trans_res) {
+								if (trans_err)
+									return next(trans_err);
+								else
+									log.debug("Status: " + trans_code + "\nResult: " + trans_res);
+							});
+						}
+						else
+							log.debug("Status: " + scout_code + "\nResult: " + scout_res);
+					}
+				});
+			}
+			else
+				log.debug("Status: " + player_code + "\nResult: " + player_res);
+		}
+	});
+}
 
 /////////////////////////////////// PUT REQUEST ///////////////////////////////////
 // update transfer info
@@ -482,32 +433,32 @@ router.put('/players/:id/contract/', function(req, res, next) {
 		date: req.body.date,
 		years: req.body.years
 	};
-	coord.incScoutContracts(req.body.scoutID, function(err, statusCode, result) {
+	coord.incScoutContracts(req.body.scoutID, function(err, code, result) {
 		if (err) {
 			res.status(503).send({ status: "Error", message: "Scout service unavailable", action: "Rollback operation"});
 			//return next (err);
 		}
 		else {
-			coord.updatePlayerContract(req.params.id, data, function(err1, statusCode1, result1) {
-				if (err1) {
-					coord.decScoutContracts(req.body.scoutID, function(err2, statusCode2, result2) {
-						if (err) {
-							return next(err);
-						}
-						else {
-							res.status(503).send({ status: "Error", message: "Player service unavailable", action: "Rollback operation" });
-						}
-					});
-				}
-				else {
-					if (statusCode1 == 200) {
-						res.status(statusCode1).send({status: "Ok", message: "Contract player \'" + req.params.id + "\' was updated"});
+			if (result) {
+				coord.updatePlayerContract(req.params.id, data, function(player_err, player_code, player_res) {
+					if (player_err) {
+						coord.decScoutContracts(req.body.scoutID, function(scout_err, scout_code, scout_res) {
+							if (err)
+								return next(err);
+							else
+								res.status(503).send({ status: "Error", message: "Player service unavailable", action: "Rollback operation" });
+						});
 					}
 					else {
-						res.status(statusCode1).send(result1);
+						if (player_code == 200)
+							res.status(player_code).send({status: "Ok", message: "Contract player \'" + req.params.id + "\' was updated"});
+						else
+							res.status(player_code).send(player_res);
 					}
-				}
-			});
+				});
+			}
+			else
+				res.status(code).send(result);
 		}
 	});
 });
