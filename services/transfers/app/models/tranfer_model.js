@@ -3,8 +3,8 @@ var mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 
 let Transfer = new Schema({
-	PlayerID: Schema.Types.ObjectId,
-	ScoutID: Schema.Types.ObjectId,
+	playerID: Schema.Types.ObjectId,
+	scoutID: Schema.Types.ObjectId,
 	cost: {
 		type: Number,
 		min: 0,
@@ -15,10 +15,7 @@ let Transfer = new Schema({
 		default: Date.now()
 	},
 	club: {
-		from: {
-			type: String,
-			default: "NoClub"
-		},
+		from: String,
 		to: {
 			type: String,
 			default: "NoClub"
@@ -26,24 +23,22 @@ let Transfer = new Schema({
 	}
 });
 
-Transfer.virtual('date')
-	.get(function() {
-		return this._id.getTimestamp();
-	});
+Transfer.virtual('date').get(function() {
+	return this._id.getTimestamp();
+});
 
-Transfer.statics.createTransfer = function(info, callback) {
+Transfer.statics.create = function(info, callback) {
 	let object = Object(info);
 	const check = checkRequiredFields(Object.keys(object));
+	
 	if (check) {
 		let transfer = createTransfer(object);
 		if (transfer) {
 			return transfer.save(function (err, result) {
 				if (err)
 					return callback(err, null);
-				else {
-					let res = getTransfer(result);
-					return callback(null, res);
-				}
+				else 
+					return callback(null, getTransfer(result));
 			});
 		} else
 			return callback("Incorrect transfer fields", null);
@@ -51,10 +46,22 @@ Transfer.statics.createTransfer = function(info, callback) {
 		return callback("Not found required fields", null);
 };
 
-Transfer.statics.updateTransfer = function(id, data, callback) {
+Transfer.statics.delete = function(callback) {
+	this.remove({}, function(err){
+		err ? callback(err, null) : callback(null, null);
+	});
+}
+
+Transfer.statics.deleteById = function(id, callback) {
+	this.findByIdAndRemove(id, function(err, transfer) {
+		err ? callback(err, null) : (transfer ? callback(null, "Ok") : callback(null, null));
+	});
+}
+
+Transfer.statics.updateById = function(id, data, callback) {
 	return this.findByIdAndUpdate(id, {
 		cost: data.cost,
-		dateOfSign: data.dateOfSign,
+		dateOfSign: data.date,
 		club: {
 			from: data.clubFrom, 
 			to: data.clubTo
@@ -64,18 +71,17 @@ Transfer.statics.updateTransfer = function(id, data, callback) {
 	});
 };
 
-
-Transfer.statics.getTransfers = function(page, count, callback){
-	return this.find( function(err, transfers) {
+Transfer.statics.getAll = function(page, count, callback){
+	return this.find(function(err, transfers) {
 		if (err)
 			callback(err, null);
 		else {
 			if (transfers) {
 				let result = [];
-				for (let i = 0; i < transfers.length; i++){
-	        		let item = getTransfer(transfers[i]);
-	        		result[i] = item;
-	      		}
+				for (let i = 0; i < transfers.length; i++) {
+					let item = getTransfer(transfers[i]);
+	        		result[i] = item;	
+				}
 	      		callback(null, result);
 			} else
 	      		callback(null, null);
@@ -83,7 +89,7 @@ Transfer.statics.getTransfers = function(page, count, callback){
   	}).skip(page * count).limit(count); 
 };
 
-Transfer.statics.getTransfer = function(id, callback) {
+Transfer.statics.getById = function(id, callback) {
 	return this.findById(id, function(err, result) {
 		err ? callback(err, null) : (result ? callback(null, getTransfer(result)) : callback(null, null));
 	});
@@ -106,28 +112,28 @@ function getTransfer(object) {
 
 function createTransfer(object) {
 	const model = mongoose.model("Transfer");
-	let item = new model();
+	let result = new model();
 	let error = false;
 
 	for (key in object) {
 		switch (key) {
-			case "PlayerID":
-				item.playerID = mongoose.Types.ObjectId(object[key]);
+			case "playerID":
+				result.playerID = mongoose.Types.ObjectId(object[key]);
 				break;
-			case "ScoutID":
-				item.scoutID = mongoose.Types.ObjectId(object[key]);
+			case "scoutID":
+				result.scoutID = mongoose.Types.ObjectId(object[key]);
 				break;
-			case "Cost":
-				item.cost = new Number(object[key]);
+			case "cost":
+				result.cost = new Number(object[key]);
 				break;
-			case "ClubTo":
-				item.club.to = new String(object[key]);
+			case "clubTo":
+				result.club.to = new String(object[key]);
 				break;
-			case "ClubFrom":
-				item.club.from = new String(object[key]);
+			case "clubFrom":
+				result.club.from = new String(object[key]);
 				break;
-			case "DateOfSign":
-				item.dateOfSign = new Date(object[key]);
+			case "dateOfSign":
+				result.dateOfSign = new Date(object[key]);
 				break;
 			default:
 				error = true;
@@ -137,12 +143,12 @@ function createTransfer(object) {
 	if (error)
 		return null;
 	else
-		return item;
+		return result;
 }
 
 function checkRequiredFields(objectKeys){
 	const keys = Array.from(objectKeys);
-	const requiredField = ["PlayerID", "ScoutID", "Cost", "DateOfSign", "ClubFrom", "ClubTo"];
+	const requiredField = ["playerID", "scoutID", "clubFrom"];
 	let flag = 0;
 	
 	for(let i = 0; i < keys.length; i++ )

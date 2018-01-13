@@ -41,11 +41,20 @@ Player.virtual('date').get(function() {
 		return this._id.getTimestamp();
 	});
 
-Player.statics.createPlayer = function(player, callback) {
+Player.statics.create = function(player, callback) {
 	return player.save(callback);
 }
 
-Player.statics.getPlayers = function(page = 0, count = 15, callback) {
+Player.statics.delete = function(callback) {
+	this.remove({}, function(err){
+		if (err)
+			callback(err, null);
+		else
+			callback(null, null);
+	});
+}
+
+Player.statics.getAll = function(page = 0, count = 15, callback) {
 	return this.find(function(err, players) {
 		if (err)
 			callback(err, null);
@@ -62,13 +71,13 @@ Player.statics.getPlayers = function(page = 0, count = 15, callback) {
 	}).skip(page * count).limit(count);
 }
 
-Player.statics.getPlayer = function(id, callback) {
+Player.statics.getById = function(id, callback) {
 	return this.findById(id, function(err, player) {
 		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
 	});
 }
 
-Player.statics.updatePlayer = function(id, data, callback) {
+Player.statics.updateById = function(id, data, callback) {
 	return this.findByIdAndUpdate(id, { 
 			club: data.clubTo,
 			contract: {
@@ -80,8 +89,13 @@ Player.statics.updatePlayer = function(id, data, callback) {
 	});
 }
 
-Player.statics.updateContract = function(id, data, callback) {
-	return this.findByIdAndUpdate(id, { contract: { date: data.date, years: data.years } }, function(err, player) {
+Player.statics.updateContractById = function(id, data, callback) {
+	return this.findByIdAndUpdate(id, {
+			contract: { 
+				date: data.date,
+				years: data.years
+			} 
+		}, function(err, player) {
 		err ? callback(err, null) : (player ? callback(null, getPlayerInfo(player)) : callback(null, null));
 	});
 }

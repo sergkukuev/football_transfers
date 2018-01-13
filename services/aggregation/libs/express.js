@@ -28,7 +28,7 @@ module.exports = function(app, config) {
 
 // 404
   app.use(function (req, res, next) {
-    var err = new Error('Not Found');
+    var err = new Error('Route not found');
     err.status = 404;
     next(err);
   });
@@ -37,20 +37,18 @@ module.exports = function(app, config) {
   if(app.get('env') === 'development'){
     app.use(function (err, req, res, next) {
       res.status(err.status || 500);
-      res.send({
-        message: err.message,
-        error: err,
-        title: 'error'
+      res.render('error', {
+      	status : "Error",
+        message: err.message
       });
     });
   }
 
   app.use(function (err, req, res, next) {
     res.status(err.status || 500);
-      res.send({
-        message: err.message,
-        error: {},
-        title: 'error'
+    res.render('error', {
+      	status: "Error",
+        message: err.message
       });
   });
 

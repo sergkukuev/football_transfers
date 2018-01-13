@@ -27,12 +27,18 @@ Scout.virtual('date').get(function() {
 		return this._id.getTimestamp();
 	});
 
-Scout.statics.createScout = function(scout, callback) {
+Scout.statics.create = function(scout, callback) {
 	scout.rank = calculateRank(scout.amount.deals);
 	return scout.save(callback);
 }
 
-Scout.statics.getScouts = function(page = 0, count = 10, callback) {
+Scout.statics.delete = function(callback) {
+	this.remove({}, function(err){
+		err ? callback(err, null) : callback(null, null);
+	});
+}
+
+Scout.statics.getAll = function(page = 0, count = 15, callback) {
 	return this.find(function(err, scouts) {
 		if (err)
 			callback(err, null);
@@ -49,14 +55,13 @@ Scout.statics.getScouts = function(page = 0, count = 10, callback) {
 	}).skip(page * count).limit(count);
 }
 
-Scout.statics.getScout = function(id, callback) {
+Scout.statics.getById = function(id, callback) {
 	return this.findById(id, function(err, scout) {
 		err ? callback(err, null) : (scout ? callback(null, getScoutInfo(scout)) : callback(null, null));
 	});
 }
 
-Scout.statics.updateScout = function(id, data, callback) {
-	console.log(data);
+Scout.statics.updateById = function(id, data, callback) {
 	return this.findByIdAndUpdate(id, { 
 			amount:  {
 				deals: data.deal,

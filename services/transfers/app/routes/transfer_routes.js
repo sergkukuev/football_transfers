@@ -9,6 +9,10 @@ module.exports = function(app) {
 	app.use('/transfers', router);
 };
 
+router.head('/live', function(req, res, next) {
+	res.status(200).send({ status: "Ok", message: "I'm a live" });
+});
+
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
 // get all transfers
 router.get('/', function(req, res, next) {
@@ -16,13 +20,13 @@ router.get('/', function(req, res, next) {
 	let count = validator.checkInt(req.query.count);
 	page = validator.checkValue(page) ? page : 0;
 	count = validator.checkValue(count) ? count : 0;
-	transfers.getTransfers(page, count, function(err, result) {
+	transfers.getAll(page, count, function(err, result) {
 		if (err) {
-			log.debug('Request \'getTransfers\': ' + err);
-			res.status(400).send({ "message": err});
+			log.error('Request \'getAll\': ' + err);
+			res.status(400).send({ status: "Error", message: err});
 		}
 		else {
-			log.info('Request \'getTransfers\' was successfully executed');
+			log.info('Request \'getAll\': completed');
 			res.status(200).send(result);
 		}
 	});
@@ -31,69 +35,74 @@ router.get('/', function(req, res, next) {
 // get transfer by id
 router.get('/:id', function(req, res, next) {
 	const id = req.params.id;
-	if (!validator.checkValue(id)) {
-		log.debug('Request \'getTransfer\': ID is undefined');
-		res.status(400).send({ "message": "Bad request: ID is undefined"});
-	}
-	else {
-		transfers.getTransfer(id, function(err, result) {
-			if (err) {
-				if (err.kind == "ObjectID") {
-					log.debug('Request \'getTransfer\': ID is invalid');
-					res.status(400).send({ "message": "Bad request: ID is invalid"});
-				} 
-				else { 
-					log.debug('Request \'getTransfer\': Transfer not found');
-					res.status(400).send({ "message": "Transfer not found"});
-				}
+	transfers.getById(id, function(err, result) {
+		if (err) {
+			if (err.kind == "ObjectId") {
+				log.error('Request \'getById\': ID is invalid');
+				res.status(400).send({ status: "Error", message: "Bad request: ID is invalid"});
+			} 
+			else { 
+				log.error('Request \'getById\': ' + err);
+				res.status(400).send({ status: "Error", message: err});
 			}
-			else {
-				log.info('Request \'getTransfer\' was successfully executed');
+		}
+		else {
+			if (result) {
+				log.info('Request \'getById\': completed');
 				res.status(200).send(result); 
 			}
-		});
-	}
+			else {
+				log.error('Request \'getById\': Transfer not found');
+				res.status(404).send({ status: "Error", message: "Transfer not found"});	
+			}
+		}
+	});
 });
+
 /////////////////////////////////// PUT REQUEST ///////////////////////////////////
 router.put('/:id', function(req, res, next) {
 	const id = req.params.id;
-	let item = {
-		cost: parseInt(req.body.Cost, 10),
-		dateOfSign: validator.parseDate(req.body.DateOfSign),
-		clubTo: req.body.ClubTo,
-		clubFrom: req.body.ClubFrom
+	let data = {
+		cost: validator.checkInt(req.body.cost),
+		date: validator.parseDate(req.body.date),
+		clubTo: req.body.clubTo,
+		clubFrom: req.body.clubFrom
 	};
 
-	let keys = Array.from(item);
-	let flag = false;
+	let keys = [data.cost, data.date, data.clubTo, data.clubFrom];
+	let flag = 0;
 
 	for (let i = 0; i < keys.length; i++)
-		if (!validator.checkValue(keys[i]))
-			flag = true;
+		if (validator.checkValue(keys[i]))
+			flag++;
 
-	if (!validator.checkValue(id)) {
-		log.debug('Request \'updateTransfer\': ID is undefined');
-		res.status(400).send({ "message": "Bad request: ID is undefined"});
-	}
-	else if (flag) {
-		log.debug('Request \'updateTransfer\': incorrect fields');
-		res.status(400).send({ "message": "Bad request: incorrect fields" });
-	} else {
-		transfers.updateTransfer(id, item, function(err, result) {
+	if (flag != keys.length) {
+		log.error('Request \'updateById\': Incorrect one or more parameters');
+		res.status(400).send({ status: "Error", message: "Incorrect one or more parameters", 
+			parameters: "cost, date, clubTo, clubFrom" });
+	} 
+	else {
+		transfers.updateById(id, data, function(err, result) {
 			if (err) {
-				log.debug('Request \'updateTransfer\': ' + err);
-				next(err);
+				if (err.kind == "ObjectId") {
+					log.error('Request \'updateById\': Incorrect ID');
+					res.status(400).send({ status: "Error", message: "Incorrect ID"});
+				} 
+				else { 
+					log.error('Request \'updateById\': ' + err);
+					res.status(400).send({ status: "Error", message: err});
+				}
 			}
 			else {
 				if (result) {
-					log.debug('Request \'updateTransfer\' was successfully executed');
-					res.status(201).send(result);	
+					log.error('Request \'updateById\': completed');
+					res.status(200).send(result);
 				}
 				else {
-					log.debug('Request \'updateTransfer\': Unknown error');
-					res.status(500).send({ "message": "Unknown error" });
+					log.error('Request \'updateById\': Transfer not found');
+					res.status(404).send({ status: "Error", message: "Transfer not found" });	
 				}
-			}
+			}	
 		});
 	}
 });
@@ -101,41 +110,81 @@ router.put('/:id', function(req, res, next) {
 /////////////////////////////////// POST REQUEST ///////////////////////////////////
 // create transfer
 router.post('/create', function(req, res, next) {
-	let item = {
-		PlayerID: req.body.PlayerID,
-		ScoutID: req.body.ScoutID,
-		Cost: parseInt(req.body.Cost, 10),
-		DateOfSign: validator.parseDate(req.body.DateOfSign),
-		ClubFrom: req.body.ClubFrom,
-		ClubTo: req.body.ClubTo
+	let data = {
+		playerID: req.body.playerID,
+		scoutID : req.body.scoutID,
+		cost 	: validator.checkInt(req.body.cost),
+		dateOfSign 	: validator.parseDate(req.body.date),
+		clubFrom: req.body.clubFrom,
+		clubTo 	: req.body.clubTo
 	};
 
-	let keys = Array.from(item);
-	let flag = false;
+	let keys = [data.playerID, data.scoutID, data.cost, data.dateOfSign, data.clubFrom, data.clubTo];
+	let flag = 0;
 
 	for (let i = 0; i < keys.length; i++)
-		if (!validator.checkValue(keys[i]))
-			flag = true;
+		if (validator.checkValue(keys[i]))
+			flag++;
 
-	if (flag) {
-		log.debug('Request \'createTransfer\': incorrect fields');
-		res.status(400).send({ "message": "Bad request: incorrect fields" });
-	} else {
-		transfers.createTransfer(item, function(err, result) {
+	if (flag != keys.length) {
+		log.error('Request \'create\': Incorrect one or more parameters');
+		res.status(400).send({ status: "Error", message: "Incorrect one or more parameters",
+			parameters: "playerID, scoutID, cost, date, clubTo, clubFrom" });
+	} 
+	else {
+		transfers.create(data, function(err, result) {
 			if (err) {
-				log.debug('Request \'createTransfer\': ' + err);
-				next(err);
+				log.error('Request \'create\': ' + err);
+				res.status(400).send({ status: "Error", message: err});
 			}
 			else {
 				if (result) {
-					log.debug('Request \'createTransfer\' was successfully executed');
-					res.status(201).send(result);	
-				}
+					log.info('Request \'create\': completed');
+					res.status(201).send(result);
+				}	
 				else {
-					log.debug('Request \'createTransfer\': Unknown error');
-					res.status(500).send({ "message": "Unknown error" });
+					log.error('Request \'create\': Transfer did not created');
+					res.status(500).send({ status: "Error", message: "Transfer did not created"});
 				}
 			}
 		});
 	}
+});
+
+
+/////////////////////////////////// DELETE REQUEST ///////////////////////////////////
+// delete all data
+router.delete('/', function(req, res, next) {
+	transfers.delete(function(err, result){
+		if (err) {
+			log.error("Request \'delete\':" + err);
+			res.status(400).send({status: "Error", message: err.message});
+		}
+		else {	
+			log.info("Request \'delete\': All data was deleted");
+			res.status(200).send({status: "Ok", message: "All data was deleted"});
+		}
+	});
+});
+
+// delete data by id
+router.delete('/:id', function(req, res, next) {
+	const id = req.params.id;
+	console.log(id);
+	transfers.deleteById(id, function(err, result){
+		if (err) {
+			log.error("Request \'deleteById\':" + err);
+			res.status(400).send({status: "Error", message: err});
+		}
+		else {	
+			if (result) {
+				log.info("Request \'deleteById\': Transfer \'" + id + "\' was deleted");
+				res.status(200).send({status: "Error", message: "Transfer \'" + id + "\' was deleted"});
+			}
+			else {
+				log.error("Request \'deleteById\': Transfer \'" + id + "\' not found");
+				res.status(404).send({status: "Error", message: "Transfer \'" + id + "\' was not found"});	
+			}
+		}
+	});
 });

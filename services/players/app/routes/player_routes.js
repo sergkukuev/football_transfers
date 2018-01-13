@@ -9,6 +9,10 @@ module.exports = function(app) {
 	app.use('/players', router);
 };
 
+router.head('/live', function(req, res, next) {
+	res.status(200).send({ status: "Ok", message: "I'm a live" });
+});
+
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
 // get all players
 router.get('/', function(req, res, next) {
@@ -16,13 +20,14 @@ router.get('/', function(req, res, next) {
 	let count = validator.checkInt(req.query.count);
 	page = validator.checkValue(page) ? page : 0;
 	count = validator.checkValue(count) ? count : 0;
-	players.getPlayers(page, count, function(err, result) {
+
+	players.getAll(page, count, function(err, result) {
 		if (err) {
-			log.debug('Request \'getPlayers\': ' + err);
-			res.status(400).send({ "message": err});
+			log.error('Request \'getAll\': ' + err);
+			res.status(400).send({ status: "Error", message: err});
 		}
 		else {
-			log.info('Request \'getPlayers\' was successfully executed');
+			log.info('Request \'getAll\': completed');
 			res.status(200).send(result);
 		}
 	});
@@ -32,90 +37,95 @@ router.get('/', function(req, res, next) {
 // get player by id
 router.get('/:id', function(req, res, next) {
 	const id = req.params.id;
-	if (!validator.checkValue(id)) {
-		log.debug('Request \'getPlayerById\': ID is undefined');
-		res.status(400).send({ "message": "Bad request: ID is undefined"});
-	}
-	else {
-		players.getPlayer(id, function(err, result) {
-			if (err) {
-				if (err.kind == "ObjectID") {
-					log.debug('Request \'getPlayerById\': ID is invalid');
-					res.status(400).send({ "message": "Bad request: ID is invalid"});
-				} 
-				else { 
-					log.debug('Request \'getPlayerById\': Player not found');
-					res.status(400).send({ "message": "Player not found"});
-				}
+	players.getById(id, function(err, result) {
+		if (err) {
+			if (validator.checkValue(err.value)) {
+				log.error('Request \'getById\': Incorrect ID');
+				res.status(400).send({ status: "Error", message: "Incorrect ID"});
+			} 
+			else { 
+				log.error('Request \'getById\': ' + err);
+				res.status(400).send({ status: "Error", message: err});
 			}
-			else {
-				log.info('Request \'getPlayerById\' was successfully executed');
+		}
+		else {
+			if (result) {
+				log.info('Request \'getById\': completed');
 				res.status(200).send(result); 
 			}
+			else {
+				log.error('Request \'getById\': Player not found');
+				res.status(404).send({ status: "Error", message: "Player not found"});	
+			}
+		}
+	});
+});
+
+/////////////////////////////////// POST REQUEST ///////////////////////////////////
+// generate test players
+router.post('/test_generate', function (req, res, next) {
+	let name = ["Roberto", "Sanches", "Morata", "Bakary", "Handanovich", "Messi", "Rivaldo", "Jo", "Lee", "Yamaho"];
+	let club = ["Juventus", "Arsenal", "Barselona", "Betis", "Chelsea", "Milan", "Inter", "Bayern", "Koln", "CSKA"];
+	let count = validator.checkInt(req.query.count);
+	count = validator.checkValue(count) ? count : 10; 
+	for (let i = 0; i < count; i++){
+		let player = new players({
+			name  		: name[i % 10],
+			club  		: club[(i * 3) % 10],
+			age			: (i*30 + 18) % (45 - 18) + 18,	//Math.random(18, 45),
+			rating    	: (i*30 + 18) % (99 - 45) + 45,	//Math.random(45, 100)
+			contract: {
+				date: Date.now(),
+				years: (i % 6) + 1
+			}
+		});
+		players.create(player, function(err, result){
+			err ? next(err) : log.debug('Save new player \'' + result.name + '\'');
 		});
 	}
+	log.info('Random players was created');
+	res.status(201).json({ status: "Created", message: "Random players was created" });
 });
 
 /////////////////////////////////// PUT REQUEST ///////////////////////////////////
-// generate test players
-router.put('/test_generate', function (req, res, next) {
-	let count = validator.checkInt(req.query.count);
-	count = validator.checkValue(count) ? count : 10;
-	for (let i = 0; i < count; i++){
-		let player = new players({
-			name  		: "Player" + i.toString(),
-			club  		: "Club" + i.toString(),
-			age			: (i*30 + 18) % 45,	//Math.random(18, 45),
-			rating    	: (i*30 + 18) % 99,	//Math.random(45, 100)
-			contract: {
-				date: Date.now(),
-				years: 1
-			}
-		});
-		
-		players.createPlayer(player, function(err, result){
-			err ? next(err) : log.debug('Save new player \'' + result.Name + '\'');
-		});
-	}
-	log.info('Random ' + count + ' players was created');
-	res.status(200).send({ "message": "Random " + count + " players was created" });
-});
-
 // update contract player by id
 router.put('/:id/contract/', function(req, res, next) {
 	const id = req.params.id;
 	let data = {
-		date: validator.parseDate(req.body.StartDate), 
-		years: parseInt(req.body.Years, 10)
+		date: validator.parseDate(req.body.date), 
+		years: validator.checkInt(req.body.years)
 	};
-	if (!validator.checkValue(id)) {
-		log.debug('Request \'updateContractById\': ID is undefined');
-		res.status(400).send({ "message": "Bad request: ID is undefined"});
-	}
-	else if (!validator.checkValue(data.date)) {
-		log.debug('Request \'updateContractById\': StartDate is undefined');
-		res.status(400).send({ "message": "Bad request: StartDate is undefined"});
+
+	if (!validator.checkValue(data.date)) {
+		log.error('Request \'updateContractById\':  Invalid parameter (date)');
+		res.status(400).send({ status: "Error", message: "Invalid parameter (date)"});
 	}
 	else if (!validator.checkValue(data.years)) {
-		log.debug('Request \'updateContractById\': Years is undefined');
-		res.status(400).send({ "message": "Bad request: Years is undefined"});
+		log.error('Request \'updateContractById\': Invalid parameter (years)');
+		res.status(400).send({ status: "Error", message: "Invalid parameter (years)"});
 	}
 	else {
-		players.updateContract(id, data, function(err, result) {
+		players.updateContractById(id, data, function(err, result) {
 			if (err) {
-				if (err.kind == "ObjectID") {
-					log.debug('Request \'updateContractById\': ID is invalid');
-					res.status(400).send({ "message": "Bad request: ID is invalid"});
+				if (err.kind == "ObjectId") {
+					log.error('Request \'updateContractById\': Incorrect ID');
+					res.status(400).send({ status: "Error", message: "Incorrect ID"});
 				} 
 				else { 
-					log.debug('Request \'updateContractById\': Player not found');
-					res.status(400).send({ "message": "Player not found"});
+					log.error('Request \'updateContractById\': ' + err);
+					res.status(400).send({ status: "Error", message: err});
 				}
 			}
 			else {
-				log.info('Request \'updateContractById\' was successfully executed');
-				let msg = "Contract " + result.name + " was updated";
-				res.status(200).send({ "message": msg });
+				if (result) {
+					log.info('Request \'updateContractById\': completed');
+					let msg = "Contract " + result.name + " was updated";
+					res.status(200).send(/*{ status: "Ok", message: msg }*/result);
+				}
+				else {
+					log.error('Request \'updateContractById\': Player not found');
+					res.status(404).send({ status: "Error", message: "Player not found" });	
+				}
 			} 
 		});
 	}
@@ -125,46 +135,60 @@ router.put('/:id/contract/', function(req, res, next) {
 router.put('/:id', function(req, res, next) {
 	const id = req.params.id;
 	let data = {
-		clubTo: req.body.ClubTo,
-		date: validator.parseDate(req.body.StartDate), 
-		years: parseInt(req.body.Years, 10)
+		clubTo: req.body.clubTo,
+		date: validator.parseDate(req.body.date), 
+		years: validator.checkInt(req.body.years)
 	};
-	if (!validator.checkValue(id)) {
-		log.debug('Request \'updatePlayerById\': ID is undefined');
-		res.status(400).send({ "message": "Bad request: ID is undefined"});
-	}
-	else if (!validator.checkValue(data.date)) {
-		log.debug('Request \'updatePlayerById\': StartDate is undefined');
-		res.status(400).send({ "message": "Bad request: StartDate is undefined"});
-	}
-	else if (!validator.checkValue(data.clubTo)) {
-		log.debug('Request \'updatePlayerById\': ClubTo is undefined');
-		res.status(400).send({ "message": "Bad request: ClubTo is undefined"});
+
+	if (!validator.checkValue(data.date)) {
+		log.error('Request \'updateById\': Invalid parameter (date)');
+		res.status(400).send({ status: "Error", message: "Invalid parameter (date)"});
 	}
 	else if (!validator.checkValue(data.years)) {
-		log.debug('Request \'updatePlayerById\': Years is undefined');
-		res.status(400).send({ "message": "Bad request: Years is undefined"});
+		log.error('Request \'updateById\': Invalid parameter (years)');
+		res.status(400).send({ status: "Error", message: "Invalid parameter (years)"});
+	}
+	else if (!validator.checkValue(data.clubTo)) {
+		log.error('Request \'updateById\': Invalid parameter (clubTo)');
+		res.status(400).send({ status: "Error", message: "Invalid parameter (clubTo)"});
 	}
 	else {
-		players.updatePlayer(id, data, function(err, result) {
+		players.updateById(id, data, function(err, result) {
 			if (err) {
-				if (err.kind == "ObjectID") {
-					log.debug('Request \'updatePlayerById\': ID is invalid');
-					res.status(400).send({ "message": "Bad request: ID is invalid"});
+				if (err.kind == "ObjectId") {
+					log.error('Request \'updateById\': Incorrect ID');
+					res.status(400).send({ status: "Error", message: "Incorrect ID"});
 				} 
 				else { 
-					log.debug('Request \'updatePlayerById\': Player not found');
-					res.status(400).send({ "message": "Player not found"});
+					log.error('Request \'updateById\': ' + err);
+					res.status(400).send({ status: "Error", message: err});
 				}
 			}
 			else {
-				log.info('Request \'updatePlayerById\' was successfully executed');
-				res.status(200).send({ "message": result.name + " moved to " + data.clubTo });
+				if (result) {
+					log.info('Request \'updateById\': completed');
+					res.status(200).send(result);
+				}
+				else {
+					log.error('Request \'updateById\': Player not found');
+					res.status(404).send({ status: "Error", message: "Player not found" });	
+				}
 			} 
 		});
 	}
 });
 
-router.options('/live', function(req, res, next) {
-	res.status(200).send(null);
+/////////////////////////////////// DELETE REQUEST ///////////////////////////////////
+// delete all data
+router.delete('/', function(req, res, next) {
+	players.delete(function(err, result){
+		if (err) {
+			log.info("Request \'deletePlayers\':" + err);
+			res.status(400).send({status: "Error", message: err});
+		}
+		else {	
+			log.info("Request \'deletePlayers\': All data was deleted");
+			res.status(200).send({status: "Ok", message: "All data was deleted"});
+		}
+	});
 });
