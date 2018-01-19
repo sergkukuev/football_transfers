@@ -43,7 +43,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import {API} from './api'
 
 export default {
   name: 'players',
@@ -58,8 +58,8 @@ export default {
   },
   methods: {
     get_players: function () {
-      let path = 'http://127.0.0.1:3000/players?count=' + this.count + '&page=' + this.page
-      axios.get(path).then((response) => {
+      let path = '/players?count=' + this.count + '&page=' + this.page
+      API.get(path).then((response) => {
         if (response.data.length === 0) {
           --this.page
         } else {
