@@ -1,5 +1,6 @@
 <template lang="html">
   <div id="transfers" v-if="status === 200">
+    <router-link class="" to="/create"> Create Transfer </router-link> </br>
     <div class="notification">
       Number of transfers per page: &nbsp
       <input type="text" v-model="count" v-bind:class="count" v-on:change="update_count" style="width:40px"/>
@@ -29,7 +30,6 @@
       </table>
     </div>
     <div class="notification">
-    {{data}}
       <div class="">
         <button v-on:click="prev_page" style="margin-left:40%"> << </button>
         &nbsp Page {{page + 1}} &nbsp

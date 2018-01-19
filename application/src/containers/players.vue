@@ -5,31 +5,28 @@
       <input type="text" v-model="count" v-bind:class="count" v-on:change="update_count" style="width:40px"/>
     </div>
     <div class="table">
-      <div class="table">
-        <table class="table">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Club</th>
-              <th>Rating</th>
-              <th>Contract: Start date</th>
-              <th>Contract: Years</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="item in players">
-              <td>{{item.name}}</td>
-              <td>{{item.club}}</td>
-              <td>{{item.rating}}</td>
-              <td>{{item.contract.date}}</td>
-              <td>{{item.contract.years}}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Club</th>
+            <th>Rating</th>
+            <th>Contract: Start date</th>
+            <th>Contract: Years</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in players">
+            <td>{{item.name}}</td>
+            <td>{{item.club}}</td>
+            <td>{{item.rating}}</td>
+            <td>{{item.contract.date}}</td>
+            <td>{{item.contract.years}}</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
     <div class="notification">
-    {{data}}
       <div class="">
         <button v-on:click="prev_page" style="margin-left:40%"> << </button>
         &nbsp Page {{page + 1}} &nbsp

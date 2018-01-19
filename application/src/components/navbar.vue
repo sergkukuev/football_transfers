@@ -2,10 +2,7 @@
   <nav class="nav has-shadow" >
     <div class="nav-left">
       <router-link class="nav-item is-brand" to="/">
-        Transfers Project
-      </router-link>
-      <router-link class="nav-item is-tab" to="/transfers">
-        <i class="fa fa-list-alt"></i> Transfers
+        Transfers
       </router-link>
       <router-link class="nav-item is-tab" to="/players">
         <i class="fa fa-list-alt"></i> Players

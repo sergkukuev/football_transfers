@@ -27,7 +27,6 @@
       </div>
     </div>
     <div class="notification">
-    {{data}}
       <div class="">
         <button v-on:click="prev_page" style="margin-left:40%"> << </button>
         &nbsp Page {{page + 1}} &nbsp
