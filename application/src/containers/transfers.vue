@@ -1,34 +1,33 @@
 <template lang="html">
   <div id="transfers" v-if="status === 200">
     <router-link class="" to="/create"> Create Transfer </router-link> </br>
+    <input type="hidden" id="selected" value="-" style="width:40px" disabled>
     <div class="notification">
       Number of transfers per page: &nbsp
       <input type="text" v-model="count" v-bind:class="count" v-on:change="update_count" style="width:40px"/>
     </div>
-    <div class="table">
-      <table class="table">
-        <thead>
-          <tr>
-            <th>Player ID</th>
-            <th>Scout ID</th>
-            <th>Cost</th>
-            <th>Date</th>
-            <th>ClubFrom</th>
-            <th>ClubTo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in transfers">
-            <td>{{item.playerID}}</td>
-            <td>{{item.scoutID}}</td>
-            <td>{{item.cost}}</td>
-            <td>{{item.dateOfSign}}</td>
-            <td>{{item.club.from}}</td>
-            <td>{{item.club.to}}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <table id="trans" v-on:click="get_info('trans')" class="table">
+      <thead>
+        <tr>
+          <th>Player ID</th>
+          <th>Scout ID</th>
+          <th>Cost</th>
+          <th>Date</th>
+          <th>ClubFrom</th>
+          <th>ClubTo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="item in transfers">
+          <td>{{item.playerID}}</td>
+          <td>{{item.scoutID}}</td>
+          <td>{{item.cost}}</td>
+          <td>{{item.dateOfSign}}</td>
+          <td>{{item.club.from}}</td>
+          <td>{{item.club.to}}</td>
+        </tr>
+      </tbody>
+    </table>
     <div class="notification">
       <div class="">
         <button v-on:click="prev_page" style="margin-left:40%"> << </button>
@@ -64,6 +63,7 @@ export default {
           --this.page
         } else {
           this.transfers = response.data
+          console.log(this.transfers)
           this.status = response.status
         }
       }, (err) => {
@@ -88,6 +88,16 @@ export default {
     update_count: function () {
       this.page = 0
       this.get_transfers()
+    },
+    get_info: function (name) {
+      let table = document.getElementById(name)
+      for (let i = 0; i < table.rows.length; i++) {
+        table.rows[i].onclick = function () {
+          document.getElementById('selected').value = this.rowIndex
+        }
+      }
+      let index = document.getElementById('selected').value
+      window.location = 'http://localhost:8080/' + this.transfers[index - 1].id
     }
   },
   mounted: function () {
