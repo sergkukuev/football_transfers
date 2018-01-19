@@ -13,7 +13,7 @@ module.exports = function(app) {
 var interval1 = 500, interval2 = 2000; //20s
 
 function addToQueue(name, func, data) {
-	rabbitMQ.connect('amqp://guest:guest@localhost:5672', function(err, conn) {
+	rabbitMQ.connect('amqp://guest:guest@127.0.0.1', function(err, conn) {
 		conn.createChannel(function(err, ch) {
 			ch.assertQueue(name, { durable: false });
 			ch.sendToQueue(name, Buffer.from(JSON.stringify(data)), { persistent: true });
@@ -24,7 +24,7 @@ function addToQueue(name, func, data) {
 }
 
 function receiveFromQueue(name, func, callback){
-	rabbitMQ.connect('amqp://guest:guest@localhost:5672', function(err, conn){
+	rabbitMQ.connect('amqp://guest:guest@127.0.0.1', function(err, conn){
 		conn.createChannel(function(err, ch){
 			ch.assertQueue(name, { durable: false });
 			ch.consume(name, function(data) {
