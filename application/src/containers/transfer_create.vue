@@ -201,6 +201,7 @@ export default {
           this.data.clubFrom = this.items[sel - 1].club
           document.getElementById('selected').value = '-'
           ++this.step
+          this.page = 0
           this.get_scouts()
         }
       } else if (this.step === 1) {
@@ -224,7 +225,6 @@ export default {
           ++this.step
         }
       }
-      this.page = 0
     }
   },
   mounted: function () {
