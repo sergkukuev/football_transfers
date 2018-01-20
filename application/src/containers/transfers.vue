@@ -25,7 +25,8 @@
           <tr v-for="item in transfers">
             <td>{{item.playerID}}</td>
             <td>{{item.scoutID}}</td>
-            <td>{{item.cost}}</td>
+            <td v-if="item.cost !== 0">{{item.cost}}</td>
+            <td v-else>free</td>
             <td>{{item.dateOfSign}}</td>
             <td>{{item.club.from}}</td>
             <td>{{item.club.to}}</td>
