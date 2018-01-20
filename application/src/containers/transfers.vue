@@ -1,43 +1,49 @@
 <template lang="html">
-  <div id="transfers" v-if="status === 200">
-    <router-link class="" to="/create"> Create Transfer </router-link> </br>
-    <input type="hidden" id="selected" value="-" style="width:40px" disabled>
-    <div class="notification">
-      Number of transfers per page: &nbsp
-      <input type="text" v-model="count" v-bind:class="count" v-on:change="update_count" style="width:40px"/>
+  <div id="transfers">
+    <div id="operation">
+      <router-link class="" to="/create"> Create Transfer </router-link> </br>
     </div>
-    <table id="trans" v-on:click="get_info('trans')" class="table">
-      <thead>
-        <tr>
-          <th>Player</th>
-          <th>Scout, Rank</th>
-          <th>Cost</th>
-          <th>Date</th>
-          <th>ClubFrom</th>
-          <th>ClubTo</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="item in transfers">
-          <td>{{item.playerID}}</td>
-          <td>{{item.scoutID}}</td>
-          <td>{{item.cost}}</td>
-          <td>{{item.dateOfSign}}</td>
-          <td>{{item.club.from}}</td>
-          <td>{{item.club.to}}</td>
-        </tr>
-      </tbody>
-    </table>
-    <div class="notification">
-      <div class="">
+    <div id="waiting" class="notification" v-if="status === 0">
+      Loading...
+    </div>
+    <div id="history" v-else-if="status === 200">
+      <input type="hidden" id="selected" disabled>
+      <font size="5">Transfer history:</font>
+      <div class="notification">
+        Number of transfers per page: &nbsp
+        <input type="text" v-model="count" v-bind:class="count" v-on:change="update_count" style="width:40px"/>
+      </div>
+      <table id="transfer_list" v-on:click="get_info('transfer_list')" class="table">
+        <thead>
+          <tr>
+            <th>Player</th>
+            <th>Scout, Rank</th>
+            <th>Cost</th>
+            <th>Date</th>
+            <th>ClubFrom</th>
+            <th>ClubTo</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr v-for="item in transfers">
+            <td>{{item.playerID}}</td>
+            <td>{{item.scoutID}}</td>
+            <td>{{item.cost}}</td>
+            <td>{{item.dateOfSign}}</td>
+            <td>{{item.club.from}}</td>
+            <td>{{item.club.to}}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="notification">
         <button v-on:click="prev_page" style="margin-left:40%"> << </button>
         &nbsp Page {{page + 1}} &nbsp
         <button v-on:click="next_page"> >> </button>
       </div>
     </div>
-  </div>
-  <div v-else class="notification">
-    <label style="margin-left:40%"> {{error.message}} : {{error.response.statusText}} </label>
+    <div v-else class="notification">
+      <font color="red"> {{error.message}} : {{error.response.statusText}} </font>
+    </div>
   </div>
 </template>
 
@@ -51,7 +57,7 @@ export default {
       page: 0,
       count: 10,
       transfers: [],
-      status: 200,
+      status: 0,
       error: {}
     }
   },
@@ -118,7 +124,10 @@ export default {
         }
       }
       let index = document.getElementById('selected').value
-      window.location = 'http://localhost:8080/' + this.transfers[index - 1].id
+      if (index !== '') {
+        console.log('Index = ' + index)
+        window.location = 'http://localhost:8080/' + this.transfers[index - 1].id
+      }
     }
   },
   mounted: function () {
