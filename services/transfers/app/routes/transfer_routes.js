@@ -6,7 +6,7 @@ var express = require('express'),
 	validator = require('./../validators');
 
 module.exports = function(app) {
-	app.use('/transfers', router);
+	app.use('/api/transfers', router);
 };
 
 router.head('/live', function(req, res, next) {
@@ -69,17 +69,20 @@ router.put('/:id', function(req, res, next) {
 		clubFrom: req.body.clubFrom
 	};
 
-	let keys = [data.cost, data.date, data.clubTo, data.clubFrom];
+	let keys = [data.date, data.clubTo, data.clubFrom];
 	let flag = 0;
 
 	for (let i = 0; i < keys.length; i++)
 		if (validator.checkValue(keys[i]))
 			flag++;
 
-	if (flag != keys.length) {
+	if (data.cost == 'undefined') {
+		log.error('Request \'updateById\': Incorrect cost');
+		res.status(400).send({ status: "Error", message: "Incorrect cost"});
+	} else if (flag != keys.length) {
 		log.error('Request \'updateById\': Incorrect one or more parameters');
 		res.status(400).send({ status: "Error", message: "Incorrect one or more parameters", 
-			parameters: "cost, date, clubTo, clubFrom" });
+			parameters: "date, clubTo, clubFrom" });
 	} 
 	else {
 		transfers.updateById(id, data, function(err, result) {
@@ -119,17 +122,20 @@ router.post('/create', function(req, res, next) {
 		clubTo 	: req.body.clubTo
 	};
 
-	let keys = [data.playerID, data.scoutID, data.cost, data.dateOfSign, data.clubFrom, data.clubTo];
+	let keys = [data.playerID, data.scoutID, data.dateOfSign, data.clubTo, data.clubFrom];
 	let flag = 0;
 
 	for (let i = 0; i < keys.length; i++)
 		if (validator.checkValue(keys[i]))
 			flag++;
 
-	if (flag != keys.length) {
+	if (data.cost == 'undefined') {
+		log.error('Request \'updateById\': Incorrect cost');
+		res.status(400).send({ status: "Error", message: "Incorrect cost"});
+	} else if (flag != keys.length) {
 		log.error('Request \'create\': Incorrect one or more parameters');
 		res.status(400).send({ status: "Error", message: "Incorrect one or more parameters",
-			parameters: "playerID, scoutID, cost, date, clubTo, clubFrom" });
+			parameters: "playerID, scoutID, date, clubTo, clubFrom" });
 	} 
 	else {
 		transfers.create(data, function(err, result) {

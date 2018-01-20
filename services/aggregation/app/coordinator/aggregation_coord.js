@@ -1,6 +1,6 @@
-const   PlayerHost 	  = 'http://localhost:3001',
-        ScoutHost	  = 'http://localhost:3002',
-        TransferHost  = 'http://localhost:3003';
+const   PlayerHost 	  = 'http://localhost:3001/api',
+        ScoutHost	  = 'http://localhost:3002/api',
+        TransferHost  = 'http://localhost:3003/api';
 
 module.exports = {
     // Players service

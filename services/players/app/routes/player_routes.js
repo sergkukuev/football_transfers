@@ -6,7 +6,7 @@ var express = require('express'),
 	validator = require('./../validators');
 
 module.exports = function(app) {
-	app.use('/players', router);
+	app.use('/api/players', router);
 };
 
 router.head('/live', function(req, res, next) {

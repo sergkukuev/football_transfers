@@ -6,14 +6,14 @@ var express		= require('express'),
 	rabbitMQ 	 = require('amqplib/callback_api');
 
 module.exports = function(app) {
-	app.use('/', router);
+	app.use('/api', router);
 };
 
 /////////////////////////////////// QUEVE ///////////////////////////////////
 var interval1 = 500, interval2 = 2000; //20s
 
 function addToQueue(name, func, data) {
-	rabbitMQ.connect('amqp://guest:guest@localhost:5672', function(err, conn) {
+	rabbitMQ.connect('amqp://guest:guest@127.0.0.1', function(err, conn) {
 		conn.createChannel(function(err, ch) {
 			ch.assertQueue(name, { durable: false });
 			ch.sendToQueue(name, Buffer.from(JSON.stringify(data)), { persistent: true });
@@ -24,7 +24,7 @@ function addToQueue(name, func, data) {
 }
 
 function receiveFromQueue(name, func, callback){
-	rabbitMQ.connect('amqp://guest:guest@localhost:5672', function(err, conn){
+	rabbitMQ.connect('amqp://guest:guest@127.0.0.1', function(err, conn){
 		conn.createChannel(function(err, ch){
 			ch.assertQueue(name, { durable: false });
 			ch.consume(name, function(data) {
@@ -253,8 +253,8 @@ router.get('/transfers/:id', function(req, res, next) {
 		if (trans_err) {
 			let item = {
 				"ID"		: req.params.id,
-				"PlayerID" 	: 'undefined',
-				"ScoutID" 	:'undefined',
+				"Player" 	: 'undefined',
+				"Scout" 	:'undefined',
 				"Cost"		: 'undefined',
 				"DateOfSign": 'undefined',
 				"Club"	: {
@@ -262,7 +262,7 @@ router.get('/transfers/:id', function(req, res, next) {
 					"From"	: 'undefined'
 				}
 			};
-			res.status(500).send(item);
+			res.status(200).send(item);
 		}
 		else {
 			if (trans_code == 200) {
@@ -278,41 +278,41 @@ router.get('/transfers/:id', function(req, res, next) {
 						else if (player_err && !scout_err) { 
 							if (scout_code == 200) {
 								let item = getTransferWithoutPlayer(transfer, transfer.playerID, scout); 
-								res.status(trans_code).send(item);
+								res.status(200).send(item);
 							}
 							else {
 								let item = getTransferWithoutBoth(transfer, transfer.playerID, "Not Found");
-								res.status(trans_code).send(item);
+								res.status(200).send(item);
 							}
 						}
 						// Недоступен сервис скаутов
 						else if (!player_err && scout_err) {
 							if (player_code == 200) {
 								let item = getTransferWithoutScout(transfer, player, transfer.scoutID); 
-								res.status(trans_code).send(item);
+								res.status(200).send(item);
 							}
 							else {
 								let item = getTransferWithoutBoth(transfer, "Not Found", transfer.scoutID); 
-								res.status(trans_code).send(item);
+								res.status(200).send(item);
 							}
 						}
 						// Все сервисы доступны
 						else {
 							if (player_code == 200 && scout_code == 200) {
 								let item = getTransfer(transfer, player, scout);
-								res.status(trans_code).send(item);
+								res.status(200).send(item);
 							}
 							else if (player_code != 200) {
 								let item  = getTransferWithoutPlayer(transfer, "Not Found", scout);
-								res.status(trans_code).send(item);
+								res.status(200).send(item);
 							}
 							else if (scout_code != 200) {
 								let item = getTransferWithoutScout(transfer, player, "Not Found");
-								res.status(trans_code).send(item);
+								res.status(200).send(item);
 							}
 							else {
 								let item = getTransferWithoutBoth(transfer, "Not Found", "Not Found");
-								res.status(trans_code).send(item);
+								res.status(200).send(item);
 							}
 						}
 					});
