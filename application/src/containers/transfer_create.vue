@@ -1,7 +1,7 @@
   <template lang="html">
   <div id="transfers">
     <p v-if="step !== 3"> Step {{step + 1}} of 3</p>
-    <font size="5"> Create transfer: </font>
+    <font v-if="step !== 3" size="5"> Create transfer: </font>
     <input type="hidden" id="selected" disabled>
     <div id="step1" v-if="step === 0">
       <font size="3"> Select a player: </font>
@@ -119,7 +119,8 @@
             Buying club: </br>
             <input type="text" id="clubTo" value="NoClub" style="margin-left:5%"/> </br> </br>
             Transfer cost: </br>
-            <input type="text" id="cost" value="0" style="margin-left:5%"/> </br> </br>
+            <input v-if="player.club !== 'NoClub'" type="text" id="cost" value="0" style="margin-left:5%"/>
+            <input v-else type="text" id="cost" value="0" style="margin-left:5%" disabled/> </br> </br>
             Contract years: &nbsp
             <select v-model="data.years">
               <option>1</option>
@@ -133,9 +134,16 @@
         </div>
         <button v-on:click="next_step" style="margin-right:10%"> Create </button>
       </div>
+      <div class="notification" v-if="valid !== ''">
+        <font color="red"> Ooooooops. {{valid}} </font>
+      </div>
     </div>
-    <div v-else>
-      <router-link class="" to="/"> Transfer confirm </router-link>
+    <div class="notification" v-else>
+      <div v-if="status === 0" class="notification"> 
+        Adding... 
+      </div>
+      <router-link v-else-if="status === 201 || status === 202" class="" to="/"> Transfer confirm </router-link>
+      <font v-else color="red"> Ooooooops. Something went wrong </font>
     </div>
   </div>
 </template>
@@ -164,6 +172,7 @@ export default {
       statusPlayer: 0,
       statusScout: 0,
       status: 0,
+      valid: '',
       error: {}
     }
   },
@@ -172,9 +181,10 @@ export default {
       console.log(this.data)
       let path = '/transfers/create'
       API.post(path, this.data).then(response => {
-        console.log(response)
+        this.status = response.status
       }, (err) => {
-        console.log(err)
+        this.status = err.response.status
+        this.error = err.response.data
       })
     },
     get_players: function () {
@@ -260,19 +270,26 @@ export default {
       } else if (this.step === 2) {
         let cost = Number(parseInt(document.getElementById('cost').value))
         let club = document.getElementById('clubTo').value
-        this.data.playerID = this.player.id
-        this.data.scoutID = this.scout.id
-        this.data.clubFrom = this.player.club
 
-        if (!club || typeof (club) === 'undefined' || club.length === 0 || club.length > 50) {
-          console.log('club err')
+        if (!club || typeof (club) === 'undefined') {
+          this.valid = 'Field \'Buying club\' contains error'
+        } else if (club.length === 0) {
+          this.valid = 'Field \'Buying club\' contains error: empty string'
+        } else if (club.length > 50) {
+          this.valid = 'Field \'Buying club\' contains error: lenght must be smaller than 50'
+        } else if (club === this.player.club) {
+          this.valid = 'Field \'Buying club\' contains eror: Player already in this club'
         } else if (isNaN(cost) || cost < 0) {
-          console.log('cost err')
+          this.valid = 'Field \'Transfer cost\' contains error: cost must be greater than or equal 0'
         } else {
+          this.valid = ''
+          this.data.playerID = this.player.id
+          this.data.scoutID = this.scout.id
+          this.data.clubFrom = this.player.club
           this.data.cost = cost
           this.data.clubTo = club
           this.post_transfer()
-          ++this.step
+          this.step++
         }
       }
     }
