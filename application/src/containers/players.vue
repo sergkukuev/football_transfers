@@ -94,7 +94,7 @@ export default {
         }
       }
       let index = document.getElementById('selected').value
-      window.location = 'http://localhost:8080/' + this.players[index - 1].id
+      window.location = 'http://localhost:8080/players/' + this.players[index - 1].id
     }
   },
   mounted: function () {
