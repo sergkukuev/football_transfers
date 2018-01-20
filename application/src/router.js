@@ -8,6 +8,7 @@ import createTransfer from './containers/transfer_create'
 import infoTransfer from './containers/transfer_info'
 import players from './containers/players'
 import infoPlayer from './containers/player_info'
+import updatePlayer from './containers/player_update'
 import scouts from './containers/scouts'
 
 // application routes
@@ -17,6 +18,7 @@ const routes = [
   { path: '/players', component: players },
   { path: '/scouts', component: scouts },
   { path: '/players/:id', component: infoPlayer },
+  { path: '/players/:id/contract', component: updatePlayer },
   { path: '/:id', component: infoTransfer }
 ]
 
