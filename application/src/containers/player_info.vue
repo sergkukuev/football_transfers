@@ -19,7 +19,8 @@
         </ul>
       </ul>
       </br>
-      <router-link class="" to="/"> Back </router-link> 
+      <router-link class="" v-bind:to=contract_path> Update Contract </router-link> &nbsp &nbsp
+      <router-link class="" to="/players"> Back </router-link>
     </div>
     <div class="notification" id="notexist" v-else>
       <font color="red"> Oooooops. {{error.message}} </font>
@@ -35,6 +36,7 @@ export default {
     data: function () {
       return {
         id: '',
+        contract_path: '',
         player: {},
         status: 0,
         error: {}
@@ -43,6 +45,7 @@ export default {
     methods: {
       get_player: function () {
         let path = '/players/' + this.id
+        this.contract_path = '/players/' + this.id + '/contract'
         API.get(path).then((response) => {
           this.player = response.data
           this.status = response.status
