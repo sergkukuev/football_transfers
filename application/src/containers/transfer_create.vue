@@ -1,10 +1,9 @@
-<template lang="html">
+  <template lang="html">
   <div id="transfers">
     <p v-if="step !== 3"> Step {{step + 1}} of 3</p>
     <div class="notification" v-if="step !== 2 && step !== 3">
         Select one from the table: </br>
-        Selected: &nbsp
-        <input type="text" id="selected" value="-" style="width:40px" disabled>
+        <input type="hidden" id="selected" value="-" style="width:40px" disabled>
     </div>
     <div id="step1" v-if="step === 0">
       Players: </br>
@@ -35,7 +34,6 @@
           <button v-on:click="prev_players" style="margin-left:40%"> << </button>
           &nbsp Page {{page + 1}} &nbsp
           <button v-on:click="next_players"> >> </button>
-          <button v-on:click="next_step" style="margin-right:10%"> Next step </button>
         </div>
       </div>
     </div>
@@ -193,6 +191,7 @@ export default {
           document.getElementById('selected').value = this.rowIndex
         }
       }
+      this.next_step()
     },
     next_step: function () {
       if (this.step === 0) {
