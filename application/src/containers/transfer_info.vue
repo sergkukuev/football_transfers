@@ -1,6 +1,5 @@
 <template lang="html">
   <div id="transfer">
-    <input type="hidden" id="id_transfer" disabled>
     <font size="5"> Transfer information: </font>
     ({{ id = $route.params.id }})
     <div id="waiting" class="notification" v-if="status === 0">
