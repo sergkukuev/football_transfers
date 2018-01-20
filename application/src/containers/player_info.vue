@@ -1,19 +1,29 @@
 <template lang="html">
   <div id="player">
-    <ul>
-      <li>Player ID: {{ id = $route.params.id }}</li>
-      <li>Name: {{ player.name }}</li>
-      <li>Club: {{ player.club }}</li>
-      <li>Age: {{ player.age }}</li>
-      <li>Rating: {{ player.rating }}</li>
-      <li>Contract:</li>
-      <ul>
-        <li>Start date: {{ player.contract.date }}</li>
-        <li>Years: {{ player.contract.years }}</li>
+    <font size="5"> Player information: </font>
+    ({{ id = $route.params.id }})
+    <div id="waiting" class="notification" v-if="status === 0">
+      Loading...
+    </div>
+    <div id="exist" class="notification" v-else-if="status === 200">
+      <ul style="list-style-type: disc">
+        <li>ID: {{ id = $route.params.id }}</li>
+        <li>Name: {{ player.name }}</li>
+        <li>Club: {{ player.club }}</li>
+        <li>Age: {{ player.age }}</li>
+        <li>Rating: {{ player.rating }}</li>
+        <li>Contract:</li>
+        <ul>
+          <li>Start date: {{ player.contract.date }}</li>
+          <li>Years: {{ player.contract.years }}</li>
+        </ul>
       </ul>
-    </ul>
-    </br>
-    <router-link class="" to="/players"> Back </router-link> </br>
+      </br>
+      <router-link class="" to="/"> Back </router-link> 
+    </div>
+    <div class="notification" id="notexist" v-else>
+      <font color="red"> Oooooops. {{error.message}} </font>
+    </div>
   </div>
 </template>
 
@@ -25,10 +35,8 @@ export default {
     data: function () {
       return {
         id: '',
-        page: 0,
-        count: 10,
         player: {},
-        status: 200,
+        status: 0,
         error: {}
       }
     },
@@ -37,13 +45,24 @@ export default {
         let path = '/players/' + this.id
         API.get(path).then((response) => {
           this.player = response.data
-          console.log(this.player)
           this.status = response.status
         }, (err) => {
-          this.error = err
+          this.error = err.response.data
           this.status = err.response.status
-          console.log(err)
+          console.log(this.error)
         })
+      },
+      isJson: function (item) {
+        item = typeof item !== 'string' ? JSON.stringify(item) : item
+        try {
+          item = JSON.parse(item)
+        } catch (e) {
+          return false
+        }
+        if (typeof item === 'object' && item !== null) {
+          return true
+        }
+        return false
       }
     },
     mounted: function () {
