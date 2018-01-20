@@ -1,8 +1,5 @@
 <template lang="html">
   <div id="transfers">
-    <div id="operation">
-      <router-link class="" to="/create"> Create Transfer </router-link> </br>
-    </div>
     <div id="waiting" class="notification" v-if="status === 0">
       Loading...
     </div>
