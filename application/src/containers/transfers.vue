@@ -9,8 +9,8 @@
     <table id="trans" v-on:click="get_info('trans')" class="table">
       <thead>
         <tr>
-          <th>Player ID</th>
-          <th>Scout ID</th>
+          <th>Player</th>
+          <th>Scout, Rank</th>
           <th>Cost</th>
           <th>Date</th>
           <th>ClubFrom</th>
@@ -63,12 +63,33 @@ export default {
           --this.page
         } else {
           this.transfers = response.data
-          console.log(this.transfers)
           this.status = response.status
+          for (let i = 0; i < this.transfers.length; i++) {
+            this.get_player(i)
+            this.get_scout(i)
+          }
         }
       }, (err) => {
         this.error = err
         this.status = err.response.status
+        console.log(err)
+      })
+    },
+    get_player: function (i) {
+      let path = '/players/' + this.transfers[i].playerID
+      API.get(path).then((response) => {
+        let player = response.data.name + ', ' + response.data.club
+        this.transfers[i].playerID = player
+      }, (err) => {
+        console.log(err)
+      })
+    },
+    get_scout: function (i) {
+      let path = '/scouts/' + this.transfers[i].scoutID
+      API.get(path).then((response) => {
+        let scout = response.data.name + ', ' + response.data.rank
+        this.transfers[i].scoutID = scout
+      }, (err) => {
         console.log(err)
       })
     },
