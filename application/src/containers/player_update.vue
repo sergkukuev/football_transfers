@@ -42,7 +42,7 @@
         <font color="red"> Ooooooops. {{error.message}} : {{error.response.statusText}} </font>
       </div>
     </div>
-    <div id="step2" v-if="step === 1">
+    <div id="step2" v-else-if="step === 1">
       <font size="5"> New contract information: </font>
       <div class="notification" v-if="statusPlayer === 200">
         <p> Player: </p>
@@ -86,6 +86,13 @@
       </br>
       <button v-on:click="update_contract" style="margin-right:10%"> Update </button>    
     </div>
+    <div id="step3" v-else>
+      <div class="notification">
+        <p v-if="status === 0"> Loading... </p> 
+        <font color="red" v-else-if="status === 503"> {{ error.message }}. {{error.action}}. </font>
+        <router-link v-else to="/players"> Contract confirm </router-link> </br>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -108,6 +115,7 @@ export default {
       scouts: [],
       scout: {},
       player: {},
+      status: 0,
       statusScout: 0,
       statusPlayer: 0,
       error: {}
@@ -126,6 +134,7 @@ export default {
       }, (err) => {
         this.error = err
         this.statusScout = err.response.status
+        console.log(err)
       })
     },
     get_player: function () {
@@ -134,7 +143,6 @@ export default {
         this.player = response.data
         this.statusPlayer = response.status
       }, (err) => {
-        this.error = err
         this.statusPlayer = err.status
         console.log(err)
       })
@@ -142,6 +150,16 @@ export default {
     update_contract: function () {
       this.data.scoutID = this.scout.id
       console.log(this.data)
+      let path = '/players/' + this.id + '/contract'
+      API.put(path, this.data).then(response => {
+        console.log(response.data)
+        this.status = response.status
+      }, (err) => {
+        this.status = err.response.status
+        this.error = err.response.data
+        console.log(err.response)
+      })
+      this.step++
     },
     prev_page: function () {
       if (this.page > 0) {
@@ -172,7 +190,6 @@ export default {
       if (index !== '') {
         console.log('Index = ' + index)
         this.scout = this.scouts[index - 1]
-        this.status = 0
         this.step++
         this.get_player()
       }
