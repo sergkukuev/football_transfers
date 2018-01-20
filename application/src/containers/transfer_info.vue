@@ -2,25 +2,31 @@
   <div id="transfer">
     <ul>
       <li>Transfer ID: {{ id = $route.params.id }}</li>
-      <li>Player: {{ transfer.Player }}</li>
-      <ul>
-        <li>Name: {{ transfer.Player.Name }}</li>
-        <li>Club: {{ transfer.Player.Club }}</li>
-        <li>Age: {{ transfer.Player.Age }}</li>
-        <li>Rating: {{ transfer.Player.Rating }}</li>
-        <li>Contract:</li>
+      <li v-if="transfer.Player === 'undefined' || !isJson(transfer.Player)">Player: {{ transfer.Player }}</li>
+      <div v-else>
+        <li>Player:</li>
         <ul>
-          <li>Start date: {{ transfer.Player.Contract.Date }}</li>
-          <li>Years: {{ transfer.Player.Contract.Years }}</li>
+          <li>Name: {{ transfer.Player.Name }}</li>
+          <li>Club: {{ transfer.Player.Club }}</li>
+          <li>Age: {{ transfer.Player.Age }}</li>
+          <li>Rating: {{ transfer.Player.Rating }}</li>
+          <li>Contract:</li>
+          <ul>
+            <li>Start date: {{ transfer.DateOfSign }}</li>
+            <li>Years: {{ transfer.Player.Contract.Years }}</li>
+          </ul>
         </ul>
-      </ul>
-      <li>Scout: {{ transfer.Scout }} </li>
-      <ul>
-        <li>Name: {{ transfer.Scout.Name }}</li>
-        <li>Rank: {{ transfer.Scout.Rank }}</li>
-        <li>Deals: {{ transfer.Scout.Deals }}</li>
-        <li>Contracts: {{ transfer.Scout.Contracts }}</li>
-      </ul>
+      </div>
+      <li v-if="transfer.Scout === 'undefined' || !isJson(transfer.Scout)">Scout: {{ transfer.Scout }}</li>
+      <div v-else>
+        <li>Scout: </li>
+        <ul>
+          <li>Name: {{ transfer.Scout.Name }}</li>
+          <li>Rank: {{ transfer.Scout.Rank }}</li>
+          <li>Deals: {{ transfer.Scout.Deals }}</li>
+          <li>Contracts: {{ transfer.Scout.Contracts }}</li>
+        </ul>
+      </div>
       <li>Cost: {{ transfer.Cost }}</li>
       <li>Date of sign: {{ transfer.DateOfSign }}</li>
       <li>Club:</li>
@@ -42,10 +48,8 @@ export default {
     data: function () {
       return {
         id: '',
-        page: 0,
-        count: 10,
         transfer: {},
-        status: 200,
+        status: 0,
         error: {}
       }
     },
@@ -61,6 +65,18 @@ export default {
           this.status = err.response.status
           console.log(err)
         })
+      },
+      isJson: function (item) {
+        item = typeof item !== 'string' ? JSON.stringify(item) : item
+        try {
+          item = JSON.parse(item)
+        } catch (e) {
+          return false
+        }
+        if (typeof item === 'object' && item !== null) {
+          return true
+        }
+        return false
       }
     },
     mounted: function () {
