@@ -1,13 +1,15 @@
 <template lang="html">
   <div id="player">
+    <p v-if="step !== 2"> Step {{step + 1}} of 2 </p>
     <div id="step1" v-if="step === 0">
       <div id="waiting" v-if="statusScout === 0" class="notification"> 
         Loading... 
       </div>
       <div v-else-if="statusScout == 200">
         <font size="5"> Update player contract: </font>
+        </br>
         <input id="selected" type="hidden" disabled>
-        <p>Choose the scout from list who updated player ({{ id = $route.params.id }}) contract </p>
+        <font size="3">Choose the scout from list who updated player ({{ id = $route.params.id }}) contract </font>
         <div class="notification" >
           Number of scouts per page: &nbsp
           <input type="text" v-model="count" v-bind:class="count" v-on:change="update_count" style="width:40px"/>
@@ -43,7 +45,9 @@
       </div>
     </div>
     <div id="step2" v-else-if="step === 1">
-      <font size="5"> New contract information: </font>
+      <font size="5"> Update player contract: </font>
+      </br> 
+      <font size="3"> New contract information: </font>
       <div class="notification" v-if="statusPlayer === 200">
         <p> Player: </p>
         <div style="margin-left:40px">
@@ -81,6 +85,7 @@
           <li>ID: {{scout.id }}</li>
           <li>Name: {{ scout.name }}</li>
           <li>Rank: {{ scout.rank }}</li>
+          <li>Contracts {{scout.amount.contracts}}</li>
         </ul>
       </div>
       </br>
