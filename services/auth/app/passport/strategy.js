@@ -1,10 +1,10 @@
 const	crypto	= require('crypto'),
-		config	= require('./index'),
-		log 	= require('./log'),
-		UserModel   	= require('./../app/models/user').userModel,
-		ClientModel 	= require('./../app/models/client').clientModel,
-		AccessToken  	= require('./../app/models/tokens/access').tokenModel,
-		RefreshToken 	= require('./../app/models/tokens/refresh').tokenModel;
+		config	= require('./../../config'),
+		log 	= require('./../../config/log'),
+		UserModel   	= require('./../models/user').userModel,
+		ClientModel 	= require('./../models/client').clientModel,
+		AccessToken  	= require('./../models/tokens/access').tokenModel,
+		RefreshToken 	= require('./../models/tokens/refresh').tokenModel;
 
 module.exports = {
 	checkService : function(appId, appSecret, done) {

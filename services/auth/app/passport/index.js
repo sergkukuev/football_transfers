@@ -1,5 +1,5 @@
 const   basic       = require('basic-auth'),
-        strategy    = require('./../../config/passport-strategy');
+        strategy    = require('./strategy');
 
 const basicType  = /basic/i;
 const bearerType = /bearer/i;
