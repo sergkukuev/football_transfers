@@ -3,7 +3,8 @@ var express = require('express'),
 	mongoose = require('mongoose'),
 	log = require('./../../libs/log')(module),
 	transfers = mongoose.model('Transfer'),
-	validator = require('./../validators');
+	validator = require('./../validators'),
+	passport =require('./../passport');
 
 module.exports = function(app) {
 	app.use('/api/transfers', router);
@@ -16,46 +17,58 @@ router.head('/live', function(req, res, next) {
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
 // get all transfers
 router.get('/', function(req, res, next) {
-	let page = validator.checkInt(req.query.page);
-	let count = validator.checkInt(req.query.count);
-	page = validator.checkValue(page) ? page : 0;
-	count = validator.checkValue(count) ? count : 0;
-	transfers.getAll(page, count, function(err, result) {
-		if (err) {
-			log.error('Request \'getAll\': ' + err);
-			res.status(400).send({ status: "Error", message: err});
-		}
-		else {
-			log.info('Request \'getAll\': completed');
-			res.status(200).send(result);
-		}
+	passport.checkServiceAuthorization(req, res, function (scope) {
+		let page = validator.checkInt(req.query.page);
+		let count = validator.checkInt(req.query.count);
+		page = validator.checkValue(page) ? page : 0;
+		count = validator.checkValue(count) ? count : 0;
+		transfers.getAll(page, count, function(err, result) {
+			if (err) {
+				log.error('Request \'getAll\': ' + err);
+				res.status(400).send({ status: "Error", message: err, service: scope});
+			}
+			else {
+				log.info('Request \'getAll\': completed');
+				let temp = {
+					info: result,
+					service: scope
+				}
+				res.status(200).send(temp);
+			}
+		});
 	});
 });
 
 // get transfer by id
 router.get('/:id', function(req, res, next) {
-	const id = req.params.id;
-	transfers.getById(id, function(err, result) {
-		if (err) {
-			if (err.kind == "ObjectId") {
-				log.error('Request \'getById\': ID is invalid');
-				res.status(400).send({ status: "Error", message: "Bad request: ID is invalid"});
-			} 
-			else { 
-				log.error('Request \'getById\': ' + err);
-				res.status(400).send({ status: "Error", message: err});
-			}
-		}
-		else {
-			if (result) {
-				log.info('Request \'getById\': completed');
-				res.status(200).send(result); 
+	passport.checkServiceAuthorization(req, res, function (scope) {
+		const id = req.params.id;
+		transfers.getById(id, function(err, result) {
+			if (err) {
+				if (err.kind == "ObjectId") {
+					log.error('Request \'getById\': ID is invalid');
+					res.status(400).send({ status: "Error", message: "Bad request: ID is invalid", service: scope});
+				} 
+				else { 
+					log.error('Request \'getById\': ' + err);
+					res.status(400).send({ status: "Error", message: err, service: scope});
+				}
 			}
 			else {
-				log.error('Request \'getById\': Transfer not found');
-				res.status(404).send({ status: "Error", message: "Transfer not found"});	
+				if (result) {
+					log.info('Request \'getById\': completed');
+					let temp = {
+						info: result,
+						service: scope
+					}
+					res.status(200).send(result); 
+				}
+				else {
+					log.error('Request \'getById\': Transfer not found');
+					res.status(404).send({ status: "Error", message: "Transfer not found", service: scope});	
+				}
 			}
-		}
+		});
 	});
 });
 
@@ -113,48 +126,54 @@ router.put('/:id', function(req, res, next) {
 /////////////////////////////////// POST REQUEST ///////////////////////////////////
 // create transfer
 router.post('/create', function(req, res, next) {
-	let data = {
-		playerID: req.body.playerID,
-		scoutID : req.body.scoutID,
-		cost 	: validator.checkInt(req.body.cost),
-		dateOfSign 	: validator.parseDate(req.body.date),
-		clubFrom: req.body.clubFrom,
-		clubTo 	: req.body.clubTo
-	};
+	return passport.checkServiceAuthorization(req, res, function (scope) {
+		let data = {
+			playerID: req.body.playerID,
+			scoutID : req.body.scoutID,
+			cost 	: validator.checkInt(req.body.cost),
+			dateOfSign 	: validator.parseDate(req.body.date),
+			clubFrom: req.body.clubFrom,
+			clubTo 	: req.body.clubTo
+		};
 
-	let keys = [data.playerID, data.scoutID, data.dateOfSign, data.clubTo, data.clubFrom];
-	let flag = 0;
+		let keys = [data.playerID, data.scoutID, data.dateOfSign, data.clubTo, data.clubFrom];
+		let flag = 0;
 
-	for (let i = 0; i < keys.length; i++)
-		if (validator.checkValue(keys[i]))
-			flag++;
+		for (let i = 0; i < keys.length; i++)
+			if (validator.checkValue(keys[i]))
+				flag++;
 
-	if (data.cost == 'undefined') {
-		log.error('Request \'updateById\': Incorrect cost');
-		res.status(400).send({ status: "Error", message: "Incorrect cost"});
-	} else if (flag != keys.length) {
-		log.error('Request \'create\': Incorrect one or more parameters');
-		res.status(400).send({ status: "Error", message: "Incorrect one or more parameters",
-			parameters: "playerID, scoutID, date, clubTo, clubFrom" });
-	} 
-	else {
-		transfers.create(data, function(err, result) {
-			if (err) {
-				log.error('Request \'create\': ' + err);
-				res.status(400).send({ status: "Error", message: err});
-			}
-			else {
-				if (result) {
-					log.info('Request \'create\': completed');
-					res.status(201).send(result);
-				}	
-				else {
-					log.error('Request \'create\': Transfer did not created');
-					res.status(500).send({ status: "Error", message: "Transfer did not created"});
+		if (data.cost == 'undefined') {
+			log.error('Request \'updateById\': Incorrect cost');
+			res.status(400).send({ status: "Error", message: "Incorrect cost", service: scope});
+		} else if (flag != keys.length) {
+			log.error('Request \'create\': Incorrect one or more parameters');
+			res.status(400).send({ status: "Error", message: "Incorrect one or more parameters",
+				parameters: "playerID, scoutID, date, clubTo, clubFrom", service: scope });
+		} 
+		else {
+			transfers.create(data, function(err, result) {
+				if (err) {
+					log.error('Request \'create\': ' + err);
+					res.status(400).send({ status: "Error", message: err, service: scope});
 				}
-			}
-		});
-	}
+				else {
+					if (result) {
+						log.info('Request \'create\': completed');
+						let temp = {
+							info: result,
+							service: scope
+						}
+						res.status(201).send(temp);
+					}	
+					else {
+						log.error('Request \'create\': Transfer did not created');
+						res.status(500).send({ status: "Error", message: "Transfer did not created", service: scope});
+					}
+				}
+			});
+		}
+	});
 });
 
 
