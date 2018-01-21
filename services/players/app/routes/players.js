@@ -3,7 +3,8 @@ var express = require('express'),
 	mongoose = require('mongoose'),
 	log = require('./../../config/log')(module),
 	players = mongoose.model('Player'),
-	validator = require('./../validators');
+	validator = require('./../validators'), 
+	passport = require('./../passport');
 
 module.exports = function(app) {
 	app.use('/api/players', router);
@@ -16,48 +17,60 @@ router.head('/live', function(req, res, next) {
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
 // get all players
 router.get('/', function(req, res, next) {
-	let page = validator.checkInt(req.query.page);
-	let count = validator.checkInt(req.query.count);
-	page = validator.checkValue(page) ? page : 0;
-	count = validator.checkValue(count) ? count : 0;
+	passport.checkServiceAuthorization(req, res, function (scope) {
+		let page = validator.checkInt(req.query.page);
+		let count = validator.checkInt(req.query.count);
+		page = validator.checkValue(page) ? page : 0;
+		count = validator.checkValue(count) ? count : 0;
 
-	players.getAll(page, count, function(err, result) {
-		if (err) {
-			log.error('Request \'getAll\': ' + err);
-			res.status(400).send({ status: "Error", message: err});
-		}
-		else {
-			log.info('Request \'getAll\': completed');
-			res.status(200).send(result);
-		}
+		players.getAll(page, count, function(err, result) {
+			if (err) {
+				log.error('Request \'getAll\': ' + err);
+				res.status(400).send({ status: "Error", message: err, service: scope});
+			}
+			else {
+				log.info('Request \'getAll\': completed');
+				let temp = {
+					content: result,
+					service: scope
+				}
+				res.status(200).send(temp);
+			}
+		});
 	});
 });
 
 
 // get player by id
 router.get('/:id', function(req, res, next) {
-	const id = req.params.id;
-	players.getById(id, function(err, result) {
-		if (err) {
-			if (validator.checkValue(err.value)) {
-				log.error('Request \'getById\': Incorrect ID');
-				res.status(400).send({ status: "Error", message: "Incorrect ID"});
-			} 
-			else { 
-				log.error('Request \'getById\': ' + err);
-				res.status(400).send({ status: "Error", message: err});
-			}
-		}
-		else {
-			if (result) {
-				log.info('Request \'getById\': completed');
-				res.status(200).send(result); 
+	passport.checkServiceAuthorization(req, res, function (scope) {
+		const id = req.params.id;
+		players.getById(id, function(err, result) {
+			if (err) {
+				if (validator.checkValue(err.value)) {
+					log.error('Request \'getById\': Incorrect ID');
+					res.status(400).send({ status: "Error", message: "Incorrect ID", service: scope});
+				} 
+				else { 
+					log.error('Request \'getById\': ' + err);
+					res.status(400).send({ status: "Error", message: err, service: scope});
+				}
 			}
 			else {
-				log.error('Request \'getById\': Player not found');
-				res.status(404).send({ status: "Error", message: "Player not found"});	
+				if (result) {
+					log.info('Request \'getById\': completed');
+					let temp = {
+						content: result,
+						service: scope
+					}
+					res.status(200).send(temp); 
+				}
+				else {
+					log.error('Request \'getById\': Player not found');
+					res.status(404).send({ status: "Error", message: "Player not found", service: scope});	
+				}
 			}
-		}
+		});
 	});
 });
 
@@ -90,92 +103,103 @@ router.post('/test_generate', function (req, res, next) {
 /////////////////////////////////// PUT REQUEST ///////////////////////////////////
 // update contract player by id
 router.put('/:id/contract/', function(req, res, next) {
-	const id = req.params.id;
-	let data = {
-		date: validator.parseDate(req.body.date), 
-		years: validator.checkInt(req.body.years)
-	};
+	passport.checkServiceAuthorization(req, res, function (scope) {
+		const id = req.params.id;
+		let data = {
+			date: validator.parseDate(req.body.date), 
+			years: validator.checkInt(req.body.years)
+		};
 
-	if (!validator.checkValue(data.date)) {
-		log.error('Request \'updateContractById\':  Invalid parameter (date)');
-		res.status(400).send({ status: "Error", message: "Invalid parameter (date)"});
-	}
-	else if (!validator.checkValue(data.years)) {
-		log.error('Request \'updateContractById\': Invalid parameter (years)');
-		res.status(400).send({ status: "Error", message: "Invalid parameter (years)"});
-	}
-	else {
-		players.updateContractById(id, data, function(err, result) {
-			if (err) {
-				if (err.kind == "ObjectId") {
-					log.error('Request \'updateContractById\': Incorrect ID');
-					res.status(400).send({ status: "Error", message: "Incorrect ID"});
-				} 
-				else { 
-					log.error('Request \'updateContractById\': ' + err);
-					res.status(400).send({ status: "Error", message: err});
-				}
-			}
-			else {
-				if (result) {
-					log.info('Request \'updateContractById\': completed');
-					let msg = "Contract " + result.name + " was updated";
-					res.status(200).send(/*{ status: "Ok", message: msg }*/result);
+		if (!validator.checkValue(data.date)) {
+			log.error('Request \'updateContractById\':  Invalid parameter (date)');
+			res.status(400).send({ status: "Error", message: "Invalid parameter (date)", service: scope});
+		}
+		else if (!validator.checkValue(data.years)) {
+			log.error('Request \'updateContractById\': Invalid parameter (years)');
+			res.status(400).send({ status: "Error", message: "Invalid parameter (years)", service: scope});
+		}
+		else {
+			players.updateContractById(id, data, function(err, result) {
+				if (err) {
+					if (err.kind == "ObjectId") {
+						log.error('Request \'updateContractById\': Incorrect ID');
+						res.status(400).send({ status: "Error", message: "Incorrect ID", service: scope});
+					} 
+					else { 
+						log.error('Request \'updateContractById\': ' + err);
+						res.status(400).send({ status: "Error", message: err, service: scope});
+					}
 				}
 				else {
-					log.error('Request \'updateContractById\': Player not found');
-					res.status(404).send({ status: "Error", message: "Player not found" });	
-				}
-			} 
-		});
-	}
+					if (result) {
+						log.info('Request \'updateContractById\': completed');
+						let temp = {
+							content: result,
+							service: scope
+						}
+						res.status(200).send(temp);
+					}
+					else {
+						log.error('Request \'updateContractById\': Player not found');
+						res.status(404).send({ status: "Error", message: "Player not found", service: scope});	
+					}
+				} 
+			});
+		}
+	});
 });
 
-// update player by id
+// update player(club, contract) by id
 router.put('/:id', function(req, res, next) {
-	const id = req.params.id;
-	let data = {
-		clubTo: req.body.clubTo,
-		date: validator.parseDate(req.body.date), 
-		years: validator.checkInt(req.body.years)
-	};
+	passport.checkServiceAuthorization(req, res, function (scope) {
+		const id = req.params.id;
+		let data = {
+			clubTo: req.body.clubTo,
+			date: validator.parseDate(req.body.date), 
+			years: validator.checkInt(req.body.years)
+		};
 
-	if (!validator.checkValue(data.date)) {
-		log.error('Request \'updateById\': Invalid parameter (date)');
-		res.status(400).send({ status: "Error", message: "Invalid parameter (date)"});
-	}
-	else if (!validator.checkValue(data.years)) {
-		log.error('Request \'updateById\': Invalid parameter (years)');
-		res.status(400).send({ status: "Error", message: "Invalid parameter (years)"});
-	}
-	else if (!validator.checkValue(data.clubTo)) {
-		log.error('Request \'updateById\': Invalid parameter (clubTo)');
-		res.status(400).send({ status: "Error", message: "Invalid parameter (clubTo)"});
-	}
-	else {
-		players.updateById(id, data, function(err, result) {
-			if (err) {
-				if (err.kind == "ObjectId") {
-					log.error('Request \'updateById\': Incorrect ID');
-					res.status(400).send({ status: "Error", message: "Incorrect ID"});
-				} 
-				else { 
-					log.error('Request \'updateById\': ' + err);
-					res.status(400).send({ status: "Error", message: err});
-				}
-			}
-			else {
-				if (result) {
-					log.info('Request \'updateById\': completed');
-					res.status(200).send(result);
+		if (!validator.checkValue(data.date)) {
+			log.error('Request \'updateById\': Invalid parameter (date)');
+			res.status(400).send({ status: "Error", message: "Invalid parameter (date)", service: scope});
+		}
+		else if (!validator.checkValue(data.years)) {
+			log.error('Request \'updateById\': Invalid parameter (years)');
+			res.status(400).send({ status: "Error", message: "Invalid parameter (years)", service: scope});
+		}
+		else if (!validator.checkValue(data.clubTo)) {
+			log.error('Request \'updateById\': Invalid parameter (clubTo)');
+			res.status(400).send({ status: "Error", message: "Invalid parameter (clubTo)", service: scope});
+		}
+		else {
+			players.updateById(id, data, function(err, result) {
+				if (err) {
+					if (err.kind == "ObjectId") {
+						log.error('Request \'updateById\': Incorrect ID');
+						res.status(400).send({ status: "Error", message: "Incorrect ID", service: scope});
+					} 
+					else { 
+						log.error('Request \'updateById\': ' + err);
+						res.status(400).send({ status: "Error", message: err, service: scope});
+					}
 				}
 				else {
-					log.error('Request \'updateById\': Player not found');
-					res.status(404).send({ status: "Error", message: "Player not found" });	
-				}
-			} 
-		});
-	}
+					if (result) {
+						log.info('Request \'updateById\': completed');
+						let temp = {
+							content: result,
+							service: scope
+						}
+						res.status(200).send(temp);
+					}
+					else {
+						log.error('Request \'updateById\': Player not found');
+						res.status(404).send({ status: "Error", message: "Player not found", service: scope});	
+					}
+				} 
+			});
+		}
+	});
 });
 
 /////////////////////////////////// DELETE REQUEST ///////////////////////////////////
