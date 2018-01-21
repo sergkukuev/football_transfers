@@ -1,7 +1,7 @@
 var express = require('express'),
 	router = express.Router(),
 	mongoose = require('mongoose'),
-	log = require('./../../libs/log')(module),
+	log = require('./../../config/log')(module),
 	scouts = mongoose.model('Scout'),
 	validator = require('./../validators');
 
