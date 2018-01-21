@@ -1,7 +1,7 @@
 var express		= require('express'),
 	router 		= express.Router(),
 	log 		= require('./../../libs/log')(module),
-	coord		= require('./../coordinator/aggregation_coord'),
+	coord		= require('./../coordinators/aggregation'),
 	validator	= require('./../validators'), 
 	rabbitMQ 	= require('amqplib/callback_api'), 
 	auth		= require('basic-auth');
