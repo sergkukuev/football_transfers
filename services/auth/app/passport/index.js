@@ -15,8 +15,27 @@ module.exports = {
         }
         return callback('Unknown authorization type', 400, null);
     },
-    setUserTokenByPwd : function(log, pwd, callback) {
-        return strategy.createTokenForUser(log, pwd, function(err, status, scope) {
+    /**
+    * @param {Object} data - data
+    */
+    getUserCode : function (data, callback) {
+        const validator = checkResponseType(data.responseType, 'code');
+        if (!validator) {
+            return callback('Invalid responseType', 400, null);
+        }
+        return strategy.checkServiceById(data.appId, function (err, status, response) {
+            if (err) {
+                return callback(err, status, response);
+            } else if (!response) {
+                return callback(err, status, null);
+            } else
+                return strategy.getUserCode(data.login, data.password, function(err, status, code){
+                    return callback(err, status, code);
+                });
+        });
+    },
+    setUserTokenByCode : function(code, callback) {
+        return strategy.createTokenForUser(code, function(err, status, scope) {
             if (err)
                 return callback(err, status, null);
             if (!scope)
@@ -45,6 +64,12 @@ module.exports = {
             return callback(null, status, user);
         });
     }   
+}
+
+function checkReponseType(type, needed) {
+    if (type === needed)
+        return true;
+    return false;
 }
 
 function checkBasicAuthorization(header_authorization, callback) {

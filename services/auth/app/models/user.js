@@ -20,7 +20,9 @@ const UserSchema = new Schema({
     created: {
         type: Date, 
         default: Date.now
-    }
+    },
+    code: String,
+    role: String
 });
 
 UserSchema.methods.encryptPassword = function(password) {

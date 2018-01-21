@@ -19,6 +19,28 @@ module.exports = {
 				return done(null, null, app_cli);
 		});
 	},
+	checkServiceById : function(appId, done) {
+		return ClientModel.findOne({appId: appId}, function (err, app_cli) {
+			if (err)
+				return done(err, 500);
+			else if (!app_cli)
+				return done('App not found', 404);
+			return done(null, 200, true);
+		});
+	},
+	getUserCode : function (login, password, done) {
+		return UserModel.findOne({login: login}, function (err, user) {
+			if (err)
+				return done(err, 500, null);
+			else if (!user)
+				return done('User not found', 500, null);
+			else if (!user.checkPassword(password))
+				return done('Password is wrong', 400, null);
+
+			const code = user.code;
+			return done(null, 200, code);
+		});
+	},
 	checkServiceAccessToken : function(accessToken, done) {
 		return AccessToken.findOne({token : accessToken}, function(err, token) {
 			if (err) {
@@ -66,14 +88,12 @@ module.exports = {
 			}
 		});
 	},
-	createTokenForUser : function(login, password, done) {
-		return UserModel.findOne({login: login}, function(err, user) {
+	createTokenForUser : function(code, done) {
+		return UserModel.findOne({code: code}, function(err, user) {
 			if (err)
 				return done(err, 500);
 			if (!user)
-				return done('User with this login or password not found', 400, false);
-			if (!user.checkPassword(password))
-				return done('Wrong password', 401, false);
+				return done('User with this code not found', 401, false);
 
 			RefreshToken.remove({userID: user.userID}, function(err) {
 				if (err)
@@ -99,7 +119,7 @@ module.exports = {
 			userID: user.id
 			});
 
-			refreshToken.save(function(err) {
+			return refreshToken.save(function(err) {
 				if (err)
 					return done(err, 500);
 				token.save(function(err, token) {
