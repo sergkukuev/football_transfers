@@ -22,7 +22,7 @@ checkService : function(appId, appSecret, done) {
 			if (!token)
 				return done('Application with this access token not found', 401, false);
 		
-			const timeLife = (Date.now() - token.created)/1000;
+			const timeLife = (Date.now() - token.created) / 1000;
 			if (timeLife > life) {
 				return token.remove(function(err) {
 					if (err)
