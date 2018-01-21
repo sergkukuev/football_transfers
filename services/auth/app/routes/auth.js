@@ -109,3 +109,27 @@ function refreshTokenAuthorization(req, res, next, service_scope) {
         return res.status(200).send(data);
     });
 }
+
+/*
+const mongoose = require('mongoose');
+router.get('/create', function(req, res, next){
+    let model = mongoose.model('User');
+    let user = new model({
+        login: 'Valencia',
+        password : '6666'
+    });
+    user.save(function(err, nw_user){
+        if (err)
+            return res.send(err);
+        return res.send(nw_user);
+    });
+        
+    let ClientModel = mongoose.model('Client');
+    var client = new ClientModel({ name: "Valencia", appId: "es1", appSecret:"6666" });
+    client.save(function(err, client) {
+        if(err) 
+            return res.send(err);
+        res.send(null);
+    });
+});
+*/
