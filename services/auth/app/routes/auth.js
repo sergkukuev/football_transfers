@@ -73,7 +73,7 @@ function passwordAuthorization(req, res, next, service_scope) {
 function refreshTokenAuthorization(req, res, next, service_scope) {
     const token = req.body.refresh_token;
     if (!token || typeof(token) == 'undefined')
-        return res.status(400).send({ status: 'Error', 'Token is undefined'));
+        return res.status(400).send({ status: 'Error', message: 'Token is undefined'});
     return passport.setUserTokenByToken(token, function(err, status, user_scope) {
         if (err)
             return res.status(status).send({ status: 'Error', message: err});

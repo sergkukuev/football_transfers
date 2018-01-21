@@ -1,7 +1,7 @@
 const	crypto	= require('crypto'),
-		config	= require('./config'),
+		config	= require('./index'),
 		log 	= require('./log'),
-		UserModel   	= require('./../app/models/users').userModel,
+		UserModel   	= require('./../app/models/user').userModel,
 		ClientModel 	= require('./../app/models/client').clientModel,
 		AccessToken  	= require('./../app/models/tokens/access').tokenModel,
 		RefreshToken 	= require('./../app/models/tokens/refresh').tokenModel;
