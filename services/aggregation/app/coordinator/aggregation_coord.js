@@ -348,7 +348,7 @@ function createAndSendDeleteHttpRequest(options, callback) {
     });
 }
 
-function createOptions(uri, method, user_token = null, user_id = null) {
+function createOptions(uri, method, token, user_token = null, user_id = null) {
     let item = {
         method: method,
         uri: uri,
