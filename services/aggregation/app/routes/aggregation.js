@@ -291,7 +291,9 @@ router.get('/transfers/:id', function(req, res, next) {
 		}
 		else {
 			if (trans_code == 200) {
-				let transfer = JSON.parse(trans_res);
+				let temp = JSON.parse(trans_res);
+				let transfer = temp.content;
+				console.log(temp);
 				let t1 = {
 					id: transfer.playerID
 				} 
@@ -300,8 +302,10 @@ router.get('/transfers/:id', function(req, res, next) {
 						id: transfer.scoutID
 					} 
 					coord.getScout(t2, function(scout_err, scout_code, scout_res) {
-						let player = JSON.parse(player_res);
-						let scout = JSON.parse(scout_res);
+						temp = JSON.parse(player_res);
+						let player = temp.content;
+						temp = JSON.parse(scout_res);
+						let scout = temp.content;
 						// Оба сервиса недоступны
 						if (player_err && scout_err)	
 							res.status(trans_code).send(transfer);

@@ -17,7 +17,7 @@ router.head('/live', function(req, res, next) {
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
 // get all transfers
 router.get('/', function(req, res, next) {
-	passport.checkServiceAuthorization(req, res, function (scope) {
+	return passport.checkServiceAuthorization(req, res, function (scope) {
 		let page = validator.checkInt(req.query.page);
 		let count = validator.checkInt(req.query.count);
 		page = validator.checkValue(page) ? page : 0;
@@ -41,7 +41,7 @@ router.get('/', function(req, res, next) {
 
 // get transfer by id
 router.get('/:id', function(req, res, next) {
-	passport.checkServiceAuthorization(req, res, function (scope) {
+	return passport.checkServiceAuthorization(req, res, function (scope) {
 		const id = req.params.id;
 		transfers.getById(id, function(err, result) {
 			if (err) {
@@ -61,7 +61,7 @@ router.get('/:id', function(req, res, next) {
 						content: result,
 						service: scope
 					}
-					res.status(200).send(result); 
+					res.status(200).send(temp); 
 				}
 				else {
 					log.error('Request \'getById\': Transfer not found');
