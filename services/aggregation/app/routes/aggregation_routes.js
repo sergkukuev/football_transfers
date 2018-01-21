@@ -3,7 +3,8 @@ var express		= require('express'),
 	log 		= require('./../../libs/log')(module),
 	coord		= require('./../coordinator/aggregation_coord'),
 	validator	= require('./../validators'), 
-	rabbitMQ 	 = require('amqplib/callback_api');
+	rabbitMQ 	= require('amqplib/callback_api'), 
+	auth		= require('basic-auth');
 
 module.exports = function(app) {
 	app.use('/api', router);
@@ -43,19 +44,6 @@ function receiveFromQueue(name, func, callback){
 
 // create transfers (queue)
 setInterval(function(){
-	/*coord.liveTransferService(function(trans_err, trans_code) {
-		coord.liveScoutService(function(scout_err, scout_code) {
-			coord.livePlayerService(function(player_err, player_code) {
-				if (trans_code == 200 && scout_code == 200 && player_code == 200) {
-					receiveFromQueue(function(data){
-						if (data) {
-							createTransfer(data);
-						}
-					});
-				}
-			});
-		});
-	});*/
 	coord.livePlayerService(function(err, code) {
 		if (code == 200) {
 			receiveFromQueue("players", "updatePlayer", function(data){
@@ -85,9 +73,11 @@ setInterval(function(){
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
 // get all players
 router.get('/players', function(req, res, next) {
-	const page = validator.checkInt(req.query.page);
-	const count = validator.checkInt(req.query.count);
-	coord.getPlayers(page, count, function(err, statusCode, players) {
+	let data = {
+		page: validator.checkInt(req.query.page),
+		count: validator.checkInt(req.query.count)
+	};
+	coord.getPlayers(data, function(err, statusCode, players) {
 		if (err) {
 			log.error(err);
 			return next(err);
@@ -101,7 +91,10 @@ router.get('/players', function(req, res, next) {
 
 // get player by id
 router.get('/players/:id', function(req, res, next) {
-	coord.getPlayer(req.params.id, function(err, statusCode, player) {
+	let data = {
+		id: req.params.id
+	};
+	coord.getPlayer(data, function(err, statusCode, player) {
 		if (err) {
 			log.error(err);
 			return next(err);
@@ -115,9 +108,11 @@ router.get('/players/:id', function(req, res, next) {
 
 // get all scouts
 router.get('/scouts', function(req, res, next) {
-	const page = validator.checkInt(req.query.page);
-	const count = validator.checkInt(req.query.count);
-	coord.getScouts(page, count, function(err, statusCode, scouts) {
+	let data = {
+		page: validator.checkInt(req.query.page),
+		count: validator.checkInt(req.query.count)
+	};
+	coord.getScouts(data, function(err, statusCode, scouts) {
 		if (err) {
 			log.error(err);
 			return next(err);
@@ -131,7 +126,10 @@ router.get('/scouts', function(req, res, next) {
 
 // get scout by id
 router.get('/scouts/:id', function(req, res, next) {
-	coord.getScout(req.params.id, function(err, statusCode, scout) {
+	let data = {
+		id: req.params.id
+	};
+	coord.getScout(data, function(err, statusCode, scout) {
 		if (err) {
 			log.error(err);
 			return next(err);
@@ -145,9 +143,11 @@ router.get('/scouts/:id', function(req, res, next) {
 
 // get transfers
 router.get('/transfers', function(req, res, next) {
-	const page = validator.checkInt(req.query.page);
-	const count = validator.checkInt(req.query.count);
-	coord.getTransfers(page, count, function(err, statusCode, transfers) {
+	let data = {
+		page: validator.checkInt(req.query.page),
+		count: validator.checkInt(req.query.count)
+	};
+	coord.getTransfers(data, function(err, statusCode, transfers) {
 		if (err){
 			log.error(err);
 			next(err);
@@ -249,7 +249,10 @@ function getTransferWithoutBoth(transfer, insteadPlayer, insteadScout) {
 }
 
 router.get('/transfers/:id', function(req, res, next) {
-	coord.getTransfer(req.params.id, function(trans_err, trans_code, trans_res) {
+	let t = {
+		id: req.params.id
+	} 
+	coord.getTransfer(t, function(trans_err, trans_code, trans_res) {
 		if (trans_err) {
 			let item = {
 				"ID"		: req.params.id,
@@ -267,8 +270,14 @@ router.get('/transfers/:id', function(req, res, next) {
 		else {
 			if (trans_code == 200) {
 				let transfer = JSON.parse(trans_res);
-				coord.getPlayer(transfer.playerID, function(player_err, player_code, player_res) {
-					coord.getScout(transfer.scoutID, function(scout_err, scout_code, scout_res) {
+				let t1 = {
+					id: transfer.playerID
+				} 
+				coord.getPlayer(t1, function(player_err, player_code, player_res) {
+					let t2 = {
+						id: transfer.scoutID
+					} 
+					coord.getScout(t2, function(scout_err, scout_code, scout_res) {
 						let player = JSON.parse(player_res);
 						let scout = JSON.parse(scout_res);
 						// Оба сервиса недоступны
@@ -326,6 +335,30 @@ router.get('/transfers/:id', function(req, res, next) {
 
 
 /////////////////////////////////// POST REQUEST ///////////////////////////////////
+//  auth
+router.post('/auth', function(req, res, next){
+	let getToken = function getBearerToken(req){
+		return req.headers.authorization.split(' ')[1];
+	}
+	if (req.headers.authorization.indexOf('Basic') === 0){
+		let user = auth(req);
+		const info = {
+			login     : user.name,
+			password  : user.pass
+		};
+		return bus.getTokenByPassword(info, function(err, status, responseText){
+			return res.status(status).send(responseText);
+		});
+	} else if (req.headers.authorization.indexOf('Bearer') === 0) {
+		const info = {
+			ref_token : getToken(req)
+		};
+		return bus.getTokenByToken(info, function(err, status, responseText){
+			res.status(status).send(responseText);
+		});
+	}
+});
+
 // create transfer (класть операцию в очередь)
 router.post('/transfers/create', function(req, res, next) {
 	const data = {
@@ -338,24 +371,18 @@ router.post('/transfers/create', function(req, res, next) {
 		clubFrom	: undefined
 	};
 
-	/*coord.liveTransferService(function(trans_err, trans_code) {
-		coord.liveScoutService(function(scout_err, scout_code) {
-			coord.livePlayerService(function(player_err, player_code) {
-				if (trans_code != 200 || scout_code != 200 || player_code != 200) {
-					addToQueue(data);
-					res.status(202).send({status: "Accepted", message: "Operation \'createTransfer\' accepted for processing"});
-				}
-			});
-		});
-	});*/
-
 	let player_data = {
 		clubTo 	: data.clubTo,
 		date 	: data.date,
 		years 	: data.years
 	};
 
-	coord.updatePlayer(data.playerID, player_data, function(player_err, player_code, player_res) {
+	let p = {
+		id: data.playerID,
+		data: player_data
+	}
+
+	coord.updatePlayer(p, function(player_err, player_code, player_res) {
 		if (player_err) { 
 			addToQueue("players", "updatePlayer", data);
 			res.status(202).send({status: "Accepted", message: "Operation \'updatePlayer\' accepted for processing"});
@@ -365,7 +392,10 @@ router.post('/transfers/create', function(req, res, next) {
 			if (player_code == 200) {
 				let player = JSON.parse(player_res);
 				data.clubFrom = player.club;
-				coord.incScoutDeals(data.scoutID, function(scout_err, scout_code, scout_res) {
+				let s = {
+					id: data.scoutID
+				}
+				coord.incScoutDeals(s, function(scout_err, scout_code, scout_res) {
 					if (scout_err) {
 						addToQueue("scouts", "confirmScoutDeals", data);
 						res.status(202).send({status: "Accepted", message: "Operation \'confirmScoutDeals\' accepted for processing"});
@@ -400,14 +430,21 @@ function updatePlayer(data) {
 		date 	: data.date,
 		years 	: data.years
 	};
-	coord.updatePlayer(data.playerID, player_data, function(player_err, player_code, player_res) {
+	let p = {
+		id: data.playerID,
+		data: player_data
+	}
+	coord.updatePlayer(p, function(player_err, player_code, player_res) {
 		if (player_err)
 			addToQueue("players", "updatePlayer", data);
 		else {
 			if (player_code == 200) {
 				let player = JSON.parse(player_res);
 				data.clubFrom = player.club;
-				coord.incScoutDeals(data.scoutID, function(scout_err, scout_code, scout_res) {
+				let s = {
+					id: data.scoutID
+				}
+				coord.incScoutDeals(s, function(scout_err, scout_code, scout_res) {
 					if (scout_err)
 						addToQueue("scouts", "confirmScoutDeals", data);
 					else {
@@ -431,7 +468,10 @@ function updatePlayer(data) {
 }
 
 function confirmScoutDeals(data) {
-	coord.incScoutDeals(data.scoutID, function(scout_err, scout_code, scout_res) {
+	let s = {
+		id: data.scoutID
+	}
+	coord.incScoutDeals(s, function(scout_err, scout_code, scout_res) {
 		if (scout_err)
 			addToQueue("scouts", "confirmScoutDeals", data);
 		else {
@@ -459,49 +499,28 @@ function createTransfer(data){
 }
 
 /////////////////////////////////// PUT REQUEST ///////////////////////////////////
-// update transfer info
-/*router.put('/transfers/update/:id', function(req, res, next) {
-	const id = req.params.id;
-	const param = {
-		Cost: req.body.Cost,
-		DateOfSign: req.body.DateOfSign,
-		ClubTo: req.body.ClubTo
-	};
-	coord.getTransfer(id, function(err, status, transfer) {
-		let arr = JSON.parse(transfer);
-		coord.updatePlayer(arr.PlayerID, param.ClubTo, function(err, statusCode, result) {
-			if (err)
-				next(err);
-			else
-				log.error(result);
-		});
-	});
-	coord.updateTransfer(id, param, function(err, statusCode, transfer) {
-		if (err)
-			return next(err);
-		else {
-			log.info('Transfer updated')
-			res.status(statusCode).send(transfer);
-		}
-	});
-});*/
-
 // update contract info (полный откат операции)
 router.put('/players/:id/contract/', function(req, res, next) {
-	const data = {
-		date: req.body.date,
-		years: req.body.years
-	};
-	coord.incScoutContracts(req.body.scoutID, function(err, code, result) {
+	let s = {
+		id: req.body.scoutID
+	}
+	let p = {
+		id: req.params.id,
+		data: {
+			date: req.body.date,
+			years: req.body.years
+		}
+	}
+	coord.incScoutContracts(s, function(err, code, result) {
 		if (err) {
 			res.status(503).send({ status: "Error", message: "Scout service unavailable", action: "Rollback operation"});
 			//return next (err);
 		}
 		else {
 			if (result) {
-				coord.updatePlayerContract(req.params.id, data, function(player_err, player_code, player_res) {
+				coord.updatePlayerContract(p, function(player_err, player_code, player_res) {
 					if (player_err) {
-						coord.decScoutContracts(req.body.scoutID, function(scout_err, scout_code, scout_res) {
+						coord.decScoutContracts(s, function(scout_err, scout_code, scout_res) {
 							if (err)
 								return next(err);
 							else
