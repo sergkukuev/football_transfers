@@ -383,66 +383,68 @@ router.post('/auth', function(req, res, next){
 
 // create transfer (класть операцию в очередь)
 router.post('/transfers/create', function(req, res, next) {
-	const data = {
-		playerID 	: req.body.playerID,
-		scoutID 	: req.body.scoutID,
-		cost 		: req.body.cost,
-		date 		: req.body.date,
-		clubTo 		: req.body.clubTo,
-		years 		: req.body.years,
-		clubFrom	: undefined
-	};
+	return checkAuth (req, res, function (user) {
+		const data = {
+			playerID 	: req.body.playerID,
+			scoutID 	: req.body.scoutID,
+			cost 		: req.body.cost,
+			date 		: req.body.date,
+			clubTo 		: req.body.clubTo,
+			years 		: req.body.years,
+			clubFrom	: undefined
+		};
 
-	let player_data = {
-		clubTo 	: data.clubTo,
-		date 	: data.date,
-		years 	: data.years
-	};
+		let player_data = {
+			clubTo 	: data.clubTo,
+			date 	: data.date,
+			years 	: data.years
+		};
 
-	let p = {
-		id: data.playerID,
-		data: player_data
-	}
-
-	coord.updatePlayer(p, function(player_err, player_code, player_res) {
-		if (player_err) { 
-			addToQueue("players", "updatePlayer", data);
-			res.status(202).send({status: "Accepted", message: "Operation \'updatePlayer\' accepted for processing"});
-			//return next(player_err);
+		let p = {
+			id: data.playerID,
+			data: player_data
 		}
-		else {
-			if (player_code == 200) {
-				let player = JSON.parse(player_res);
-				data.clubFrom = player.club;
-				let s = {
-					id: data.scoutID
-				}
-				coord.incScoutDeals(s, function(scout_err, scout_code, scout_res) {
-					if (scout_err) {
-						addToQueue("scouts", "confirmScoutDeals", data);
-						res.status(202).send({status: "Accepted", message: "Operation \'confirmScoutDeals\' accepted for processing"});
-						//return next (scout_err);
-					}
-					else {
-						if (scout_code == 200) {
-							coord.createTransfer(data, function(trans_err, trans_code, trans_res) {
-								if (trans_err) {
-									addToQueue("transfers", "createTransfer", data);
-									res.status(202).send({status: "Accepted", message: "Operation \'createTransfer\' accepted for processing"});
-									//return next(trans_err);
-								}
-								else
-									res.status(trans_code).send(trans_res);
-							});
-						}
-						else
-							res.status(scout_code).send(scout_res);
-					}
-				});
+
+		coord.updatePlayer(p, function(player_err, player_code, player_res) {
+			if (player_err) { 
+				addToQueue("players", "updatePlayer", data);
+				res.status(202).send({status: "Accepted", message: "Operation \'updatePlayer\' accepted for processing"});
+				//return next(player_err);
 			}
-			else
-				res.status(player_code).send(player_res);
-		}
+			else {
+				if (player_code == 200) {
+					let player = JSON.parse(player_res);
+					data.clubFrom = player.club;
+					let s = {
+						id: data.scoutID
+					}
+					coord.incScoutDeals(s, function(scout_err, scout_code, scout_res) {
+						if (scout_err) {
+							addToQueue("scouts", "confirmScoutDeals", data);
+							res.status(202).send({status: "Accepted", message: "Operation \'confirmScoutDeals\' accepted for processing"});
+							//return next (scout_err);
+						}
+						else {
+							if (scout_code == 200) {
+								coord.createTransfer(data, function(trans_err, trans_code, trans_res) {
+									if (trans_err) {
+										addToQueue("transfers", "createTransfer", data);
+										res.status(202).send({status: "Accepted", message: "Operation \'createTransfer\' accepted for processing"});
+										//return next(trans_err);
+									}
+									else
+										res.status(trans_code).send(trans_res);
+								});
+							}
+							else
+								res.status(scout_code).send(scout_res);
+						}
+					});
+				}
+				else
+					res.status(player_code).send(player_res);
+			}
+		});
 	});
 });
 
