@@ -30,7 +30,7 @@ router.get('/', function(req, res, next) {
 			else {
 				log.info('Request \'getAll\': completed');
 				let temp = {
-					info: result,
+					content: result,
 					service: scope
 				}
 				res.status(200).send(temp);
@@ -110,7 +110,7 @@ router.post('/create', function(req, res, next) {
 					if (result) {
 						log.info('Request \'create\': completed');
 						let temp = {
-							info: result,
+							content: result,
 							service: scope
 						}
 						res.status(201).send(temp);
