@@ -1,7 +1,7 @@
 var express = require('express'),
 	router = express.Router(),
 	mongoose = require('mongoose'),
-	log = require('./../../libs/log')(module),
+	log = require('./../../config/log')(module),
 	transfers = mongoose.model('Transfer'),
 	validator = require('./../validators'),
 	passport =require('./../passport');

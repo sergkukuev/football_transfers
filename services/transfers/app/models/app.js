@@ -1,5 +1,5 @@
 const   mongoose    = require('mongoose'),
-        log         = require('./../../libs/log');
+        log         = require('./../../config/log');
 
 const Schema  = mongoose.Schema;
 

@@ -1,5 +1,5 @@
 const crypto        = require('crypto'),
-      life          = require('./../../libs/config').app.tokenLife,
+      life          = require('./../../config').app.tokenLife,
       AppManager    = require('./../models/app').model,
       TokenManager  = require('./../models/tokens/access').token;
 
