@@ -58,7 +58,7 @@ router.get('/:id', function(req, res, next) {
 				if (result) {
 					log.info('Request \'getById\': completed');
 					let temp = {
-						info: result,
+						content: result,
 						service: scope
 					}
 					res.status(200).send(result); 
@@ -70,57 +70,6 @@ router.get('/:id', function(req, res, next) {
 			}
 		});
 	});
-});
-
-/////////////////////////////////// PUT REQUEST ///////////////////////////////////
-router.put('/:id', function(req, res, next) {
-	const id = req.params.id;
-	let data = {
-		cost: validator.checkInt(req.body.cost),
-		date: validator.parseDate(req.body.date),
-		clubTo: req.body.clubTo,
-		clubFrom: req.body.clubFrom
-	};
-
-	let keys = [data.date, data.clubTo, data.clubFrom];
-	let flag = 0;
-
-	for (let i = 0; i < keys.length; i++)
-		if (validator.checkValue(keys[i]))
-			flag++;
-
-	if (data.cost == 'undefined') {
-		log.error('Request \'updateById\': Incorrect cost');
-		res.status(400).send({ status: "Error", message: "Incorrect cost"});
-	} else if (flag != keys.length) {
-		log.error('Request \'updateById\': Incorrect one or more parameters');
-		res.status(400).send({ status: "Error", message: "Incorrect one or more parameters", 
-			parameters: "date, clubTo, clubFrom" });
-	} 
-	else {
-		transfers.updateById(id, data, function(err, result) {
-			if (err) {
-				if (err.kind == "ObjectId") {
-					log.error('Request \'updateById\': Incorrect ID');
-					res.status(400).send({ status: "Error", message: "Incorrect ID"});
-				} 
-				else { 
-					log.error('Request \'updateById\': ' + err);
-					res.status(400).send({ status: "Error", message: err});
-				}
-			}
-			else {
-				if (result) {
-					log.error('Request \'updateById\': completed');
-					res.status(200).send(result);
-				}
-				else {
-					log.error('Request \'updateById\': Transfer not found');
-					res.status(404).send({ status: "Error", message: "Transfer not found" });	
-				}
-			}	
-		});
-	}
 });
 
 /////////////////////////////////// POST REQUEST ///////////////////////////////////
