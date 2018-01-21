@@ -1,6 +1,6 @@
 var express	 = require('express'),
-	config 	 = require('./libs/config'),
-	log 	 = require('./libs/log')(module),
+	config 	 = require('./config'),
+	log 	 = require('./config/log')(module),
 	mongoose = require('mongoose');
 
 var app = express();
@@ -16,7 +16,7 @@ db.once('open', function callback() {
 	log.info("Service \'Player\' connected to MongoDB!");
 });
 
-module.exports = require('./libs/express') (app, config);
+module.exports = require('./config/express') (app, config);
 
 app.listen(config.port, function(){
 	log.info('Service \'Player\' listening on port ' + config.port);
