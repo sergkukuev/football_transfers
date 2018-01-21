@@ -251,11 +251,26 @@ function createAndSendDeleteHttpRequest(options, callback) {
     });
 }
 
-function createOptions(uri, method) {
+function createOptions(uri, method, user_token = null, user_id = null) {
     let item = {
         method: method,
         uri: uri,
     };
+    if (token) {
+        item.auth = {
+            bearer: token.token
+        }
+    } else {
+        item.auth ={
+            user: config.app.id,
+            pass: config.app.secret
+        }
+    }
+    item.headers = {};
+    if (user_token)
+        item.headers['user-authorization'] = 'Bearer ' + user_token;
+    if (user_id)
+        item.headers['userId'] = user_id;
     return item;
 }
 
