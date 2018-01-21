@@ -62,7 +62,7 @@ export default {
         if (response.data.length === 0) {
           --this.page
         } else {
-          this.scouts = response.data
+          this.scouts = response.data.content
           this.status = response.status
         }
       }, (err) => {

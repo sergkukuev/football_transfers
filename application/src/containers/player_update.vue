@@ -130,10 +130,10 @@ export default {
     get_scouts: function () {
       let path = '/scouts?count=' + this.count + '&page=' + this.page
       API.get(path).then((response) => {
-        if (response.data.length === 0) {
+        if (response.data.content.length === 0) {
           --this.page
         } else {
-          this.scouts = response.data
+          this.scouts = response.data.content
           this.statusScout = response.status
         }
       }, (err) => {
@@ -145,7 +145,7 @@ export default {
     get_player: function () {
       let path = '/players/' + this.id
       API.get(path).then((response) => {
-        this.player = response.data
+        this.player = response.data.content
         this.statusPlayer = response.status
       }, (err) => {
         this.statusPlayer = err.status

@@ -63,10 +63,10 @@ export default {
     get_transfers: function () {
       let path = '/transfers?count=' + this.count + '&page=' + this.page
       API.get(path).then((response) => {
-        if (response.data.length === 0) {
+        if (response.data.content.length === 0) {
           --this.page
         } else {
-          this.transfers = response.data
+          this.transfers = response.data.content
           this.status = response.status
           for (let i = 0; i < this.transfers.length; i++) {
             this.get_player(i)
@@ -82,7 +82,7 @@ export default {
     get_player: function (i) {
       let path = '/players/' + this.transfers[i].playerID
       API.get(path).then((response) => {
-        let player = response.data.name + ', ' + response.data.club
+        let player = response.data.content.name + ', ' + response.data.content.club
         this.transfers[i].playerID = player
       }, (err) => {
         console.log(err)
@@ -91,7 +91,7 @@ export default {
     get_scout: function (i) {
       let path = '/scouts/' + this.transfers[i].scoutID
       API.get(path).then((response) => {
-        let scout = response.data.name + ', ' + response.data.rank
+        let scout = response.data.content.name + ', ' + response.data.content.rank
         this.transfers[i].scoutID = scout
       }, (err) => {
         console.log(err)
