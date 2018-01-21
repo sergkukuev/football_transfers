@@ -1,5 +1,5 @@
 const   mongoose    = require('mongoose'),
-        log         = require('./../../config/log');
+        log         = require('./../../libs/log');
 
 const Schema  = mongoose.Schema;
 
@@ -36,8 +36,10 @@ function initialize(){
             return agg.save(function(err, agg){
                 if (err)
                     log.error('Can\'t saved aggregation');
-                else
-                    log.info('Successfully create aggregation client record {' + agg.name + '}');
+                else {
+                    let msg =  'Successfully create aggregation client record {' + agg.name + '}'; 
+                    log.info(msg);
+                }
                 return;
             });
         }
