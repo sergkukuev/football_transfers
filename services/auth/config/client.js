@@ -1,4 +1,4 @@
-const   client  = require('./../app/models/client').ClientModel, 
+const   client  = require('./../app/models/client').clientModel, 
         log     = require('./log');
 
 client.remove(function(err){
