@@ -70,6 +70,28 @@ setInterval(function(){
 	});
 }, interval2);
 
+/////////////////////////////////// CHECK AUTH ///////////////////////////////////
+function checkAuth(req, res, callback){
+	let getToken = function getBearerToken(req){
+		return req.headers.authorization.split(' ')[1];
+	}
+	const info = {
+		token : getToken(req)
+	} 
+	if (!info.token || info.token.length == 0 || typeof(info.token) === 'undefined')
+		return res.status(401).send({status : 'Non authorize', message : 'Invalid token'});
+	
+	return bus.getUserInfo(info, function(err, status, response){
+		if (err)
+			return res.status(status).send(err);
+		if (!response)
+			return res.status(status).send('User not found');
+		if (status == 401)
+			return res.status(status).send(response);
+		return callback(response)
+	});
+}
+
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
 // get all players
 router.get('/players', function(req, res, next) {
