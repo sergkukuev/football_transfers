@@ -64,104 +64,201 @@ module.exports = {
     },
     // Players service
     getPlayers: function (data, callback) {
-        const url = PlayerHost + '/players?page=' + data.page + '&count=' + data.count;
-        const options = createOptions(url, 'GET');
-        createAndSendGetHttpRequest(options, function (err, status, response) {
-            return responseHandlerArrayObject(err, status, response, callback);
-        });
-        return;
+        let main_function = function(data, callback) {
+            const url = PlayerHost + '/players?page=' + data.page + '&count=' + data.count;
+            const options = createOptions(url, 'GET');
+            createAndSendGetHttpRequest(options, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
+        return main_function(data, callback);
     },
     getPlayer: function (data, callback) {
-        const url = PlayerHost + '/players/' + data.id;
-        const options = createOptions(url, "GET");
-        createAndSendGetHttpRequest(options, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
-        return;
+        let main_function = function(data, callback) {
+            const url = PlayerHost + '/players/' + data.id;
+            const options = createOptions(url, "GET");
+            createAndSendGetHttpRequest(options, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
+        return main_function(data, callback);
     },
     updatePlayerContract: function (dataContainer, callback) {
-        const url = PlayerHost + '/players/' + dataContainer.id + '/contract/';
-        const options = createOptions(url, "PUT");
-        createAndSendHttpPutWithFormRequest(options, dataContainer.data, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
+        let main_function = function(data, callback) {
+            const url = PlayerHost + '/players/' + dataContainer.id + '/contract/';
+            const options = createOptions(url, "PUT");
+            createAndSendHttpPutWithFormRequest(options, dataContainer.data, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
+        return main_function(dataContainer, callback);
     },
     updatePlayer: function (dataContainer, callback) {
-        const url = PlayerHost + '/players/' + dataContainer.id;
-        const options = createOptions(url, "PUT");
-        createAndSendHttpPutWithFormRequest(options, dataContainer.data, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
+        let main_function = function(data, callback) {
+            const url = PlayerHost + '/players/' + dataContainer.id;
+            const options = createOptions(url, "PUT");
+            createAndSendHttpPutWithFormRequest(options, dataContainer.data, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
+        return main_function(dataContainer, callback);
     },
     // Scouts service
     getScouts: function (data, callback) {
-        const url = ScoutHost + '/scouts?page=' + data.page + '&count=' + data.count;
-        const options = createOptions(url, 'GET');
-        createAndSendGetHttpRequest(options, function (err, status, response) {
-            return responseHandlerArrayObject(err, status, response, callback);
-        });
-        return;
+        let main_function = function(data, callback) {
+            const url = ScoutHost + '/scouts?page=' + data.page + '&count=' + data.count;
+            const options = createOptions(url, 'GET');
+            createAndSendGetHttpRequest(options, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
+        return main_function(data, callback);
     },
     getScout: function (data, callback) {
-        const url = ScoutHost + '/scouts/' + data.id;
-        const options = createOptions(url, "GET");
-        createAndSendGetHttpRequest(options, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
-        return;
+        let main_function = function(data, callback) {
+            const url = ScoutHost + '/scouts/' + data.id;
+            const options = createOptions(url, "GET");
+            createAndSendGetHttpRequest(options, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
+        return main_function(data, callback);
     },
     incScoutDeals: function (data, callback) {
-        const url = ScoutHost + '/scouts/' + data.id + '/deals/confirm';
-        const options = createOptions(url, "PUT");
-        createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
+        let main_function = function(data, callback) {
+            const url = ScoutHost + '/scouts/' + data.id + '/deals/confirm';
+            const options = createOptions(url, "PUT");
+            createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
+        return main_function(data, callback);
     },
     decScoutDeals: function (data, callback) {
-        const url = ScoutHost + '/scouts/' + data.id + '/deals/cancel';
-        const options = createOptions(url, "PUT");
-        createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
+        let main_function = function(data, callback) {
+            const url = ScoutHost + '/scouts/' + data.id + '/deals/cancel';
+            const options = createOptions(url, "PUT");
+            createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
+        return main_function(data, callback);
     },
     incScoutContracts: function (data, callback) {
-        const url = ScoutHost + '/scouts/' + data.id + '/contracts/confirm';
-        const options = createOptions(url, "PUT");
-        createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
+        let main_function = function(data, callback) {
+            const url = ScoutHost + '/scouts/' + data.id + '/contracts/confirm';
+            const options = createOptions(url, "PUT");
+            createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
+        return main_function(data, callback);
     },
     decScoutContracts: function (data, callback) {
-        const url = ScoutHost + '/scouts/' + data.id + '/contracts/cancel';
-        const options = createOptions(url, "PUT");
-        createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
+        let main_function = function(data, callback) {
+            const url = ScoutHost + '/scouts/' + data.id + '/contracts/cancel';
+            const options = createOptions(url, "PUT");
+            createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
+        return main_function(data, callback);
     },
     // Transfers service
     createTransfer: function (data, callback) {
-        const url = TransferHost + '/transfers/create';
-        const options = createOptions(url, "POST");
-        createAndSendHttpPostRequest(options, data.object, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
-        return;
+        let main_function = function(data, callback) {
+            const url = TransferHost + '/transfers/create';
+            const options = createOptions(url, "POST");
+            createAndSendHttpPostRequest(options, data.object, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
+        return main_function(data, callback);
     },
     getTransfer: function (data, callback) {
-        const url = TransferHost + '/transfers/' + data.id;
-        const options = createOptions(url, "GET");
-        createAndSendGetHttpRequest(options, function (err, status, response) {
-            return responseHandlerObject(err, status, response, callback);
-        });
-        return;
+        let main_function = function(data, callback) {
+            const url = TransferHost + '/transfers/' + data.id;
+            const options = createOptions(url, "GET");
+            createAndSendGetHttpRequest(options, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
+        return main_function(data, callback);
     },
     getTransfers: function (data, callback) {
-        const url = TransferHost + '/transfers?page=' + data.page + '&count=' + data.count;
-        const options = createOptions(url, "GET");
-        createAndSendGetHttpRequest(options, function (err, status, response) {
-            return responseHandlerArrayObject(err, status, response, callback);
-        });
-        return;
+        let main_function = function(data, callback) {
+            return main_function(data, callback);
+            const url = TransferHost + '/transfers?page=' + data.page + '&count=' + data.count;
+            const options = createOptions(url, "GET");
+            createAndSendGetHttpRequest(options, function (err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response){
+                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                }); 
+            });
+        }
     },
 
     // livecheck services
@@ -287,32 +384,6 @@ function responseHandlerObject(err, status, response, callback) {
             return callback(err, status, response);
         } else {
             return callback(err, status, null);
-        }
-    }
-}
-
-function responseHandlerArrayObject(err, status, response, callback) {
-    if (err) {
-        if (err.code == "ECONNREFUSED")
-            return callback(err, 503, 'Sorry. Service is not available, please try again later');
-        else
-            return callback(err, status, response);
-    }
-    else {
-        if (status == 200) {
-            if (response) {
-                const parseObject = JSON.parse(response);
-                const array = Array.from(parseObject);
-                return callback(err, status, array);
-            } else {
-                return callback(err, status, null);
-            }
-        } else {
-            if (response){
-                return callback(null, status, JSON.parse(response));
-            } else {
-                return callback(null, status, null);
-            }
         }
     }
 }
