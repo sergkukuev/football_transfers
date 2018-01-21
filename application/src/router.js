@@ -4,6 +4,7 @@ import Router from 'vue-router'
 Vue.use(Router)
 
 import transfers from './containers/transfers'
+import auth from './containers/auth'
 import createTransfer from './containers/transfer_create'
 import infoTransfer from './containers/transfer_info'
 import players from './containers/players'
@@ -14,6 +15,7 @@ import scouts from './containers/scouts'
 // application routes
 const routes = [
   { path: '/', component: transfers },
+  { path: '/login', component: auth },
   { path: '/create', component: createTransfer },
   { path: '/players', component: players },
   { path: '/scouts', component: scouts },

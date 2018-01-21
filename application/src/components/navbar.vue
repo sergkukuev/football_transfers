@@ -15,10 +15,9 @@
       </router-link>
     </div>
     <div class="nav-right">
-      <!-- Wiil be login and logout
       <span class="nav-item">
-        <a class="button">Logout</a>
-      </span> -->
+        <a class="button">Login</a>
+      </span>
     </div>
   </nav>
 </template>
