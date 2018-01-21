@@ -8,8 +8,8 @@ const config = require('./../../libs/config'),
 
 module.exports = {
     // Auth service
-     getTokenByPassword : function(info, callback){
-        let main_function = function(info, callback){
+     getTokenByPassword : function(info, callback) {
+        let main_function = function(info, callback) {
             const url = _AuthHost + '/auth/token';
             const options = createOptions(url, 'POST', AuthToken);
             const data = {
@@ -17,8 +17,8 @@ module.exports = {
                 login       : info.login,
                 password    : info.password
             };
-            return createAndSendHttpPostRequest(options, data, function(err, status, response){
-                return responseHandlerObject(err, status, response, function(err, status, response){
+            return createAndSendHttpPostRequest(options, data, function(err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response) {
                     const repeat = checkServicesInformationFromAuth(status, response, main_function, info, callback);
                     if (!repeat)
                         return callback(err, status, response);
@@ -28,16 +28,16 @@ module.exports = {
         }
         return main_function(info, callback);
     },
-    getTokenByToken : function(info, callback){
-        let main_function = function(info, callback){
+    getTokenByToken : function(info, callback) {
+        let main_function = function(info, callback) {
             const url = _AuthHost + '/auth/token';
             const options = createOptions(url, 'POST', AuthToken);
             const data = {
                 grant_type  : 'refresh_token',
                 refresh_token : info.ref_token
             };
-            return createAndSendHttpPostRequest(options, data, function(err, status, response){
-                return responseHandlerObject(err, status, response, function(err, status, response){
+            return createAndSendHttpPostRequest(options, data, function(err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response) {
                     const repeat = checkServicesInformationFromAuth(status, response, main_function, info, callback);
                     if (!repeat)
                         return callback(err, status, response);
@@ -47,12 +47,12 @@ module.exports = {
         }
         return main_function(info, callback);
     },
-    getUserInfo : function(info, callback){
-        let main_function = function(info, callback){
+    getUserInfo : function(info, callback) {
+        let main_function = function(info, callback) {
             const url = _AuthHost + '/auth/userId';
             const options = createOptions(url, 'GET', AuthToken, info.token);
-            return createAndSendGetHttpRequest(options, function(err, status, response){
-                return responseHandlerObject(err, status, response, function(err, status, response){
+            return createAndSendGetHttpRequest(options, function(err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response) {
                     let repeat = checkServicesInformationFromAuth(status, response, main_function, info, callback);
                     if (!repeat)
                         callback(err, status, response);
@@ -68,7 +68,7 @@ module.exports = {
             const url = PlayerHost + '/players?page=' + data.page + '&count=' + data.count;
             const options = createOptions(url, 'GET');
             createAndSendGetHttpRequest(options, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
+                return responseHandlerObject(err, status, response, function(err, status, response) {
                     const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
@@ -83,7 +83,7 @@ module.exports = {
             const url = PlayerHost + '/players/' + data.id;
             const options = createOptions(url, "GET");
             createAndSendGetHttpRequest(options, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
+                return responseHandlerObject(err, status, response, function(err, status, response) {
                     const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
@@ -98,7 +98,7 @@ module.exports = {
             const url = PlayerHost + '/players/' + dataContainer.id + '/contract/';
             const options = createOptions(url, "PUT");
             createAndSendHttpPutWithFormRequest(options, dataContainer.data, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
+                return responseHandlerObject(err, status, response, function(err, status, response) {
                     const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
@@ -113,7 +113,7 @@ module.exports = {
             const url = PlayerHost + '/players/' + dataContainer.id;
             const options = createOptions(url, "PUT");
             createAndSendHttpPutWithFormRequest(options, dataContainer.data, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
+                return responseHandlerObject(err, status, response, function(err, status, response) {
                     const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
@@ -129,8 +129,8 @@ module.exports = {
             const url = ScoutHost + '/scouts?page=' + data.page + '&count=' + data.count;
             const options = createOptions(url, 'GET');
             createAndSendGetHttpRequest(options, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
-                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                return responseHandlerObject(err, status, response, function(err, status, response) {
+                    const repeat = checkServicesInformationFromScout(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
                     return;
@@ -144,8 +144,8 @@ module.exports = {
             const url = ScoutHost + '/scouts/' + data.id;
             const options = createOptions(url, "GET");
             createAndSendGetHttpRequest(options, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
-                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                return responseHandlerObject(err, status, response, function(err, status, response) {
+                    const repeat = checkServicesInformationFromScout(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
                     return;
@@ -159,8 +159,8 @@ module.exports = {
             const url = ScoutHost + '/scouts/' + data.id + '/deals/confirm';
             const options = createOptions(url, "PUT");
             createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
-                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                return responseHandlerObject(err, status, response, function(err, status, response) {
+                    const repeat = checkServicesInformationFromScout(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
                     return;
@@ -174,8 +174,8 @@ module.exports = {
             const url = ScoutHost + '/scouts/' + data.id + '/deals/cancel';
             const options = createOptions(url, "PUT");
             createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
-                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                return responseHandlerObject(err, status, response, function(err, status, response) {
+                    const repeat = checkServicesInformationFromScout(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
                     return;
@@ -189,8 +189,8 @@ module.exports = {
             const url = ScoutHost + '/scouts/' + data.id + '/contracts/confirm';
             const options = createOptions(url, "PUT");
             createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
-                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                return responseHandlerObject(err, status, response, function(err, status, response) {
+                    const repeat = checkServicesInformationFromScout(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
                     return;
@@ -204,8 +204,8 @@ module.exports = {
             const url = ScoutHost + '/scouts/' + data.id + '/contracts/cancel';
             const options = createOptions(url, "PUT");
             createAndSendHttpPutWithFormRequest(options, null, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
-                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                return responseHandlerObject(err, status, response, function(err, status, response) {
+                    const repeat = checkServicesInformationFromScout(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
                     return;
@@ -220,8 +220,8 @@ module.exports = {
             const url = TransferHost + '/transfers/create';
             const options = createOptions(url, "POST");
             createAndSendHttpPostRequest(options, data.object, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
-                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                return responseHandlerObject(err, status, response, function(err, status, response) {
+                    const repeat = checkServicesInformationFromTransfer(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
                     return;
@@ -235,8 +235,8 @@ module.exports = {
             const url = TransferHost + '/transfers/' + data.id;
             const options = createOptions(url, "GET");
             createAndSendGetHttpRequest(options, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
-                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                return responseHandlerObject(err, status, response, function(err, status, response) {
+                    const repeat = checkServicesInformationFromTransfer(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
                     return;
@@ -247,18 +247,18 @@ module.exports = {
     },
     getTransfers: function (data, callback) {
         let main_function = function(data, callback) {
-            return main_function(data, callback);
             const url = TransferHost + '/transfers?page=' + data.page + '&count=' + data.count;
             const options = createOptions(url, "GET");
             createAndSendGetHttpRequest(options, function (err, status, response) {
-                return responseHandlerObject(err, status, response, function(err, status, response){
-                    const repeat = checkServicesInformationFromPlayer(status, response, main_function, data, callback);
+                return responseHandlerObject(err, status, response, function(err, status, response) {
+                    const repeat = checkServicesInformationFromTransfer(status, response, main_function, data, callback);
                     if (!repeat)
                         return callback(err, status, response);
                     return;
                 }); 
             });
         }
+        return main_function(data, callback);
     },
 
     // livecheck services
@@ -326,10 +326,10 @@ function createAndSendGetHttpRequest(options, callback) {
     });
 }
 
-function createAndSendHeadHttpRequest(options, callback){
+function createAndSendHeadHttpRequest(options, callback) {
     const request = require('request');
-    request.head(options.uri, options, function(errors, response, body){
-        if (errors){
+    request.head(options.uri, options, function(errors, response, body) {
+        if (errors) {
             return callback(errors, null, null);
         } else {
             return callback(null, response.statusCode, body);
@@ -388,14 +388,14 @@ function responseHandlerObject(err, status, response, callback) {
     }
 }
 
-function checkServicesInformationFromAuth(status, response, method, info, callback){
-    if (status == 401 && response.status == 'Service error'){
+function checkServicesInformationFromAuth(status, response, method, info, callback) {
+    if (status == 401 && response.status == 'Service error') {
         log.info('Token AuthToken not topical');
         delete AuthToken;
         AuthToken = null;
         method(info, callback);
         return true;
-    } else if (typeof(response.service) != 'undefined'){
+    } else if (typeof(response.service) != 'undefined') {
         log.info('Set new AuthToken Token');
         AuthToken = response.service;
         delete response.service;
@@ -403,14 +403,14 @@ function checkServicesInformationFromAuth(status, response, method, info, callba
     return false;
 }
 
-function checkServicesInformationFromPlayer(status, response, method, info, callback){
-    if (status == 401 && response.status == 'Service error'){
+function checkServicesInformationFromPlayer(status, response, method, info, callback) {
+    if (status == 401 && response.status == 'Service error') {
         log.info('Token Player not topical');
         delete PlayerToken;
         PlayerToken = null;
         method(info, callback);
         return true;
-    } else if (typeof(response.service) != 'undefined'){
+    } else if (typeof(response.service) != 'undefined') {
         log.info('Set new PlayerToken');
         PlayerToken = response.service;
         delete response.service;
@@ -418,14 +418,14 @@ function checkServicesInformationFromPlayer(status, response, method, info, call
     return false;
 }
 
-function checkServicesInformationFromScout(status, response, method, info, callback){
-    if (status == 401 && response.status == 'Service error'){
+function checkServicesInformationFromScout(status, response, method, info, callback) {
+    if (status == 401 && response.status == 'Service error') {
         log.info('Token Scout not topical');
         delete ScoutToken;
         ScoutToken = null;
         method(info, callback);
         return true;
-    } else if (typeof(response.service) != 'undefined'){
+    } else if (typeof(response.service) != 'undefined') {
         log.info('Set new ScoutToken');
         ScoutToken = response.service;
         delete response.service;
@@ -433,15 +433,15 @@ function checkServicesInformationFromScout(status, response, method, info, callb
     return false;
 }
 
-function checkServicesInformationFromTransfer(status, response, method, info, callback){
-    if (status == 401 && response.status == 'Service error'){
+function checkServicesInformationFromTransfer(status, response, method, info, callback) {
+    if (status == 401 && response.status == 'Service error') {
         log.info('Token Trnasfer not topical');
         delete TransferToken;
         TransferToken = null;
         method(info, callback);
         return true;
     } 
-    if (response && typeof(response.service) != 'undefined'){
+    if (response && typeof(response.service) != 'undefined') {
         log.info('Set new TransferToken');
         TransferToken = response.service;
         delete response.service;
