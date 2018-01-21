@@ -16,7 +16,7 @@
     </div>
     <div class="nav-right">
       <span class="nav-item">
-        <a class="button">Login</a>
+        <a class="button" v-on:click="get_auth">Login</a>
       </span>
     </div>
   </nav>
@@ -24,7 +24,12 @@
 
 <script>
 export default {
-  name: 'navbar'
+  name: 'navbar',
+  methods: {
+    get_auth: function () {
+      window.location = 'http://localhost:8080/login'
+    }
+  }
 }
 </script>
 
