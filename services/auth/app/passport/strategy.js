@@ -36,9 +36,7 @@ module.exports = {
 				return done('User not found', 500, null);
 			else if (!user.checkPassword(password))
 				return done('Password is wrong', 400, null);
-
-			const code = user.code;
-			return done(null, 200, code);
+			return done(null, 200, user.code);
 		});
 	},
 	checkServiceAccessToken : function(accessToken, done) {

@@ -1,5 +1,5 @@
 const   basic       = require('basic-auth'),
-        strategy    = require('./strategy');
+        strategy    = require('./strategy') ;
 
 const basicType  = /basic/i;
 const bearerType = /bearer/i;
@@ -66,7 +66,7 @@ module.exports = {
     }   
 }
 
-function checkReponseType(type, needed) {
+function checkResponseType(type, needed) {
     if (type === needed)
         return true;
     return false;

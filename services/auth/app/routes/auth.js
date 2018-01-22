@@ -1,10 +1,19 @@
 const   express   = require('express'),
         router    = express.Router(),
+        validator = require('./../validators/login')
         passport  = require('./../passport');
 
 module.exports = (app) => {
     app.use('/auth', router);
 };
+
+router.get('/authorization', function(req, res, next){
+  res.render('auth', {
+    response_type : req.query.response_type,
+    redirect_uri  : req.query.redirect_uri,
+    app_id        : req.query.app_id
+  });
+});
 
 router.post('/login', function(req, res, next){
     const data = {
@@ -33,7 +42,7 @@ router.post('/login', function(req, res, next){
 
 router.post('/token', function(req, res, next) {
     const header_auth = req.headers['authorization'];
-
+    
     if (header_auth && typeof(header_auth) !== 'undefined') {
         return passport.checkServiceAuthorization(header_auth, function(err, status, scope) {
             if (err)
@@ -80,6 +89,7 @@ router.get('/userId', function(req, res, next) {
 
 function codeAuthorization(req, res, next, service_scope) {
     const code = req.body.code;
+
     if (!code || typeof(code) == 'undefined')
         return res.status(400).send({ status: 'Error', message: 'Bad request login or password is undefined'});
     return passport.setUserTokenByCode(code, function(err, status, user_scope) {
@@ -110,13 +120,14 @@ function refreshTokenAuthorization(req, res, next, service_scope) {
     });
 }
 
-/*
+
 const mongoose = require('mongoose');
 router.get('/create', function(req, res, next){
     let model = mongoose.model('User');
     let user = new model({
-        login: 'Valencia',
-        password : '6666'
+        login: 'Yupiter',
+        password : '8888',
+        code: 'awdawascasd'
     });
     user.save(function(err, nw_user){
         if (err)
@@ -125,11 +136,10 @@ router.get('/create', function(req, res, next){
     });
         
     let ClientModel = mongoose.model('Client');
-    var client = new ClientModel({ name: "Valencia", appId: "es1", appSecret:"6666" });
+    var client = new ClientModel({ name: "Real", appId: "aggr_id", appSecret:"aggr_secret" });
     client.save(function(err, client) {
         if(err) 
             return res.send(err);
         res.send(null);
     });
 });
-*/

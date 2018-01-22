@@ -70,10 +70,10 @@ setInterval(function(){
 	});
 }, interval2);
 
-/////////////////////////////////// CHECK AUTH ///////////////////////////////////
-function checkAuth(req, res, callback){
+/////////////////////////////////// AUTH ///////////////////////////////////
+function checkAuth(req, res, callback) {
 	let getToken = function getBearerToken(req){
-		return req.headers.authorization.split(' ')[1];
+		req.headers.authorization.split(' ')[1];
 	}
 	const info = {
 		token : getToken(req)
@@ -81,7 +81,7 @@ function checkAuth(req, res, callback){
 	if (!info.token || info.token.length == 0 || typeof(info.token) === 'undefined')
 		return res.status(401).send({status : 'Non authorize', message : 'Invalid token'});
 	
-	return bus.getUserInfo(info, function(err, status, response){
+	return coord.getUserInfo(info, function(err, status, response){
 		if (err)
 			return res.status(status).send(err);
 		if (!response)
@@ -91,6 +91,51 @@ function checkAuth(req, res, callback){
 		return callback(response)
 	});
 }
+
+const appId = require('./../../libs/config').app.id;
+router.get('/auth', function(req, res, next){
+	const authUrl = "http://localhost:3005/auth/authorization?";
+	const aggregatorUrl = "http://localhost:3000/api/code";
+	const queryParametrs = ['response_type=code', 'app_id=' + appId, 'redirect_uri='+ aggregatorUrl];
+	const uri = authUrl + queryParametrs.join('&');
+	return res.status(302).redirect(uri);
+});
+
+router.post('/authByToken', function(req, res ,next){
+  let getToken = function getBearerToken(req){
+    return req.headers.authorization.split(' ')[1];
+  }
+  const data = {
+    ref_token : getToken(req)
+  };
+  return coord.getTokenByToken(data, function(err, status, response){
+    res.status(status).send(response);
+    const info = {
+      status : status,
+      response : response,
+      entryData : data
+    };
+    return res.status(200).send(info);
+  });
+});
+
+router.get('/code', function(req, res, next){
+  const code = encodeURIComponent(req.query.code);
+  if (!code || typeof(code) == 'undefined' || code.length == 0)
+    return res.status(500).send({status : "Service Error", message : "Authorization service did not send code"});
+  const info = {
+    code : code
+  };
+  coord.getTokenByCode(info, function(err, status, response){
+    if (err)
+    	return res.status(status).send(response);
+    const info = {
+      status : status,
+      response : response
+    };
+    return res.status(200).send(info);
+  });
+});
 
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
 // get all players
@@ -130,19 +175,21 @@ router.get('/players/:id', function(req, res, next) {
 
 // get all scouts
 router.get('/scouts', function(req, res, next) {
-	let data = {
-		page: validator.checkInt(req.query.page),
-		count: validator.checkInt(req.query.count)
-	};
-	coord.getScouts(data, function(err, statusCode, scouts) {
-		if (err) {
-			log.error(err);
-			return next(err);
-		}
-		else {
-			log.info("Scouts was received");
-			res.status(statusCode).send(scouts);
-		}
+	return checkAuth (req, res, function (user) {	
+		let data = {
+			page: validator.checkInt(req.query.page),
+			count: validator.checkInt(req.query.count)
+		};
+		coord.getScouts(data, function(err, statusCode, scouts) {
+			if (err) {
+				log.error(err);
+				return next(err);
+			}
+			else {
+				log.info("Scouts was received");
+				res.status(statusCode).send(scouts);
+			}
+		});
 	});
 });
 
@@ -361,30 +408,6 @@ router.get('/transfers/:id', function(req, res, next) {
 
 
 /////////////////////////////////// POST REQUEST ///////////////////////////////////
-//  auth
-router.post('/auth', function(req, res, next){
-	let getToken = function getBearerToken(req){
-		return req.headers.authorization.split(' ')[1];
-	}
-	if (req.headers.authorization.indexOf('Basic') === 0){
-		let user = auth(req);
-		const info = {
-			login     : user.name,
-			password  : user.pass
-		};
-		return bus.getTokenByPassword(info, function(err, status, responseText){
-			return res.status(status).send(responseText);
-		});
-	} else if (req.headers.authorization.indexOf('Bearer') === 0) {
-		const info = {
-			ref_token : getToken(req)
-		};
-		return bus.getTokenByToken(info, function(err, status, responseText){
-			res.status(status).send(responseText);
-		});
-	}
-});
-
 // create transfer (класть операцию в очередь)
 router.post('/transfers/create', function(req, res, next) {
 	return checkAuth (req, res, function (user) {

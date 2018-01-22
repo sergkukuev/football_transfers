@@ -21,8 +21,7 @@ const UserSchema = new Schema({
         type: Date, 
         default: Date.now
     },
-    code: String,
-    role: String
+    code: String
 });
 
 UserSchema.methods.encryptPassword = function(password) {
@@ -39,7 +38,7 @@ UserSchema.virtual('password').set(function(password){
 });
 
 UserSchema.methods.checkPassword = function(password){
-    return this.encryptPassword(password) === this.hashedPassword;
+    return this.encryptPassword(password) === this.hPassword;
 }
 
 mongoose.model('User', UserSchema);
