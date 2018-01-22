@@ -10,7 +10,7 @@ module.exports = {
     // Auth service
      getTokenByPassword : function(info, callback) {
         let main_function = function(info, callback) {
-            const url = _AuthHost + '/auth/token';
+            const url = AuthHost + '/auth/token';
             const options = createOptions(url, 'POST', AuthToken);
             const data = {
                 grant_type  : 'password',
@@ -30,7 +30,7 @@ module.exports = {
     },
     getTokenByToken : function(info, callback) {
         let main_function = function(info, callback) {
-            const url = _AuthHost + '/auth/token';
+            const url = AuthHost + '/auth/token';
             const options = createOptions(url, 'POST', AuthToken);
             const data = {
                 grant_type  : 'refresh_token',
@@ -49,7 +49,7 @@ module.exports = {
     },
     getUserInfo : function(info, callback) {
         let main_function = function(info, callback) {
-            const url = _AuthHost + '/auth/userId';
+            const url = AuthHost + '/auth/userId';
             const options = createOptions(url, 'GET', AuthToken, info.token);
             return createAndSendGetHttpRequest(options, function(err, status, response) {
                 return responseHandlerObject(err, status, response, function(err, status, response) {
