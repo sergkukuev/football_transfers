@@ -72,16 +72,18 @@ setInterval(function(){
 
 /////////////////////////////////// AUTH ///////////////////////////////////
 function checkAuth(req, res, callback) {
-	let getToken = function getBearerToken(req){
-		req.headers.authorization.split(' ')[1];
-	}
-	const info = {
-		token : getToken(req)
+	let auth = req.headers.authorization;
+	if (!auth)
+		return res.status(401).send({status : 'Non authorize', message : 'No token'});
+
+	const data = {
+		token : auth.split(' ')[1]
 	} 
-	if (!info.token || info.token.length == 0 || typeof(info.token) === 'undefined')
+
+	if (!data.token || data.token.length == 0 || typeof(data.token) === 'undefined')
 		return res.status(401).send({status : 'Non authorize', message : 'Invalid token'});
 	
-	return coord.getUserInfo(info, function(err, status, response){
+	return coord.getUserInfo(data, function(err, status, response){
 		if (err)
 			return res.status(status).send(err);
 		if (!response)
@@ -101,18 +103,20 @@ router.get('/auth', function(req, res, next){
 	return res.status(302).redirect(uri);
 });
 
-router.post('/authByToken', function(req, res ,next){
-  let getToken = function getBearerToken(req){
-    return req.headers.authorization.split(' ')[1];
-  }
+router.post('/auth', function(req, res ,next){
+  let auth = req.headers.authorization;
+	if (!auth)
+		return res.status(401).send({status : 'Non authorize', message : 'No token'});
+
   const data = {
-    ref_token : getToken(req)
+    ref_token : auth.split(' ')[1]
   };
   return coord.getTokenByToken(data, function(err, status, response){
-    res.status(status).send(response);
+    if (err)
+    	return res.status(status).send(response);
     const info = {
       status : status,
-      response : response,
+      response : JSON.parse(response),
       entryData : data
     };
     return res.status(200).send(info);
@@ -131,7 +135,7 @@ router.get('/code', function(req, res, next){
     	return res.status(status).send(response);
     const info = {
       status : status,
-      response : response
+      response : JSON.parse(response)
     };
     return res.status(200).send(info);
   });
