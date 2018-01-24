@@ -43,6 +43,15 @@ module.exports = {
             return callback(null, null, scope);
         });
     },
+    setUserTokenByPass : function(data, callback) {
+        return strategy.createTokenForUserByPass(data, function(err, status, scope) {
+            if (err)
+                return callback(err, status, null);
+            if (!scope)
+                return callback(null, status, null);
+            return callback(null, null, scope);
+        });
+    },
     setUserTokenByToken : function(token, callback) {
         return strategy.createTokenForUserByToken(token, function(err, status, scope) {
             if (err)

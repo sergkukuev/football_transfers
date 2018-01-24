@@ -24,9 +24,9 @@ function addToQueue(name, func, data) {
 	});
 }
 
-function receiveFromQueue(name, func, callback){
-	rabbitMQ.connect('amqp://guest:guest@127.0.0.1', function(err, conn){
-		conn.createChannel(function(err, ch){
+function receiveFromQueue(name, func, callback) {
+	rabbitMQ.connect('amqp://guest:guest@127.0.0.1', function(err, conn) {
+		conn.createChannel(function(err, ch) {
 			ch.assertQueue(name, { durable: false });
 			ch.consume(name, function(data) {
 				let string = data.content.toString('utf-8');
@@ -43,10 +43,10 @@ function receiveFromQueue(name, func, callback){
 }
 
 // create transfers (queue)
-setInterval(function(){
+setInterval(function() {
 	coord.livePlayerService(function(err, code) {
 		if (code == 200) {
-			receiveFromQueue("players", "updatePlayer", function(data){
+			receiveFromQueue("players", "updatePlayer", function(data) {
 				if (data)
 					updatePlayer(data);
 			});
@@ -54,7 +54,7 @@ setInterval(function(){
 	});
 	coord.liveScoutService(function(err, code) {
 		if (code == 200) {
-			receiveFromQueue("scouts", "confirmScoutDeals", function(data){
+			receiveFromQueue("scouts", "confirmScoutDeals", function(data) {
 				if (data)
 					confirmScoutDeals(data);
 			});
@@ -62,7 +62,7 @@ setInterval(function(){
 	});
 	coord.liveTransferService(function(err, code) {
 		if (code == 200) {
-			receiveFromQueue("transfers", "createTransfer", function(data){
+			receiveFromQueue("transfers", "createTransfer", function(data) {
 				if (data)
 					createTransfer(data);
 			});
@@ -83,7 +83,7 @@ function checkAuth(req, res, callback) {
 	if (!data.token || data.token.length == 0 || typeof(data.token) === 'undefined')
 		return res.status(401).send({status : 'Non authorize', message : 'Invalid token'});
 	
-	return coord.getUserInfo(data, function(err, status, response){
+	return coord.getUserInfo(data, function(err, status, response) {
 		if (err)
 			return res.status(status).send(err);
 		if (!response)
@@ -93,52 +93,75 @@ function checkAuth(req, res, callback) {
 		return callback(response)
 	});
 }
+/////// LOG/PAS AUTHORIZATION ///////
+router.post('/auth', function(req, res, next) {
+	const data = {
+		login: req.body.login,
+		password: req.body.password
+	};
+	return  coord.getTokenByPass(data, function(err, status, response) {
+		if (err)
+			return res.status(status).send(response);
+		else {
+			let result = JSON.parse(response);
+			result.status = status;
+			return res.status(200).send(result);
+		}
+	});
+});
 
-const appId = require('./../../libs/config').app.id;
-router.get('/auth', function(req, res, next){
+/////// OAUTH2 AUTHORIZATION ///////
+const appData = {
+	id: require('./../../libs/config').app.id,
+	secret: require('./../../libs/config').app.secret
+}
+
+router.get('/oauth2', function(req, res, next) {
 	const authUrl = "http://localhost:3005/auth/authorization?";
-	const aggregatorUrl = "http://localhost:3000/api/code";
-	const queryParametrs = ['response_type=code', 'app_id=' + appId, 'redirect_uri='+ aggregatorUrl];
-	const uri = authUrl + queryParametrs.join('&');
+	const aggrUrl = "http://localhost:3000/api/code";
+	const params = ['response_type=code', 'app_id=' + appData.id, 'redirect_uri='+ aggrUrl];
+	const uri = authUrl + params.join('&');
 	return res.status(302).redirect(uri);
 });
 
-router.post('/auth', function(req, res ,next){
-  let auth = req.headers.authorization;
+router.post('/auth', function(req, res ,next) {
+	let auth = req.headers.authorization;
 	if (!auth)
 		return res.status(401).send({status : 'Non authorize', message : 'No token'});
 
-  const data = {
-    ref_token : auth.split(' ')[1]
-  };
-  return coord.getTokenByToken(data, function(err, status, response){
-    if (err)
-    	return res.status(status).send(response);
-    const info = {
-      status : status,
-      response : JSON.parse(response),
-      entryData : data
-    };
-    return res.status(200).send(info);
-  });
+	const data = {
+		ref_token : auth.split(' ')[1]
+	};
+	return coord.getTokenByToken(data, function(err, status, response) {
+		if (err)
+			return res.status(status).send(response);
+		else {
+			const info = {
+				status : status,
+				response : JSON.parse(response),
+				entryData : data
+			};
+			return res.status(200).send(info);
+		}
+	});
 });
 
-router.get('/code', function(req, res, next){
-  const code = encodeURIComponent(req.query.code);
-  if (!code || typeof(code) == 'undefined' || code.length == 0)
-    return res.status(500).send({status : "Service Error", message : "Authorization service did not send code"});
-  const info = {
-    code : code
-  };
-  coord.getTokenByCode(info, function(err, status, response){
-    if (err)
-    	return res.status(status).send(response);
-    const info = {
-      status : status,
-      response : JSON.parse(response)
-    };
-    return res.status(200).send(info);
-  });
+router.get('/code', function(req, res, next) {
+	const code = encodeURIComponent(req.query.code);
+	if (!code || typeof(code) == 'undefined' || code.length == 0)
+		return res.status(500).send({status : "Service Error", message : "Authorization service did not send code"});
+	const info = {
+		code : code
+	};
+	coord.getTokenByCode(info, function(err, status, response) {
+		if (err)
+			return res.status(status).send(response);
+		else {
+			let result = JSON.parse(response);
+			result.status = status;
+			return res.status(200).send(info);
+		}
+	});
 });
 
 /////////////////////////////////// GET REQUEST ///////////////////////////////////
@@ -221,7 +244,7 @@ router.get('/transfers', function(req, res, next) {
 		count: validator.checkInt(req.query.count)
 	};
 	coord.getTransfers(data, function(err, statusCode, transfers) {
-		if (err){
+		if (err) {
 			log.error(err);
 			next(err);
 		}
@@ -544,7 +567,7 @@ function confirmScoutDeals(data) {
 	});
 }
 
-function createTransfer(data){
+function createTransfer(data) {
 	coord.createTransfer(data, function(trans_err, trans_code, trans_res) {
 		if (trans_err)
 			addToQueue("transfers", "createTransfer", data);

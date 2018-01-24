@@ -35,8 +35,8 @@ router.post('/login', function(req, res, next){
     return passport.getUserCode(data, function(err, status, result){
         if (err)
             return res.status(status).send(err);
-        const fullUrl = data.redirect_uri + "?code=" + encodeURIComponent(result);
-        return res.redirect(302, fullUrl);
+        const url = data.redirect_uri + "?code=" + encodeURIComponent(result);
+        return res.redirect(302, url);
     });
 });
 
@@ -53,7 +53,9 @@ router.post('/token', function(req, res, next) {
             if (type === 'authorization_code') {
                 return codeAuthorization(req, res, next, scope);
             } else if (type === 'refresh_token') {
-                return refreshTokenAuthorization(req, res, next, scope);
+                return refreshTokenAuthorization(req, res, next, scope); 
+            } else if (type === 'password') {
+                return passAuthorization(req, res, next, scope);
             } else {
                 return res.status(400).send({ status: 'Error', message: 'Parametr "grant_type" is undefined'});
             }
@@ -72,6 +74,7 @@ router.get('/userId', function(req, res, next) {
             if (!scope)
                 return res.status(status).send({ status: 'Service error', message: 'Scope is null'});
             const user_auth = req.headers['user-authorization'];
+            console.log(user_auth);
             if (user_auth && typeof(user_auth) !== 'undefined') {
                 return passport.checkUserByBearer(user_auth, function(err, status, user) {
                     if (err)
@@ -101,6 +104,31 @@ function codeAuthorization(req, res, next, service_scope) {
         if (service_scope !== true)
             data.service = service_scope;
         return res.status(200).send(data);
+    });
+}
+
+function passAuthorization(req, res, next, service_scope) {
+    const data = {
+        login: req.body.login, 
+        pass: req.body.password
+    };
+    console.log('ovsyanan');
+    if (!data.login || !data.pass || typeof(data.login) == 'undefined' || typeof(data.pass) == 'undefined') {
+        return res.status(400).send({status: 'Error', message: 'Bad request: login or password is undefined'});
+    }
+    return passport.setUserTokenByPass(data, function(err, status, user_scope) {
+        if (err)
+            return res.status(status).send({status: 'Error', message: err});
+        if (!user_scope) {
+            return res.status.send({status: 'Error', message: 'User for this login and password is not found'});
+        }
+        let item = {
+            content: user_scope
+        };
+
+        if (service_scope !== true)
+            item.service = service_scope;
+        return res.status(200).send(item);
     });
 }
 

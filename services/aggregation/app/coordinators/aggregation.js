@@ -8,6 +8,26 @@ const config = require('./../../libs/config'),
 
 module.exports = {
     // Auth service
+    getTokenByPass : function(info, callback) {
+        let main_function = function(info, callback) {
+            const url = AuthHost + '/auth/token';
+            const options = createOptions(url, 'POST', AuthToken);
+            const data = {
+                grant_type  : 'password',
+                login: info.login,
+                password: info.password
+            };
+            return createAndSendHttpPostRequest(options, data, function(err, status, response) {
+                return responseHandlerObject(err, status, response, function(err, status, response) {
+                    const repeat = checkServicesInformationFromAuth(status, response, main_function, info, callback);
+                    if (!repeat)
+                        return callback(err, status, response);
+                    return;
+                });
+            });
+        }
+        return main_function(info, callback);
+    },
      getTokenByCode : function(info, callback) {
         let main_function = function(info, callback) {
             const url = AuthHost + '/auth/token';
