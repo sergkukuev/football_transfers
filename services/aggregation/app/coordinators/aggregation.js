@@ -238,7 +238,7 @@ module.exports = {
         let main_function = function(data, callback) {
             const url = TransferHost + '/transfers/create';
             const options = createOptions(url, "POST");
-            createAndSendHttpPostRequest(options, data.object, function (err, status, response) {
+            createAndSendHttpPostRequest(options, data, function (err, status, response) {
                 return responseHandlerObject(err, status, response, function(err, status, response) {
                     const repeat = checkServicesInformationFromTransfer(status, response, main_function, data, callback);
                     if (!repeat)

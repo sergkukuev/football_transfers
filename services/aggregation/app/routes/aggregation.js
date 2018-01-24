@@ -467,7 +467,8 @@ router.post('/transfers/create', function(req, res, next) {
 			}
 			else {
 				if (player_code == 200) {
-					let player = JSON.parse(player_res);
+					let item = JSON.parse(player_res);
+					let player = item.content;
 					data.clubFrom = player.club;
 					let s = {
 						id: data.scoutID
@@ -518,7 +519,7 @@ function updatePlayer(data) {
 		else {
 			if (player_code == 200) {
 				let player = JSON.parse(player_res);
-				data.clubFrom = player.club;
+				data.clubFrom = player.content.club;
 				let s = {
 					id: data.scoutID
 				}
