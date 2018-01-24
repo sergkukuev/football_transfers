@@ -21,8 +21,8 @@ var AccessToken = new Schema({
     }
 });
 
-AccessToken.statics.getAll = function(callback) {
-    return this.find(function(err, tokens) {
+AccessToken.statics.getByUserId = function(data, callback) {
+    return this.find({userID: data}, function(err, tokens) {
         if (err)
             callback(err, null);
         else {

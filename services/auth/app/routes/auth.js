@@ -172,7 +172,17 @@ router.get('/create', function(req, res, next){
 
 router.get('/access_tokens', function(req, res, next) {
     let model = require('./../models/tokens/access').tokenModel;
+    model.getByUserId('5a65c7fa181baa0e6cd8489e', function(err, result) {
+        res.status(200).send(result);
+    });
+});
+
+router.get('/refresh_tokens', function(req, res, next) {
+    let model = require('./../models/tokens/refresh').tokenModel;
     model.getAll(function(err, result) {
         res.status(200).send(result);
-    })
+    });
+    /*model.remove(function(err, result){
+        
+    });*/
 });
