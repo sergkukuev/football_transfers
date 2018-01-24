@@ -39,9 +39,9 @@ export default {
     auth: function () {
       let path = '/auth'
       API.post(path, this.data).then(response => {
-        console.log(response.data)
         this.status = response.data.status
         if (this.status === 200) {
+          console.log(response.data)
           this.$cookie.set('login', this.data.login)
           this.$cookie.set('access_token', response.data.content.access_token)
           window.location = 'http://localhost:8080/'

@@ -57,6 +57,7 @@ export default {
   },
   methods: {
     get_scouts: function () {
+      console.log(this.$cookie.get('access_token'))
       let path = '/scouts?count=' + this.count + '&page=' + this.page
       const authorization = `Bearer ${this.$cookie.get('access_token')}`
       API.get(path, { headers: {authorization} }).then((response) => {

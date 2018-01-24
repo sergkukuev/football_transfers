@@ -179,6 +179,7 @@ export default {
   methods: {
     post_transfer: function () {
       console.log(this.data)
+      console.log(this.$cookie.get('access_token'))
       let path = '/transfers/create'
       const authorization = `Bearer ${this.$cookie.get('access_token')}`
       API.post(path, this.data, { headers: {authorization} }).then(response => {
