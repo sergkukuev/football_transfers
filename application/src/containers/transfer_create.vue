@@ -117,7 +117,7 @@
           Enter the rest of the information about Transfer:
           <div>
             Buying club: </br>
-            <input type="text" id="clubTo" value="NoClub" style="margin-left:5%"/> </br> </br>
+            <input type="text" id="clubTo" v-model="$cookie.get('login')" style="margin-left:5%" readonly/> </br> </br>
             Transfer cost: </br>
             <input v-if="player.club !== 'NoClub'" type="text" id="cost" value="0" style="margin-left:5%"/>
             <input v-else type="text" id="cost" value="0" style="margin-left:5%" disabled/> </br> </br>
@@ -181,7 +181,7 @@ export default {
       console.log(this.data)
       let path = '/transfers/create'
       const authorization = `Bearer ${this.$cookie.get('access_token')}`
-      API.post(path, { headers: {authorization} }, this.data).then(response => {
+      API.post(path, this.data, { headers: {authorization} }).then(response => {
         this.status = response.status
       }, (err) => {
         this.status = err.response.status
@@ -208,7 +208,8 @@ export default {
     },
     get_scouts: function () {
       let path = '/scouts?count=' + this.count + '&page=' + this.page
-      API.get(path).then((response) => {
+      const authorization = `Bearer ${this.$cookie.get('access_token')}`
+      API.get(path, { headers: {authorization} }).then((response) => {
         if (response.data.content.length === 0) {
           --this.page
         } else {
