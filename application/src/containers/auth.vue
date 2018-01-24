@@ -28,8 +28,8 @@ export default {
     return {
       oauth2: 'http://127.0.0.1:3000/api/oauth2',
       data: {
-        login: 'Yupiter',
-        password: '8888'
+        login: 'Arsenal',
+        password: '1111'
       },
       status: 0,
       error: ''
