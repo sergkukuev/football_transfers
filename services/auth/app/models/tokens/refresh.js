@@ -1,7 +1,7 @@
 const mongoose  = require('mongoose');
 const Schema  = mongoose.Schema;
 
-var RefreshToken = new Schema({
+var RToken = new Schema({
     userID: {
         type: String,
         required: true
@@ -17,7 +17,7 @@ var RefreshToken = new Schema({
     },
 });
 
-RefreshToken.statics.getAll = function(callback) {
+RToken.statics.getAll = function(callback) {
     return this.find(function(err, tokens) {
         if (err)
             callback(err, null);
@@ -34,7 +34,7 @@ RefreshToken.statics.getAll = function(callback) {
     });
 }
 
-mongoose.model('RefreshToken', RefreshToken);
+mongoose.model('RefreshToken', RToken);
 
-var model = mongoose.model('RefreshToken');
-module.exports.tokenModel = model;
+var TokenModel = mongoose.model('RefreshToken');
+module.exports.model = TokenModel;

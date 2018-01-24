@@ -2,7 +2,7 @@ const mongoose  = require('mongoose');
 
 const Schema  = mongoose.Schema;
 
-var ClientSchema = new Schema({
+var Client = new Schema({
     name: {
       type: String, 
       unique: true,
@@ -18,7 +18,7 @@ var ClientSchema = new Schema({
     }
 });
 
-mongoose.model('Client', ClientSchema);
+mongoose.model('Client', Client);
 
-var model = mongoose.model('Client');
-module.exports.clientModel = model;
+var ClientModel = mongoose.model('Client');
+module.exports.model = ClientModel;

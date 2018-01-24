@@ -3,7 +3,7 @@ const   mongoose    = require('mongoose'),
 
 const Schema  = mongoose.Schema;
 
-const UserSchema = new Schema({
+const User = new Schema({
     login: {
         type  : String, 
         unique: true,
@@ -24,7 +24,7 @@ const UserSchema = new Schema({
     code: String
 });
 
-UserSchema.statics.get = function(callback) {
+User.statics.getAll = function(callback) {
     return this.find(function(err, users) {
         if (err)
             callback(err, null);
@@ -41,24 +41,29 @@ UserSchema.statics.get = function(callback) {
     });
 }
 
-UserSchema.methods.encryptPassword = function(password) {
+User.statics.create = function(user, callback) {
+    user.code = crypto.randomBytes(10).toString('base64');
+    return user.save(callback);
+}
+
+User.methods.encryptPassword = function(password) {
   return crypto.createHmac('sha1', this.salt).update(password).digest("hex");
 }
 
-UserSchema.virtual('userID').get(function(){
+User.virtual('userID').get(function(){
     return this.id;
 });
 
-UserSchema.virtual('password').set(function(password){
+User.virtual('password').set(function(password){
     this.salt = crypto.randomBytes(32).toString('base64');
     this.hPassword = this.encryptPassword(password);
 });
 
-UserSchema.methods.checkPassword = function(password){
+User.methods.checkPassword = function(password){
     return this.encryptPassword(password) === this.hPassword;
 }
 
-mongoose.model('User', UserSchema);
+mongoose.model('User', User);
 
-var model = mongoose.model('User');
-module.exports.userModel = model;
+var UserModel = mongoose.model('User');
+module.exports.model = UserModel;

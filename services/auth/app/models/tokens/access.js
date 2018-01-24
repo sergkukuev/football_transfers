@@ -1,7 +1,7 @@
 const mongoose  = require('mongoose');
 const Schema  = mongoose.Schema;
 
-var AccessToken = new Schema({
+var AToken = new Schema({
     userID: {
         type: String,
         required: true
@@ -21,7 +21,7 @@ var AccessToken = new Schema({
     }
 });
 
-AccessToken.statics.getByUserId = function(data, callback) {
+AToken.statics.getByUserId = function(data, callback) {
     return this.find({userID: data}, function(err, tokens) {
         if (err)
             callback(err, null);
@@ -38,7 +38,7 @@ AccessToken.statics.getByUserId = function(data, callback) {
     });
 }
 
-AccessToken.statics.get = function(callback) {
+AToken.statics.getAll = function(callback) {
     return this.find(function(err, tokens) {
         if (err)
             callback(err, null);
@@ -55,7 +55,7 @@ AccessToken.statics.get = function(callback) {
     });
 }
 
-mongoose.model('AccessToken', AccessToken);
+mongoose.model('AccessToken', AToken);
 
-var model = mongoose.model('AccessToken');
-module.exports.tokenModel = model;
+var TokenModel = mongoose.model('AccessToken');
+module.exports.model = TokenModel;
