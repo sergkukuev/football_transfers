@@ -4,30 +4,40 @@
     <div class="notification">
       <div>
         Login:
-        <input type="text" id="login" value="Arsenal" style="margin-left:40px"/> </br> </br>
+        <input type="text" id="login" v-model="data.login" style="margin-left:40px"/> </br> </br>
         Password:
-        <input type="text" id="password" value="1111" style="margin-left:16px"/>
+        <input type="text" id="password" v-model="data.password" style="margin-left:16px"/>
       </div>
-      </br>
+  	  </br>
+      <a v-bind:href="oauth2"> OAuth2 authorization </a>
+      </br> </br>
       <button v-on:click="auth"> Login </button>
-	  <button v-on:click="oauth2" style="margin-right:10%"> Oauth2 login </button>
     </div>
   </div>
 </template>
 
 <script>
+import {API} from './api'
+
 export default {
   name: 'transfers',
   data: function () {
     return {
+      oauth2: 'http://127.0.0.1:3000/api/oauth2',
+      data: {
+        login: 'Yupiter',
+        password: '8888'
+      }
     }
   },
   methods: {
     auth: function () {
-      console.log('auth')
-    },
-    oauth2: function () {
-      console.log('oauth2')
+      let path = '/auth'
+      API.post(path, this.data).then(response => {
+        console.log(response.data)
+      }, (err) => {
+        console.log(err)
+      })
     }
   }
 }
