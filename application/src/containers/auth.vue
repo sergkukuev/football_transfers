@@ -46,6 +46,8 @@ export default {
           this.$cookie.set('access_token', response.data.content.access_token)
           window.location = 'http://localhost:8080/'
         } else {
+          this.$cookie.set('login', 'NoClub')
+          this.$cookie.set('access_token', '')
           this.error = response.data.message
         }
       }, (err) => {
