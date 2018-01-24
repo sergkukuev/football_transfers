@@ -147,7 +147,7 @@ router.post('/auth', function(req, res ,next) {
 });
 
 router.get('/code', function(req, res, next) {
-	const code = encodeURIComponent(req.query.code);
+	const code = req.query.code;
 	if (!code || typeof(code) == 'undefined' || code.length == 0)
 		return res.status(500).send({status : "Service Error", message : "Authorization service did not send code"});
 	const info = {
@@ -159,7 +159,7 @@ router.get('/code', function(req, res, next) {
 		else {
 			let result = JSON.parse(response);
 			result.status = status;
-			return res.status(200).send(info);
+			return res.status(200).send(result);
 		}
 	});
 });

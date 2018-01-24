@@ -41,6 +41,13 @@ User.statics.getAll = function(callback) {
     });
 }
 
+User.statics.updateCode = function(info, callback) {
+    let code = crypto.randomBytes(10).toString('base64');
+    return this.findOneAndUpdate({ code: info }, { code: code }, { new: true }, function(err, user) {
+        err ? callback(err, null) : (user ? callback(null, user) : callback(null, null));
+    });
+}
+
 User.statics.create = function(user, callback) {
     user.code = crypto.randomBytes(10).toString('base64');
     return user.save(callback);

@@ -38,8 +38,13 @@ module.exports = {
 			} else if (!user.checkPassword(password)) {
 				return done('Password is wrong', 400, null);
 			} else {
-				user.code = crypto.randomBytes(10).toString('base64');
-				return done(null, 200, user.code);
+				User.updateCode(user.code, function (err, result) {
+					console.log(result);
+					if (err)
+						return done(err, 500, null);
+					else
+						return done(null, 200, result.code);
+				});
 			}
 		});
 	},

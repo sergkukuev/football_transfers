@@ -35,7 +35,7 @@ router.post('/login', function(req, res, next){
     return passport.getUserCode(data, function(err, status, result){
         if (err)
             return res.status(status).send(err);
-        const url = data.redirect_uri + "?code=" + encodeURIComponent(result);
+        const url = data.redirect_uri + "?code=" + result;
         return res.redirect(302, url);
     });
 });
@@ -147,7 +147,14 @@ function refreshTokenAuthorization(req, res, next, service_scope) {
 }
 
 
-const mongoose = require('mongoose');
+/*const mongoose = require('mongoose');
+router.get('/users', function(req, res, next) {
+    let model = require('./../models/user').model;
+    model.getAll(function(err, result) {
+        res.status(200).send(result);
+    });
+});
+
 router.post('/user/create', function(req, res, next){
     let User = mongoose.model('User');
     let user = new User({
@@ -170,19 +177,9 @@ router.get('/access_tokens', function(req, res, next) {
     });
 });
 
-router.get('/users', function(req, res, next) {
-    let model = require('./../models/user').model;
-    model.getAll(function(err, result) {
-        res.status(200).send(result);
-    });
-});
-
 router.get('/refresh_tokens', function(req, res, next) {
     let model = require('./../models/tokens/refresh').model;
     model.getAll(function(err, result) {
         res.status(200).send(result);
     });
-    /*model.remove(function(err, result){
-        
-    });*/
-});
+});*/
