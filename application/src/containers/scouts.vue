@@ -93,7 +93,7 @@ export default {
   mounted: function () {
     let token = this.$cookie.get('access_token')
     if (token.length === 0 || typeof (token) === 'undefined') {
-      window.location = 'http://localhost:8080/auth'
+      window.location = 'http://localhost:8080/login'
     } else {
       this.get_scouts()
     }

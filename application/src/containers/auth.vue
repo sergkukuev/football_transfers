@@ -44,6 +44,7 @@ export default {
           console.log(response.data)
           this.$cookie.set('login', this.data.login)
           this.$cookie.set('access_token', response.data.content.access_token.token)
+          window.location = 'http://localhost:8080/'
         } else {
           this.$cookie.set('login', 'NoClub')
           this.$cookie.set('access_token', '')
