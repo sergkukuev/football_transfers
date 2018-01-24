@@ -148,31 +148,41 @@ function refreshTokenAuthorization(req, res, next, service_scope) {
 
 
 const mongoose = require('mongoose');
-router.get('/create', function(req, res, next){
-    let model = mongoose.model('User');
-    let user = new model({
-        login: 'Yupiter',
-        password : '8888',
-        code: 'awdawascasd'
+router.post('/user/create', function(req, res, next){
+    let User = mongoose.model('User');
+    let user = new User({
+        login: req.body.login,
+        password: req.body.password
     });
-    user.save(function(err, nw_user){
-        if (err)
-            return res.send(err);
-        return res.send(nw_user);
-    });
-        
-    let ClientModel = mongoose.model('Client');
-    var client = new ClientModel({ name: "Real", appId: "aggr_id", appSecret:"aggr_secret" });
-    client.save(function(err, client) {
-        if(err) 
-            return res.send(err);
-        res.send(null);
+
+    User.create(user, function(err, result) {
+        res.status(200).send(result);
     });
 });
 
 router.get('/access_tokens', function(req, res, next) {
-    let model = require('./../models/tokens/access').tokenModel;
+    let model = require('./../models/tokens/users_access').model;
+    //model.getByUserId('5a65b6e8df7e862bdcd7f03d', function(err, result) {
+     //   return res.status(200).send(result);
+    //});
+    model.getAll(function(err, result) {
+        return res.status(200).send(result);
+    });
+});
+
+router.get('/users', function(req, res, next) {
+    let model = require('./../models/user').model;
     model.getAll(function(err, result) {
         res.status(200).send(result);
-    })
+    });
+});
+
+router.get('/refresh_tokens', function(req, res, next) {
+    let model = require('./../models/tokens/refresh').model;
+    model.getAll(function(err, result) {
+        res.status(200).send(result);
+    });
+    /*model.remove(function(err, result){
+        
+    });*/
 });

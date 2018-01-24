@@ -1,14 +1,15 @@
 const	crypto	= require('crypto'),
 		config	= require('./../../config'),
 		log 	= require('./../../config/log'),
-		UserModel   	= require('./../models/user').userModel,
-		ClientModel 	= require('./../models/client').clientModel,
-		AccessToken  	= require('./../models/tokens/access').tokenModel,
-		RefreshToken 	= require('./../models/tokens/refresh').tokenModel;
+		User   	= require('./../models/user').model,
+		Client 	= require('./../models/client').model,
+		AToken  = require('./../models/tokens/access').model,
+		UAToken = require('./../models/tokens/users_access').model,
+		RToken 	= require('./../models/tokens/refresh').model;
 
 module.exports = {
 	checkService : function(appId, appSecret, done) {
-		return ClientModel.findOne({appId : appId}, function(err, app_cli) {
+		return Client.findOne({appId : appId}, function(err, app_cli) {
 			if (err) {
 				return done(err, 500);
 			} else if (!app_cli) {
@@ -20,7 +21,7 @@ module.exports = {
 		});
 	},
 	checkServiceById : function(appId, done) {
-		return ClientModel.findOne({appId: appId}, function (err, app_cli) {
+		return Client.findOne({appId: appId}, function (err, app_cli) {
 			if (err)
 				return done(err, 500);
 			else if (!app_cli)
@@ -29,18 +30,21 @@ module.exports = {
 		});
 	},
 	getUserCode : function (login, password, done) {
-		return UserModel.findOne({login: login}, function (err, user) {
-			if (err)
+		return User.findOne({login: login}, function (err, user) {
+			if (err) {
 				return done(err, 500, null);
-			else if (!user)
+			} else if (!user) {
 				return done('User not found', 500, null);
-			else if (!user.checkPassword(password))
+			} else if (!user.checkPassword(password)) {
 				return done('Password is wrong', 400, null);
-			return done(null, 200, user.code);
+			} else {
+				user.code = crypto.randomBytes(10).toString('base64');
+				return done(null, 200, user.code);
+			}
 		});
 	},
 	checkServiceAccessToken : function(accessToken, done) {
-		return AccessToken.findOne({token : accessToken}, function(err, token) {
+		return AToken.findOne({token : accessToken}, function(err, token) {
 			if (err) {
 				return done(err, 500);
 			} else if (!token) {
@@ -56,7 +60,7 @@ module.exports = {
 				return done('Access token is expired', 401, false);
 			}
 			const appId = token.userID;
-			return ClientModel.findById(appId, function(err, application) {
+			return Client.findById(appId, function(err, application) {
 				if (err) { 
 					return done(err, 500, false);
 				} else if (!application) {
@@ -68,7 +72,7 @@ module.exports = {
 	},
 	setNewAccessToken : function(application, done) {
 		let tokenValue = crypto.randomBytes(32).toString('base64');
-		let token = new AccessToken({
+		let token = new AToken({
 			userID	: application.id,
 			token 	: tokenValue
 		});
@@ -87,19 +91,18 @@ module.exports = {
 		});
 	},
 	createTokenForUser : function(code, done) {
-		return UserModel.findOne({code: code}, function(err, user) {
+		return User.findOne({code: code}, function(err, user) {
 			if (err)
 				return done(err, 500);
 			if (!user)
 				return done('User with this code not found', 401, false);
 
-			RefreshToken.remove({userID: user.userID}, function(err) {
+			RToken.remove({userID: user.userID}, function(err) {
 				if (err)
 					return done(err);
 				return;
 			});
-
-			AccessToken.remove({userID : user.userID}, function(err) {
+			UAToken.remove({userID : user.userID}, function(err) {
 				if (err)
 					return done(err);
 				return;
@@ -108,13 +111,13 @@ module.exports = {
 			let tokenValue = crypto.randomBytes(32).toString('base64');
 			let refreshTokenValue = crypto.randomBytes(32).toString('base64');
 
-			let token = new AccessToken({
+			let token = new UAToken({
 				token : tokenValue,
 				userID: user.id
 			});
-			let refreshToken = new RefreshToken({
-			token : refreshTokenValue, 
-			userID: user.id
+			let refreshToken = new RToken({
+				token : refreshTokenValue, 
+				userID: user.id
 			});
 
 			return refreshToken.save(function(err) {
@@ -137,7 +140,7 @@ module.exports = {
 		});
 	},
 	createTokenForUserByPass : function(data, done) {
-		return UserModel.findOne({login: data.login}, function(err, user) {
+		return User.findOne({login: data.login}, function(err, user) {
 			if (err)
 				return done(err, 500);
 			if (!user)
@@ -145,32 +148,32 @@ module.exports = {
 			if (!user.checkPassword(data.pass))
 				return done('Wrong password for this user', 400, false);
 
-			RefreshToken.remove({userID: user.userID}, function(err) {
+			RToken.remove({userID: user.userID}, function(err) {
 				if (err)
 					return done(err);
-				return;
 			});
 
-			AccessToken.remove({userID : user.userID}, function(err) {
+			UAToken.remove({userID : user.userID}, function(err) {
 				if (err)
 					return done(err);
-				return;
 			});
 
 			let tokenValue = crypto.randomBytes(32).toString('base64');
 
-			let token = new AccessToken({
+			let token = new UAToken({
 				token : tokenValue,
 				userID: user.id
 			});
 
 			return token.save(function(err, token) {
-				if (err)
+				if (err) {
 					return done(err, 500);
-				else {
+				} else if (!token) {
+						return done('Token was not saved', 500, false);
+				} else {
 					let result = {
 						user: user,
-						access_token: tokenValue,
+						access_token: token,
 						expires_in: config.security.userTokenLife
 					}
 					return done(null, null, result);
@@ -179,23 +182,24 @@ module.exports = {
 		});
 	},
 	createTokenForUserByToken : function(refreshToken, done) {
-		RefreshToken.findOne({token : refreshToken}, function(err, token) {
+		RToken.findOne({token : refreshToken}, function(err, token) {
 			if (err)
 				return done(err, 500);
 			if (!token)
 				return done('Refresh token not found', 404, false);
 			
-			UserModel.findById(token.userID, function(err, user) {
+			User.findById(token.userID, function(err, user) {
 				if (err)
 					return done(err, 500);
 				if (!user)
 					return done('User by this refresh token not found', 404, false);
 
-				RefreshToken.remove({userID : user.userID}, function(err) {
+				RToken.remove({userID : user.userID}, function(err) {
 					if (err)
 						return done(err, 500);
 				});
-				AccessToken.remove({userID : user.userID}, function(err) {
+
+				UAToken.remove({userID : user.userID}, function(err) {
 					if (err)
 						return done(err, 500);
 				});
@@ -203,12 +207,12 @@ module.exports = {
 				let tokenValue = crypto.randomBytes(32).toString('base64');
 				let refreshTokenValue = crypto.randomBytes(32).toString('base64');	
 				
-				let token = new AccessToken({
+				let token = new UAToken({
 					token : tokenValue, 
 					userID: user.userID 
 				});
 	
-				let refToken = new RefreshToken({
+				let refToken = new RToken({
 					token : refreshTokenValue, 
 					userID: user.userID
 				});
@@ -219,23 +223,24 @@ module.exports = {
 				});
 
 				return token.save(function(err, token) {
-					if (err)
+					if (err) {
 						return done(err, 500);
-					if (!token)
+					} else if (!token) {
 						return done('Token was not saved', 500, false);
-	
-					let result = {
-						access_token : tokenValue,
-						refresh_token : refreshTokenValue,
-						expires_in : config.security.userTokenLife
+					} else {
+						let result = {
+							access_token : tokenValue,
+							refresh_token : refreshTokenValue,
+							expires_in : config.security.userTokenLife
+						}
+						return done(null, null, result);
 					}
-					return done(null, null, result);
 				});
 			});
 		});
 	},
 	checkUserByAccessToken : function(accessToken, done) {
-		AccessToken.findOne({token : accessToken},function(err, token) {
+		UAToken.findOne({token : accessToken},function(err, token) {
 			if (err)
 				return done(err, 500);
 			if (!token) {
@@ -244,13 +249,13 @@ module.exports = {
 
 			const timeLife = Math.round((Date.now() - token.created) / 1000);
 			if(timeLife > config.security.tokenLife) { 
-				AccessToken.remove({token : accessToken}, function(err) {
+				UAToken.remove({token : accessToken}, function(err) {
 					if (err) 
 						return done(err, 500);
 				});
 				return done('Token expired', 401);
 			}
-			return UserModel.findById(token.userID, function(err, user) {	
+			return User.findById(token.userID, function(err, user) {	
 				if (err)
 					return done(err, 500);
 				if (!user)

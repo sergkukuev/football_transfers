@@ -70,9 +70,6 @@ export default {
       }, (err) => {
         this.error = err
         this.status = err.response.status
-        if (this.status === 401) {
-          window.location = 'http://localhost:8080/login'
-        }
       })
     },
     prev_page: function () {
@@ -96,7 +93,7 @@ export default {
   mounted: function () {
     let token = this.$cookie.get('access_token')
     if (token.length === 0 || typeof (token) === 'undefined') {
-      window.location = 'http://localhost:8080/auth'
+      window.location = 'http://localhost:8080/login'
     } else {
       this.get_scouts()
     }

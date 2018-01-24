@@ -6,7 +6,7 @@
         Login:
         <input type="text" id="login" v-model="data.login" style="margin-left:40px"/> </br> </br>
         Password:
-        <input type="text" id="password" v-model="data.password" style="margin-left:16px"/>
+        <input type="password" id="password" v-model="data.password" style="margin-left:16px"/>
       </div>
   	  </br>
       <a v-bind:href="oauth2"> OAuth2 authorization </a>
@@ -43,7 +43,7 @@ export default {
         if (this.status === 200) {
           console.log(response.data)
           this.$cookie.set('login', this.data.login)
-          this.$cookie.set('access_token', response.data.content.access_token)
+          this.$cookie.set('access_token', response.data.content.access_token.token)
           window.location = 'http://localhost:8080/'
         } else {
           this.$cookie.set('login', 'NoClub')

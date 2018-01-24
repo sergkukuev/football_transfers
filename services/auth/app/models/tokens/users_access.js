@@ -1,7 +1,7 @@
 const mongoose  = require('mongoose');
 const Schema  = mongoose.Schema;
 
-var RToken = new Schema({
+var UAToken = new Schema({
     userID: {
         type: String,
         required: true
@@ -15,9 +15,30 @@ var RToken = new Schema({
         type: Date,
         default: Date.now
     },
+    lastUse : {
+        type: Date,
+        default : Date.now
+    }
 });
 
-RToken.statics.getAll = function(callback) {
+UAToken.statics.getByUserId = function(data, callback) {
+    return this.find({userID: data}, function(err, tokens) {
+        if (err)
+            callback(err, null);
+        else {
+            if (tokens) {
+                let result = [];
+                for (let i = 0; i < tokens.length; i++)
+                    result[i] = tokens[i];
+                callback(null, result);
+            }
+            else
+                callback(null, null);
+        }
+    });
+}
+
+UAToken.statics.getAll = function(callback) {
     return this.find(function(err, tokens) {
         if (err)
             callback(err, null);
@@ -34,7 +55,7 @@ RToken.statics.getAll = function(callback) {
     });
 }
 
-mongoose.model('RefreshToken', RToken);
+mongoose.model('UserAccessToken', UAToken);
 
-var TokenModel = mongoose.model('RefreshToken');
+var TokenModel = mongoose.model('UserAccessToken');
 module.exports.model = TokenModel;
