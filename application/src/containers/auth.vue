@@ -34,6 +34,8 @@ export default {
     auth: function () {
       let path = '/auth'
       API.post(path, this.data).then(response => {
+        this.$cookie.set('login', this.data.login)
+        this.$cookie.set('access_token', response.data.content.access_token)
         console.log(response.data)
       }, (err) => {
         console.log(err)

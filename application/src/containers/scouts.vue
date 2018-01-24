@@ -58,7 +58,8 @@ export default {
   methods: {
     get_scouts: function () {
       let path = '/scouts?count=' + this.count + '&page=' + this.page
-      API.get(path).then((response) => {
+      const authorization = `Bearer ${this.$cookie.get('access_token')}`
+      API.get(path, { headers: {authorization} }).then((response) => {
         if (response.data.length === 0) {
           --this.page
         } else {
@@ -68,6 +69,9 @@ export default {
       }, (err) => {
         this.error = err
         this.status = err.response.status
+        if (this.status === 401) {
+          window.location = 'http://localhost:8080/login'
+        }
       })
     },
     prev_page: function () {
@@ -89,7 +93,12 @@ export default {
     }
   },
   mounted: function () {
-    this.get_scouts()
+    let token = this.$cookie.get('access_token')
+    if (token.length === 0 || typeof (token) === 'undefined') {
+      window.location = 'http://localhost:8080/auth'
+    } else {
+      this.get_scouts()
+    }
   }
 }
 </script>

@@ -180,11 +180,15 @@ export default {
     post_transfer: function () {
       console.log(this.data)
       let path = '/transfers/create'
-      API.post(path, this.data).then(response => {
+      const authorization = `Bearer ${this.$cookie.get('access_token')}`
+      API.post(path, { headers: {authorization} }, this.data).then(response => {
         this.status = response.status
       }, (err) => {
         this.status = err.response.status
         this.error = err.response.data
+        if (this.status === 401) {
+          window.location = 'http://localhost:8080/login'
+        }
       })
     },
     get_players: function () {
@@ -295,7 +299,13 @@ export default {
     }
   },
   mounted: function () {
-    this.get_players()
+    let token = this.$cookie.get('access_token')
+    console.log(token)
+    if (token.length === 0 || typeof (token) === 'undefined') {
+      window.location = 'http://localhost:8080/login'
+    } else {
+      this.get_players()
+    }
   }
 }
 </script>
