@@ -13,11 +13,11 @@ db.on('error', function(err) {
 });
 
 db.once('open', function callback() {
-	log.info("Service \'Transfers\' connected to MongoDB!");
+	log.info("Service \'Auth\' connected to MongoDB!");
 });
 
 module.exports = require('./config/express') (app, config);
 
 app.listen(config.port, function(){
-	log.info('Service \'Transfers\' listening on port ' + config.port);
+	log.info('Service \'Auth\' listening on port ' + config.port);
 });

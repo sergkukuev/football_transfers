@@ -15,17 +15,35 @@
       </router-link>
     </div>
     <div class="nav-right">
-      <!-- Wiil be login and logout
-      <span class="nav-item">
-        <a class="button">Logout</a>
-      </span> -->
+      <div v-if="typeof($cookie.get('login')) === 'undefined' || $cookie.get('login') === 'NoClub'">
+        <span class="nav-item">
+          <font> NoClub (not authorized)</font> &nbsp
+          <a class="button" v-on:click="login">Login</a>
+        </span>
+      </div>
+      <div v-else>
+        <span class="nav-item">
+          <font>{{$cookie.get('login')}}</font> &nbsp
+          <a class="button" v-on:click="logout">Logout</a>
+        </span>
+      </div>
     </div>
   </nav>
 </template>
 
 <script>
 export default {
-  name: 'navbar'
+  name: 'navbar',
+  methods: {
+    login: function () {
+      window.location = 'http://localhost:8080/login'
+    },
+    logout: function () {
+      this.$cookie.set('login', 'NoClub')
+      this.$cookie.set('access_token', '')
+      window.location.reload()
+    }
+  }
 }
 </script>
 

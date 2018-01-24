@@ -57,12 +57,14 @@ export default {
   },
   methods: {
     get_scouts: function () {
+      console.log(this.$cookie.get('access_token'))
       let path = '/scouts?count=' + this.count + '&page=' + this.page
-      API.get(path).then((response) => {
+      const authorization = `Bearer ${this.$cookie.get('access_token')}`
+      API.get(path, { headers: {authorization} }).then((response) => {
         if (response.data.length === 0) {
           --this.page
         } else {
-          this.scouts = response.data
+          this.scouts = response.data.content
           this.status = response.status
         }
       }, (err) => {
@@ -89,7 +91,12 @@ export default {
     }
   },
   mounted: function () {
-    this.get_scouts()
+    let token = this.$cookie.get('access_token')
+    if (token.length === 0 || typeof (token) === 'undefined') {
+      window.location = 'http://localhost:8080/login'
+    } else {
+      this.get_scouts()
+    }
   }
 }
 </script>

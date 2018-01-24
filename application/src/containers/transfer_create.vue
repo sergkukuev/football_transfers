@@ -117,7 +117,7 @@
           Enter the rest of the information about Transfer:
           <div>
             Buying club: </br>
-            <input type="text" id="clubTo" value="NoClub" style="margin-left:5%"/> </br> </br>
+            <input type="text" id="clubTo" v-model="$cookie.get('login')" style="margin-left:5%" readonly/> </br> </br>
             Transfer cost: </br>
             <input v-if="player.club !== 'NoClub'" type="text" id="cost" value="0" style="margin-left:5%"/>
             <input v-else type="text" id="cost" value="0" style="margin-left:5%" disabled/> </br> </br>
@@ -179,21 +179,26 @@ export default {
   methods: {
     post_transfer: function () {
       console.log(this.data)
+      console.log(this.$cookie.get('access_token'))
       let path = '/transfers/create'
-      API.post(path, this.data).then(response => {
+      const authorization = `Bearer ${this.$cookie.get('access_token')}`
+      API.post(path, this.data, { headers: {authorization} }).then(response => {
         this.status = response.status
       }, (err) => {
         this.status = err.response.status
         this.error = err.response.data
+        if (this.status === 401) {
+          window.location = 'http://localhost:8080/login'
+        }
       })
     },
     get_players: function () {
       let path = '/players?count=' + this.count + '&page=' + this.page
       API.get(path).then((response) => {
-        if (response.data.length === 0) {
+        if (response.data.content.length === 0) {
           --this.page
         } else {
-          this.items = response.data
+          this.items = response.data.content
           this.statusPlayer = response.status
         }
       }, (err) => {
@@ -204,11 +209,12 @@ export default {
     },
     get_scouts: function () {
       let path = '/scouts?count=' + this.count + '&page=' + this.page
-      API.get(path).then((response) => {
-        if (response.data.length === 0) {
+      const authorization = `Bearer ${this.$cookie.get('access_token')}`
+      API.get(path, { headers: {authorization} }).then((response) => {
+        if (response.data.content.length === 0) {
           --this.page
         } else {
-          this.items = response.data
+          this.items = response.data.content
           this.statusScout = response.status
         }
       }, (err) => {
@@ -295,7 +301,13 @@ export default {
     }
   },
   mounted: function () {
-    this.get_players()
+    let token = this.$cookie.get('access_token')
+    console.log(token)
+    if (token.length === 0 || typeof (token) === 'undefined') {
+      window.location = 'http://localhost:8080/login'
+    } else {
+      this.get_players()
+    }
   }
 }
 </script>

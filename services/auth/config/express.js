@@ -14,6 +14,8 @@ module.exports = function(app, config) {
   
   // app.use(favicon(config.root + '/public/img/favicon.ico'));
   app.use(cors());
+  app.set('views', config.root + '/app/views');
+  app.set('view engine', 'jade');
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({
     extended: true
@@ -23,24 +25,27 @@ module.exports = function(app, config) {
   app.use(express.static(config.root + '/public'));
   app.use(methodOverride());
 
+  var models = glob.sync(config.root + '/app/models/*.js');
+  models.forEach(function (model) {
+    require(model);
+  });
+
   var routes = glob.sync(config.root + '/app/routes/*.js');
   routes.forEach(function (route) {
     require(route)(app);
   });
 
-// 404
   app.use(function (req, res, next) {
     var err = new Error('Route not found');
     err.status = 404;
     next(err);
   });
   
-  // 500
   if(app.get('env') === 'development'){
     app.use(function (err, req, res, next) {
       res.status(err.status || 500);
       res.send({
-      	status : "Error",
+        status: 'Error',
         message: err.message
       });
     });
@@ -48,8 +53,8 @@ module.exports = function(app, config) {
 
   app.use(function (err, req, res, next) {
     res.status(err.status || 500);
-    res.send({
-      	status: "Error",
+      res.send({
+        status: 'Error',
         message: err.message
       });
   });

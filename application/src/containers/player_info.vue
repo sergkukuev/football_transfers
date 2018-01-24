@@ -47,7 +47,7 @@ export default {
         let path = '/players/' + this.id
         this.contract_path = '/players/' + this.id + '/contract'
         API.get(path).then((response) => {
-          this.player = response.data
+          this.player = response.data.content
           this.status = response.status
         }, (err) => {
           this.error = err.response.data

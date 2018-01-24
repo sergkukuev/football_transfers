@@ -22,6 +22,7 @@
     "supertest": "^2.0.0"
   },
   "dependencies": {
+    "basic-auth": "^2.0.0",
     "amqplib": "^0.5.2",
     "body-parser": "^1.13.3",
     "chai-http": "^3.0.0",
@@ -37,7 +38,6 @@
     "morgan": "^1.6.1",
     "nconf": "^0.10.0",
     "request": "^2.83.0",
-    "requests": "^0.2.2",
     "serve-favicon": "^2.3.0",
     "winston": "^2.4.0"
   }

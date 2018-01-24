@@ -6,11 +6,10 @@ var config = {
   development: {
     root: rootPath,
     app: {
-      name: 'aggregationservice', 
-      id: 'aggr_id',
-      secret: 'aggr_secret'
+      name: 'playerservice'
     },
-    port: process.env.PORT || 3000,
+    tokenLife: 400,
+    port: process.env.PORT || 3001,
     db: 'mongodb://admin:admin@Cluster0-shard-00-00-voyya.mongodb.net:27017,Cluster0-shard-00-01-voyya.mongodb.net:27017,Cluster0-shard-00-02-voyya.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin'
   }
 };

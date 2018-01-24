@@ -6,9 +6,13 @@ var config = {
   development: {
     root: rootPath,
     app: {
-      name: 'transferservice'
+      name: 'authservice'
     },
-    port: process.env.PORT || 3003,
+    security : {
+      userTokenLife : 1800,
+      serviceTokenLife : 100
+    },
+    port: process.env.PORT || 3005,
     db: 'mongodb://admin:admin@Cluster0-shard-00-00-voyya.mongodb.net:27017,Cluster0-shard-00-01-voyya.mongodb.net:27017,Cluster0-shard-00-02-voyya.mongodb.net:27017/test?ssl=true&replicaSet=Cluster0-shard-0&authSource=admin'
   }
 };
