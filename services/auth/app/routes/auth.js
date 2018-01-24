@@ -74,7 +74,6 @@ router.get('/userId', function(req, res, next) {
             if (!scope)
                 return res.status(status).send({ status: 'Service error', message: 'Scope is null'});
             const user_auth = req.headers['user-authorization'];
-            console.log(user_auth);
             if (user_auth && typeof(user_auth) !== 'undefined') {
                 return passport.checkUserByBearer(user_auth, function(err, status, user) {
                     if (err)
@@ -112,7 +111,6 @@ function passAuthorization(req, res, next, service_scope) {
         login: req.body.login, 
         pass: req.body.password
     };
-    console.log('ovsyanan');
     if (!data.login || !data.pass || typeof(data.login) == 'undefined' || typeof(data.pass) == 'undefined') {
         return res.status(400).send({status: 'Error', message: 'Bad request: login or password is undefined'});
     }
