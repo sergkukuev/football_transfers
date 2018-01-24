@@ -13,6 +13,9 @@
       </br> </br>
       <button v-on:click="auth"> Login </button>
     </div>
+    <div class="notification" v-if="status !== 200">
+    	<font color="red"> {{error}} </font>
+    </div>
   </div>
 </template>
 
@@ -27,16 +30,23 @@ export default {
       data: {
         login: 'Yupiter',
         password: '8888'
-      }
+      },
+      status: 0,
+      error: ''
     }
   },
   methods: {
     auth: function () {
       let path = '/auth'
       API.post(path, this.data).then(response => {
-        this.$cookie.set('login', this.data.login)
-        this.$cookie.set('access_token', response.data.content.access_token)
         console.log(response.data)
+        this.status = response.data.status
+        if (this.status === 200) {
+          this.$cookie.set('login', this.data.login)
+          this.$cookie.set('access_token', response.data.content.access_token)
+        } else {
+          this.error = response.data.message
+        }
       }, (err) => {
         console.log(err)
       })
