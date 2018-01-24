@@ -4,6 +4,7 @@ const	crypto	= require('crypto'),
 		UserModel   	= require('./../models/user').userModel,
 		ClientModel 	= require('./../models/client').clientModel,
 		AccessToken  	= require('./../models/tokens/access').tokenModel,
+		UAToken 		= require('./../models/tokens/users_access').tokenModel,
 		RefreshToken 	= require('./../models/tokens/refresh').tokenModel;
 
 module.exports = {
@@ -98,8 +99,7 @@ module.exports = {
 					return done(err);
 				return;
 			});
-
-			AccessToken.remove({userID : user.userID}, function(err) {
+			UAToken.remove({userID : user.userID}, function(err) {
 				if (err)
 					return done(err);
 				return;
@@ -108,13 +108,13 @@ module.exports = {
 			let tokenValue = crypto.randomBytes(32).toString('base64');
 			let refreshTokenValue = crypto.randomBytes(32).toString('base64');
 
-			let token = new AccessToken({
+			let token = new UAToken({
 				token : tokenValue,
 				userID: user.id
 			});
 			let refreshToken = new RefreshToken({
-			token : refreshTokenValue, 
-			userID: user.id
+				token : refreshTokenValue, 
+				userID: user.id
 			});
 
 			return refreshToken.save(function(err) {
@@ -148,29 +148,29 @@ module.exports = {
 			RefreshToken.remove({userID: user.userID}, function(err) {
 				if (err)
 					return done(err);
-				return;
 			});
 
-			AccessToken.remove({userID : user.userID}, function(err) {
+			UAToken.remove({userID : user.userID}, function(err) {
 				if (err)
 					return done(err);
-				return;
 			});
 
 			let tokenValue = crypto.randomBytes(32).toString('base64');
 
-			let token = new AccessToken({
+			let token = new UAToken({
 				token : tokenValue,
 				userID: user.id
 			});
 
 			return token.save(function(err, token) {
-				if (err)
+				if (err) {
 					return done(err, 500);
-				else {
+				} else if (!token) {
+						return done('Token was not saved', 500, false);
+				} else {
 					let result = {
 						user: user,
-						access_token: tokenValue,
+						access_token: token,
 						expires_in: config.security.userTokenLife
 					}
 					return done(null, null, result);
@@ -195,7 +195,8 @@ module.exports = {
 					if (err)
 						return done(err, 500);
 				});
-				AccessToken.remove({userID : user.userID}, function(err) {
+
+				UAToken.remove({userID : user.userID}, function(err) {
 					if (err)
 						return done(err, 500);
 				});
@@ -203,7 +204,7 @@ module.exports = {
 				let tokenValue = crypto.randomBytes(32).toString('base64');
 				let refreshTokenValue = crypto.randomBytes(32).toString('base64');	
 				
-				let token = new AccessToken({
+				let token = new UAToken({
 					token : tokenValue, 
 					userID: user.userID 
 				});
@@ -219,23 +220,24 @@ module.exports = {
 				});
 
 				return token.save(function(err, token) {
-					if (err)
+					if (err) {
 						return done(err, 500);
-					if (!token)
+					} else if (!token) {
 						return done('Token was not saved', 500, false);
-	
-					let result = {
-						access_token : tokenValue,
-						refresh_token : refreshTokenValue,
-						expires_in : config.security.userTokenLife
+					} else {
+						let result = {
+							access_token : tokenValue,
+							refresh_token : refreshTokenValue,
+							expires_in : config.security.userTokenLife
+						}
+						return done(null, null, result);
 					}
-					return done(null, null, result);
 				});
 			});
 		});
 	},
 	checkUserByAccessToken : function(accessToken, done) {
-		AccessToken.findOne({token : accessToken},function(err, token) {
+		UAToken.findOne({token : accessToken},function(err, token) {
 			if (err)
 				return done(err, 500);
 			if (!token) {
@@ -244,7 +246,7 @@ module.exports = {
 
 			const timeLife = Math.round((Date.now() - token.created) / 1000);
 			if(timeLife > config.security.tokenLife) { 
-				AccessToken.remove({token : accessToken}, function(err) {
+				UAToken.remove({token : accessToken}, function(err) {
 					if (err) 
 						return done(err, 500);
 				});

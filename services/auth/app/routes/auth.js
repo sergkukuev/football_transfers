@@ -155,26 +155,23 @@ router.get('/create', function(req, res, next){
         password : '8888',
         code: 'awdawascasd'
     });
-    user.save(function(err, nw_user){
-        if (err)
-            return res.send(err);
-        return res.send(nw_user);
-    });
-        
-    let ClientModel = mongoose.model('Client');
-    var client = new ClientModel({ name: "Real", appId: "aggr_id", appSecret:"aggr_secret" });
-    client.save(function(err, client) {
-        if(err) 
-            return res.send(err);
-        res.send(null);
-    });
 });
 
 router.get('/access_tokens', function(req, res, next) {
-    let model = require('./../models/tokens/access').tokenModel;
-    model.getByUserId('5a65c7fa181baa0e6cd8489e', function(err, result) {
-        res.status(200).send(result);
+    let model = require('./../models/tokens/users_access').tokenModel;
+    //model.getByUserId('5a65b6e8df7e862bdcd7f03d', function(err, result) {
+     //   return res.status(200).send(result);
+    //});
+    model.get(function(err, result) {
+        return res.status(200).send(result);
     });
+});
+
+router.get('/users', function(req, res, next) {
+    let model = require('./../models/user').userModel;
+    model.get(function(err, result) {
+        res.status(200).send(result);
+    })
 });
 
 router.get('/refresh_tokens', function(req, res, next) {

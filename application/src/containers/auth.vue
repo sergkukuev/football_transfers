@@ -43,8 +43,7 @@ export default {
         if (this.status === 200) {
           console.log(response.data)
           this.$cookie.set('login', this.data.login)
-          this.$cookie.set('access_token', response.data.content.access_token)
-          window.location = 'http://localhost:8080/'
+          this.$cookie.set('access_token', response.data.content.access_token.token)
         } else {
           this.$cookie.set('login', 'NoClub')
           this.$cookie.set('access_token', '')

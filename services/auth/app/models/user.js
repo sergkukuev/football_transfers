@@ -24,6 +24,23 @@ const UserSchema = new Schema({
     code: String
 });
 
+UserSchema.statics.get = function(callback) {
+    return this.find(function(err, users) {
+        if (err)
+            callback(err, null);
+        else {
+            if (users) {
+                let result = [];
+                for (let i = 0; i < users.length; i++)
+                    result[i] = users[i];
+                callback(null, result);
+            }
+            else
+                callback(null, null);
+        }
+    });
+}
+
 UserSchema.methods.encryptPassword = function(password) {
   return crypto.createHmac('sha1', this.salt).update(password).digest("hex");
 }
