@@ -44,6 +44,7 @@ export default {
         if (this.status === 200) {
           this.$cookie.set('login', this.data.login)
           this.$cookie.set('access_token', response.data.content.access_token)
+          window.location = 'http://localhost:8080/'
         } else {
           this.error = response.data.message
         }
