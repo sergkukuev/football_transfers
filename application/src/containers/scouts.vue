@@ -68,8 +68,13 @@ export default {
           this.status = response.status
         }
       }, (err) => {
-        this.error = err
-        this.status = err.response.status
+        console.log(err.response)
+        if (err.response.status === 401) {
+          window.location = 'http://localhost:8080/login'
+        } else {
+          this.error = err
+          this.status = err.response.status
+        }
       })
     },
     prev_page: function () {
