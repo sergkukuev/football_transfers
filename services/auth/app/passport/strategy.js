@@ -143,7 +143,7 @@ module.exports = {
 			if (!user)
 				return done('User with this login and password not found', 401, false);
 			if (!user.checkPassword(data.pass))
-				return done('Wromg password for this user', 400, false);
+				return done('Wrong password for this user', 400, false);
 
 			RefreshToken.remove({userID: user.userID}, function(err) {
 				if (err)
@@ -164,7 +164,7 @@ module.exports = {
 				userID: user.id
 			});
 
-			token.save(function(err, token) {
+			return token.save(function(err, token) {
 				if (err)
 					return done(err, 500);
 				else {
@@ -238,8 +238,9 @@ module.exports = {
 		AccessToken.findOne({token : accessToken},function(err, token) {
 			if (err)
 				return done(err, 500);
-			if (!token)
+			if (!token) {
 				return done('Access token not found', 401, false);
+			}
 
 			const timeLife = Math.round((Date.now() - token.created) / 1000);
 			if(timeLife > config.security.tokenLife) { 

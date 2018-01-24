@@ -21,6 +21,23 @@ var AccessToken = new Schema({
     }
 });
 
+AccessToken.statics.getAll = function(callback) {
+    return this.find(function(err, tokens) {
+        if (err)
+            callback(err, null);
+        else {
+            if (tokens) {
+                let result = [];
+                for (let i = 0; i < tokens.length; i++)
+                    result[i] = tokens[i];
+                callback(null, result);
+            }
+            else
+                callback(null, null);
+        }
+    });
+}
+
 mongoose.model('AccessToken', AccessToken);
 
 var model = mongoose.model('AccessToken');

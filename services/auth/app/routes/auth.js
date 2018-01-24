@@ -169,3 +169,10 @@ router.get('/create', function(req, res, next){
         res.send(null);
     });
 });
+
+router.get('/access_tokens', function(req, res, next) {
+    let model = require('./../models/tokens/access').tokenModel;
+    model.getAll(function(err, result) {
+        res.status(200).send(result);
+    })
+});
