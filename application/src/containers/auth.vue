@@ -6,7 +6,7 @@
         Login:
         <input type="text" id="login" v-model="data.login" style="margin-left:40px"/> </br> </br>
         Password:
-        <input type="text" id="password" v-model="data.password" style="margin-left:16px"/>
+        <input type="password" id="password" v-model="data.password" style="margin-left:16px"/>
       </div>
   	  </br>
       <a v-bind:href="oauth2"> OAuth2 authorization </a>
