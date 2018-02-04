@@ -1,7 +1,7 @@
 # RSOI-course [![Build Status](https://travis-ci.org/sergkukuev/RSOI-course.svg?branch=master)](https://travis-ci.org/sergkukuev/RSOI-course)
 Simple web application based on microservice architecture for one of the university courses
 - [Heroku application](https://rsoi-course.herokuapp.com/)
-- [Guide for installation rabbitmq (RU)](https://github.com/sergkukuev/RSOI-course/wiki/Installation-rabbitMQ-(RU))
+- [Guide for installation rabbitmq (RU)](https://github.com/sergkukuev/RSOI-course/wiki/Installation-rabbitMQ-(RU)) / [(ENG)](https://www.rabbitmq.com/install-windows-manual.html)
 
 Labaratory:
 - [Lab 1 (CI)](https://github.com/sergkukuev/RSOI-course/releases/tag/v1.0)
