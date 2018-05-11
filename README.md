@@ -1,6 +1,6 @@
-# football_transfers [![Build Status](https://travis-ci.org/sergkukuev/RSOI-course.svg?branch=master)](https://travis-ci.org/sergkukuev/RSOI-course)
+# Registration system for football players [![Build Status](https://travis-ci.org/sergkukuev/RSOI-course.svg?branch=master)](https://travis-ci.org/sergkukuev/RSOI-course)
 Simple web application based on microservice architecture for one of the university courses
-- [Heroku application](https://rsoi-course.herokuapp.com/)
+- [Heroku application (only first labaratory)](https://rsoi-course.herokuapp.com/)
 - [Guide for installation rabbitmq (ENG)](https://www.rabbitmq.com/install-windows-manual.html)
 
 Labaratory:
@@ -12,9 +12,10 @@ Labaratory:
 
 ___________________________________________________________________________________________________________________________________
 
+# Система оформления переходов футболистов
 Веб-приложение на RESTful API с микросервисной архитектурой, созданное при выполнении одного из курсов МГТУ им. Баумана - "Распределенные системы обработки информации".
 
-- [Деплой веб-приложения на Хероку](https://rsoi-course.herokuapp.com/)
+- [Деплой веб-приложения на Хероку (только первой лабараторной)](https://rsoi-course.herokuapp.com/)
 - [Гайд по установке очереди rabbitmq (RU)](https://github.com/sergkukuev/football_transfers/wiki/Installation-rabbitMQ-(RU))
 
 Релизы лабораторных работ:
