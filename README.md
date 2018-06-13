@@ -1,4 +1,4 @@
-# Registration system for football players [![Build Status](https://travis-ci.org/sergkukuev/RSOI-course.svg?branch=master)](https://travis-ci.org/sergkukuev/RSOI-course)
+# Registration system for football players [![Build Status](https://travis-ci.org/sergkukuev/football_transfers.svg?branch=master)](https://travis-ci.org/sergkukuev/football_transfers)
 Simple web application based on microservice architecture for one of the university courses
 - [Heroku application (only first labaratory)](https://rsoi-course.herokuapp.com/)
 - [Guide for installation rabbitmq (ENG)](https://www.rabbitmq.com/install-windows-manual.html)
