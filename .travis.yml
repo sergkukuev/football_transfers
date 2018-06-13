@@ -5,8 +5,6 @@ node_js:
 install:
 - npm install
 - npm install -g mocha
-scripts:
-- npm test
 branches:
   only:
   - master
@@ -16,6 +14,6 @@ deploy:
   api_key:
     secure: 4c3a45e1-67fd-4ce8-a99a-d01827a41f17
   on:
-    repo: sergkukuev/RSOI-course
+    repo: sergkukuev/football_transfers
     branch: master
   strategy: git
