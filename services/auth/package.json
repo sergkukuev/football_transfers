@@ -33,7 +33,7 @@
     "glob": "^6.0.4",
     "jade": "^1.11.0",
     "method-override": "^2.3.0",
-    "mongoose": "^4.13.9",
+    "mongoose": "^5.7.7",
     "mongoose-rollback": "^1.1.4",
     "morgan": "^1.6.1",
     "oauth2orize": "^1.11.0",
